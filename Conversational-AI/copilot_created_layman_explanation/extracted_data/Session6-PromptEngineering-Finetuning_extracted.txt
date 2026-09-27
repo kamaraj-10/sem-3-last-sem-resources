@@ -1,0 +1,145 @@
+PDF: Session6-PromptEngineering-Finetuning
+Pages: 32
+================================================================================
+
+--- Page 1 ---
+BITSPilaniConversational AIPrompting and FinetuningDr Bharathi RAdjunct Professor, CSIS WILP BITS PILANI
+
+--- Page 2 ---
+BITSPilaniAIMLCZG521 , Conversational AILecture No. 6 | Module 2
+
+--- Page 3 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Disclaimer & AcknowledgementDISCLAIMERThese instructional materials have been developed by the instructor for educational purposes. All content is intended solely to support the learning objectives of this course. While every effort has been made to ensure accuracy and completeness, learners are encouraged to consult original source publications for authoritative reference.These instructional materials have been developed by the instructor with due acknowledgement of the original publication authors and the broader academic community for their openly accessible resources, along with special recognition of Prof. Bhagath's Conv-AI-WILP (October 2025) presentation materials, which have been adapted and modified to support the learning objectives of this course.ACKNOWLEDGEMENT
+
+--- Page 4 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Session Outline1. Part 1: Prompt Engineering Techniques 2. Part 2: Instruction Tuning & Self-Instruct3. Part 4: Summary & Next Steps
+
+--- Page 5 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+1.Prompt EngineeringWhat is Prompt Engineering?The art and science of designing input prompts to guide LLMs toward desired outputs.Key Focus:• Instruction clarity• Context provision• Output format specification• Few-shot examples• Chain-of-thought reasoningWhy It Matters✓Immediate deployment✓No model modification✓Works with any LLM✓Cost-effective✓Enables zero-shot learningChallenges:✗Requires experimentation✗Hard to scale✗Limited by model capacity
+
+--- Page 6 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Prompt structure FrameworkEffective prompts follow a consistent structure for clarity and control:•Priming: This clearly defines the role of the LLM. (Assign a Persona)•Style and Tone: It sets expectations for clear, concise, and jargon-free language with a sought tone.•Error Handling: This guides the LLM to politely decline requests outside its defined scope.•Content (static or dynamic or both): Query, examples, data, etc.•Output Formatting: The format ensures the response can be easily used by an application or displayed in a structured way.The goal is to ensureClarity, Consistency, and Control. Without structure, LLMs can be unpredictable. With structure, they become reliable tools.
+
+--- Page 7 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Prompt Engineering: Real ExampleDetailed prompt:You are a financial analyst specializing in summarizing quarterly earnings reports for technology companies.Use clear and concise language, avoiding financial jargon. Explain complex financial concepts in a way that is easy for a non-expert to understand. Maintain a formal and objective tone.If a request is unrelated to summarizing quarterly earnings reports or providing information about them, politely decline and state that it falls outside your area of expertise.User inquiry:“Can you summarize the main points of Apple’s Q3 2024 earnings report and explain its significance?”
+
+--- Page 8 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Zero-Shot vs. Few-Shot PromptingZero-ShotNo examples providedPrompt:'Classify sentiment: "Great product!"'✓Simple & quick✓No data needed✗Lower accuracyAccuracy: ~70-75%Use case: Simple tasksFew-Shot2-5 examples providedPrompt:'"Great!" → Positive"Awful" → Negative"Great product!" → ?'✓Higher accuracy✓Context learning✗Requires examplesAccuracy: ~85-90%Use case: Complex tasks
+
+
+--- Page 9 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Chain-of-Thought (CoT) PromptingEncourage the LLM to“think step by step”by providing examples where the reasoning process is explicitly laid out. This is especially useful for tasks requiringarithmetic, commonsense, or symbolic reasoning.
+
+
+--- Page 10 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Tree-of-Thought (ToT) PromptingAn LLM exploresmultiple reasoning paths (thoughts)as a tree. Itself-evaluates intermediate thoughtsand uses search algorithms (such asBFSorDFS) to decide which path to explore further, enabling moredeliberate problem-solving.Example:‘’’I'm trying to solve [complex problem/question].Before giving me a final answer, please explore at least threedifferent potential approaches or lines of reasoning.For each approach, briefly explain it, analyze its pros and cons(or evaluate its likelihood of success/validity).Then, based on this exploration, provide your final recommendedsolution/answer.‘’’Yao, S., et al. (2023). Tree of Thoughts: Deliberate Problem Solving with Large Language Models. arXiv:2305.10601
+
+--- Page 11 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+ToTExample: Game of 24Problem: Make 24 using {4, 9, 10, 13}Step 1: Decomposition (Generate Thought Candidates)• Thought A: 13 − 9 = 4 → Remaining: {4, 4, 10}• Thought B: 10 − 4 = 6 → Remaining: {6, 9, 13}• Thought C: 4 + 9 = 13 → Remaining: {13, 10, 13}Step 2: Self-Evaluation (Score Each Path)• A: 10+4+4=18 ✗| 4×4+10=26 ✗(Unlikely)• B: Remaining {6, 9, 13}—possible but difficult• C: {13, 10, 13}—hard to resolve (Likely bad)Step 3: Pruning & Search (Discard weak branches, expand promising ones)
+
+--- Page 12 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+ToT: Expanding the Best PathContinuing from Thought B: {6, 9, 13}The model expands the most promising branch further with new thought candidates:• B1: 13 − 9 = 4 → Remaining: {6, 4} → 6 ×4 = 24 ✓SUCCESS!• B2: 13 + 9 = 22 → Remaining: {6, 22} → Can't easily reach 24• B3: 9 − 6 = 3 → Remaining: {3, 13} → 13 ×3 = 39 (too high)Solution Found: (13 − 9) ×4 + 6 = 4 ×4 + 6 = 22... [correct path]Key Insight: By exploring and pruning inefficient paths early, ToT finds solutions faster than linear reasoning.
+
+--- Page 13 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Meta-Prompting: The Model Writes Its Own PromptsAutomatic Prompt Engineer (APE) —introduced by Zhou et al. (2022), arXiv:2211.01910 —turns the LLM on itself. Instead of a human writing the best prompt for a target task, an 'APE LLM' is asked to generate and evaluate candidate prompts, which are then executed by a 'target LLM'. The best-performing prompt is selected automatically.The APE Pipeline1.Provide the APE LLM with demonstrations (input→outputexamples) of the target task.2.Instruct the APE LLM to generate N candidate prompt instructions (e.g., N=10–50).3.Execute each candidate prompt on a validation set using the target LLM.4.Score each prompt by accuracy (or another metric) on the validation set.5.Return the highest-scoring prompt for use in production.Step-1: Instruction GenerationA language model is given a task and a few examples (input–output pairs).It generates multiplecandidate prompts or instructions.Step-2: Prompt EvaluationThese prompts are tested by running them through atarget model.The outputs are scored based onperformance metrics(e.g., accuracy, relevance, coherence).Step-3: SelectionThebest-performing promptis selected for use.
+
+--- Page 14 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Guidelines for the APE Meta-Prompt•Clearly define the APE's meta-role: 'You are an expert prompt engineer.'•Describe the target task in detail with 5–10 high-quality demonstrations.•Specify what makes an effective prompt: clarity, specificity, correct output format.•Ask for diverse candidates: 'Generate 10 different prompt instructions, each with a distinct angle.'•Encourage iteration: 'Refine your best candidate based on the following failure cases.'
+Demonstrations → Automatic Prompt Engineer (APE) → Optimized PromptReference: Zhou, D., et al. (2022): Large Language Models Are Human-Level Prompt Engineers.arXivpreprint:arXiv:2211.01910SOTA (2024)APE-discovered prompts matched or outperformed human-written prompts on 24 of 24 NLP tasks evaluated by Zhou et al. 
+
+--- Page 15 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Decision Framework —Choosing the Right Technique
+💡Key Takeaway: No single technique is always best. Match technique to task complexity and available context.TechniqueBest ForComplexityAccuracy GainConcrete Use CasesZero-ShotSimple tasksLowBaselineGreeting classification, translation, FAQFew-ShotDomain tasksLow+10–20%Product review sentiment, entity extractionChain-of-ThoughtReasoning tasksMedium+30–50%Math word problems, legal analysis, debuggingTree-of-ThoughtComplex problemsHigh+40–70%Game of 24, creative writing, proof generationAPEUnknown/novel tasksMedium+15–40%Any task where optimal phrasing is unclear
+
+--- Page 16 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Part 2: Fine-Tuning & Instruction TuningBeyond PromptingAdapting Models to Your Specific Needs
+
+--- Page 17 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Language Modeling ≠ Following InstructionsPre-trained LLMs are optimized for next-token prediction, not for following user instructions or maintaining alignment with human intent.Problem Example:Prompt: "Explain the moon landing to a 6-year-old."Completion (unconstrained): "Explain gravity to a 6-year-old... Explain relativity... Explain the big bang..."The model continues the pattern rather than answering the question. It needs fine-tuning to follow instructions reliably.
+Ouyang, L., et al. (2022). Training language models to follow instructions with human feedback. NeurIPS 2022.
+
+--- Page 18 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+The pretraining/finetuning paradigm
+Pretraining can improve NLP applications by serving as parameter initialization.
+• Start with pretrained weights from foundational models• Fine-tune on smaller, task-specific datasets• Dramatically reduces data and compute requirementsResult: Better performance, faster training, lower costs
+
+--- Page 19 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Instruction TuningInstruction TuningFine-tuning a pre-trained LLM on a diverse dataset of (instruction, input, output) tuples.Goal:• Enable zero-shot generalization• Improve task performance• Make models instruction-followingResult: Base model → Instruction-tuned modelKey Differences from Traditional Fine-TuningTraditional FT:✗Single task✗Task-specific data✗Poor generalizationInstruction Tuning:✓Multiple tasks✓Diverse instructions✓Excellent generalization✓Zero-shot transfer
+
+
+--- Page 20 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Introduction
+
+
+--- Page 21 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Self-Instruct: Aligning Language Models with Self-Generated Instructions-(Wang et al., 2023)
+Human-written seed tasksare used to bootstrapoff-the-shelf language models(e.g., GPT-3).Data SourceCharacteristicsHuman-Annotated Data (e.g., InstructGPT)~13,000 human-written prompts + ranked responses. Cost: hundreds of annotator-hours. High quality but expensive and slow to scale.Self-Instruct Data (e.g., Alpaca)52,000 instruction-following examples generated by text-davinci-003. Cost: ~$500 in API calls. Comparable quality for most tasks.Instructiontuningrequireslarge,diversedatasetsof(instruction,output)pairs.Creatingthesedatasetsmanuallyisexpensive:humanannotationatscalecostsmillionsofdollarsandmonthsoftime.Self-Instruct(Wangetal.,2023)addressesthisbottleneckbyusingtheLLMitselftogenerateitsowntrainingdata.
+
+--- Page 22 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+How does Self-Instruct work broadly?
+Step 1: InstructionGeneration•TheLM generates new task instructionsbased on existing tasks.Step 2: Task Classification (Identification)•The LM determines whether the instruction represents a•Classification task(Yes / No decision)•Non-classification taskStep 3: Instance GenerationThe LM generatesinput–output pairsusing one of two strategies:Step 4: Filtering: Remove duplicates and low quality examples
+
+--- Page 23 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Table6: Prompt used for classifying whether a task instruction is
+url= "https://aclanthology.org/2023.acl-long.754/"
+
+--- Page 24 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Data Format Example
+
+
+--- Page 25 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Self-Instruct: Complete Data Generation PipelineStart: 100 Seed TasksManually write 100 diverse task examplesGenerate: Create MoreUse GPT-3 to generate 10,000+ new instructionsFilter: Quality AssuranceRemove duplicates, low-quality, and biased examplesFine-Tune: Train Your ModelFine-tune your model on filtered dataset (10,000+ examples)Result: 10,000+ diverse instruction examples with ~90-95% quality
+
+--- Page 26 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Summary Table: Input-First vs. Output-FirstFeatureInput-FirstOutput-FirstTask TypeCreative / Open-endedClassification (Finite labels)OrderGenerate Input → Answer itPick Label → Generate Input to matchPrimary GoalNatural logical flowPreventing Class Imbalance/BiasWhyOutput-FirstMattersforClassificationSupposeasentimentclassifierhas3classes:Positive,Neutral,Negative.Ifwegenerateinputsfirst,theLLM'snaturallanguagebiaswillskewtowardPositiveexamples(becausepositivelanguageismorecommonintrainingdata).Measuredempirically:Input-Firstgenerates~65%Positive,25%Negative,10%Neutral.Output-Firstgenerates~33%each.Amodeltrainedontheskeweddataachievesonly61%accuracyonabalancedtestset;amodeltrainedonthebalancedOutput-Firstdataachieves78%.
+
+--- Page 27 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Experimental Results
+
+
+--- Page 28 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Self-Instruct: Aligning Language Models with Self-Generated InstructionsWang et al. 'Self-Instruct: Aligning Language Models with Self-Generated Instructions' (presented at ACL 2023) makes four primary contributions to the field:1.Problem identification: articulates the instruction-following gap in pre-trained LLMs and frames it as a solvable data generation problem.2.Pipeline design: proposes the four-step pipeline (generate → classify → instance generate → filter) that is now widely adopted in the field.3.Empirical validation: demonstrates near-InstructGPTperformance at a fraction of the cost on SUPERNI.4.Data release: releases the 52K instruction dataset and code, enabling the broader community to fine-tune open-source models (leading directly to Alpaca, Vicuna, etc.).
+
+--- Page 29 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Comparison of Using Different Instruction Tuning Datasets
+Multiple instruction tuning datasets now exist, each with different trade-offs between cost, quality, diversity, and coverage
+
+--- Page 30 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Practical Fine-Tuning: Making IT Affordable with PEFT
+PEFT (Low-Rank Adaptation) enables efficient fine-tuning on commodity hardware, reducing costs by 98%+MetricGPU TypeTime/ModelCost/ModelStorage100 Models CostFull Fine-TuningH100 Cluster7 days$5,0007 GB$500,000LoRASingle GPU1 day$50010 MB$50,000QLoRAConsumer GPU4 hours$10010 MB$10,000Fullfine-tuningupdateseveryparameterofamodel.Fora7-billion-parametermodel,thisrequiresstoringgradientsforall7Bweights—demandingmassiveGPUmemoryandhoursofcompute.PEFT(Parameter-EfficientFine-Tuning)methodsfreezethepre-trainedweightsandtrainonlyasmallnumberofadditionalparameters,achievingnear-fullfine-tuningperformanceatafractionofthecost.
+
+--- Page 31 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+What Comes Next: Lecture 7 -RLHF & PEFT Deep DiveReinforcement Learning from Human Feedback (RLHF)Learn how to align models with human preferences using reward models and policy optimizationDirect Preference Optimization (DPO)A simplified approach to alignment that bypasses the need for separate reward models
+
+--- Page 32 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+References & Further Reading1. Wang, Y., et al. (2023). Self-Instruct: Aligning language models with self-generated instructions. ACL 2023.2. Wei, J., et al. (2022). Chain-of-Thought Prompting Elicits Reasoning in Large Language Models. arXiv:2201.119033. Yao, S., et al. (2023). Tree of Thoughts: Deliberate Problem Solving with Large Language Models. arXiv:2305.106014. Zhou, Y., et al. (2023). Large Language Models Are Human-Level Prompt Engineers. arXiv:2211.019105. Ouyang, L., et al. (2022). Training language models to follow instructions with human feedback. NeurIPS 2022.6. Rafailov, R., et al. (2024). Direct Preference Optimization. arXiv:2305.182907. Dettmers, T., et al. (2023). QLoRA: Efficient finetuning of quantized LLMs. NeurIPS 2023.

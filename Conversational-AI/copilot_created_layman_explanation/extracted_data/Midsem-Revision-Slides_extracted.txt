@@ -1,0 +1,1155 @@
+PDF: Midsem-Revision-Slides
+Pages: 270
+================================================================================
+
+--- Page 1 ---
+BITSPilaniConversational AIMidsemRevisionDr Bharathi RAdjunct Professor, CSIS WILP BITS PILANI
+
+--- Page 2 ---
+BITSPilaniAIMLCZG521 , Conversational AILecture No. 1 | Module 1Foundations of Conversational AI
+
+--- Page 3 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Disclaimer & AcknowledgementDISCLAIMERThese instructional materials have been developed by the instructor for educational purposes. All content is intended solely to support the learning objectives of this course. While every effort has been made to ensure accuracy and completeness, learners are encouraged to consult original source publications for authoritative reference.These instructional materials have been developed by the instructor with due acknowledgement of the original publication authors and the broader academic community for their openly accessible resources, along with special recognition of Prof. Bhagath's Conv-AI-WILP (October 2025) presentation materials, which have been adapted and modified to support the learning objectives of this course.ACKNOWLEDGEMENT
+
+--- Page 4 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Syllabus for EC2 and Question Paper Structure
+Q. No.TopicsMarks1Sessions 1 & 2: Foundations and Embeddings62Sessions 2 & 3: ANN Methods and Hybrid Search63Session 4:Model Landscape and Cost Engineering64Session 5: Function Calling, ReAct, and Prompting65Sessions 6 & 7: Instruction Tuning, RLHF, and Fine-Tuning6Total30Syllabus: Session1 to Session 7Total Marks: 30Question Types• Numerical Problems (complex/lengthyformulas will be provided wherever applicable)• Scenario-Based Case Studies• Conceptual QuestionsInstructions• Questions may contain subdivisions.• The examination will assess both conceptual understanding and problem-solving ability.
+
+--- Page 5 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956What Is Conversational AI?
+Definition: Any AI system that engages humans through natural language to understand intent, retain context, retrieve knowledge, and deliver information or take real-world action.
+FAQ Botkeyword matchTask Botslot fillingcontext-awareLLMChatbotgenerativeplans + acts
+💬UnderstandInterpret natural language intent, entities, sentiment
+🧠ReasonPlan, chain thoughts, decompose multi-step problems
+⚡ActCall APIs, write code, retrieve docs, orchestrate agentsCore CapabilitiesNatural Language Understanding (NLU)Understanding user intent and entitiesDialogue ManagementManaging conversation flow and contextNatural Language Generation (NLG)Generating human-like responsesContext AwarenessRemembering conversation historyMulti-turn InteractionHandling complex dialoguesPersonalizationAdapting to user preferences
+
+--- Page 6 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Lecture Overview
+1NLP FoundationsTokenization · Context Windows
+2Transformers & LLMsArchitecture · Capabilities · Limitations
+3Chatbots → Agentic SystemsEvolution · Why Agentic AI?
+4System Lifecycle & Architecture7-Stage Pipeline · Components
+5Protocol LandscapeMCP · LangGraph · REST
+6Production ConcernsCost · Latency · Safety
+
+--- Page 7 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+1. Tokenization —The Foundation
+What is Tokenization?Breaking text into subwordunits (tokens) that LLMs process.Algorithms: BPE (GPT), SentencePiece(multilingual), WordPiece(BERT)TextTokensCount"Hello World"Hello · World2 tokens"artificial intelligence"art · ificial· intelligence3 tokens"GPT-4"G · PT · -· 44 tokens"Book a flight to NYC"Book · a · flight · to · NYC5 tokensWhy It Matters for Conversational AI
+💰Cost:API pricing is per token → impacts conversation economics
+🪟Context Window:Limits conversation length (200K tokens ≈ 150K words)
+⚡Latency:More tokens = slower response in conversations
+🎯Quality:Tokenization affects understanding of domain-specific terms
+💡Key Insight: Model selection & prompt optimization can cut token costs by 10–20×(ref. Lecture 11)
+
+--- Page 8 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19561.Tokenization: Impact on ConvAIImpact on Conversational AIScenario: Customer support conversation (2025 typical costs)•Average conversation: 40-60 turns (user + agent exchanges)•Average tokens per turn: 15-25 tokens•Total per conversation: ~800-1,200 tokens•Cost with GPT-4o: ~$0.01-0.03 per conversation•Cost with GPT-3.5 Turbo: ~$0.002-0.005 per conversation•At 10,000 conversations/day with GPT-4o: $100-300/dayKey insight: Model selection and optimization can reduce costs by 10-20x. We'll cover these techniques in Lecture 11.
+
+--- Page 9 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Hands-On: Byte-Pair EncodingUnderstanding Tokenization with CodeWe'll explore how text is converted to tokens using the tiktoken libraryDemo Components:•Text to Tokens:See how different texts are tokenized•Token Counting:Calculate tokens for a sample conversation•Cost Analysis:Understand the economic implications•Model Comparison:Tokenization differences across models
+
+--- Page 10 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Hands-On: Byte-Pair Encoding•BPEis a "subword" tokenization algorithm. It sits in the "Goldilocks" zone between character-based tokenization (too long, little meaning) and word-based tokenization (huge vocabulary, fails on unknown words)How it works (The Concept):1.Training:It reads a massive corpus of text and counts adjacent pairs of characters.2.Merging:It takes the most frequent pair (e.g., 'e' and 'r' -> 'er') and adds it to the vocabulary as a new unit.3.Iterating:It repeats this thousands of times. Eventually, it learns common prefixes (un-,re-), suffixes (-ing,-ed), and whole common words (apple,table).BPE training starts by computing the unique set of words used in the corpus (after the normalization and pre-tokenization steps are completed), then building the vocabulary by taking all the symbols used to write those words. As a very simple example, let’s say our corpus uses these five words:"hug", "pug", "pun", "bun", "hugs”The base vocabulary will then be["b", "g", "h", "n", "p", "s", "u"].
+
+--- Page 11 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Byte-Pair Encoding-first merginglet’s assume the words had the following frequencies:("hug", 10), ("pug", 5), ("pun", 12), ("bun", 4), ("hugs", 5)meaning"hug"was present 10 times in the corpus,"pug"5 times,"pun"12 times,"bun"4 times, and"hugs"5 times.•We start the training by splitting each word into characters (the ones that form our initial vocabulary) so we can see each word as a list of tokens:•("h" "u" "g", 10), ("p" "u" "g", 5), ("p" "u" "n", 12), ("b" "u" "n", 4), ("h" "u" "g" "s", 5)•Then we look at pairs. The pair(”u", ”g")is present in the words"hug","pug", and"hugs", for a grand total of 20 times in the vocabulary.
+
+--- Page 12 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Byte-Pair Encoding-Second MergingThus, the first merge rule learned by the tokenizer is("u", "g") -> "ug", which means that"ug"will be added to the vocabulary, and the pair should be merged in all the words of the corpus. At the end of this stage, the vocabulary and corpus look like this:Vocabulary: ["b", "g", "h", "n", "p", "s", "u", "ug"]Corpus: ("h" "ug", 10), ("p" "ug", 5), ("p" "u" "n", 12), ("b" "u" "n", 4), ("h" "ug" "s", 5)Now we have some pairs that result in a token longer than two characters: the pair("h", "ug"), for instance (present 15 times in the corpus). The most frequent pair at this stage is("u", "n"), however, present 16 times in the corpus, so the second merge rule learned is("u", "n") -> "un".Adding that to the vocabulary and merging all existing occurrences leads us to:Vocabulary: ["b", "g", "h", "n", "p", "s", "u", "ug", "un"]Corpus: ("h" "ug", 10), ("p" "ug", 5), ("p" "un", 12), ("b" "un", 4), ("h" "ug" "s", 5)
+
+--- Page 13 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Byte-Pair Encoding-Third MergingNow the most frequent pair is("h", "ug"), so we learn the merge rule("h", "ug") -> "hug", which gives us our first three-letter token. After the merge, the corpus looks like this:Vocabulary: ["b", "g", "h", "n", "p", "s", "u", "ug", "un", "hug"]Corpus: ("hug", 10), ("p" "ug", 5), ("p" "un", 12), ("b" "un", 4), ("hug" "s", 5)And we continue like this until we reach the desired vocabulary size.Let’s take the example we used during training, with the three merge rules learned:("u", "g") -> "ug"("u", "n") -> "un"("h", "ug") -> "hug”The word"bug"will be tokenized as["b", "ug"]."mug", however, will be tokenized as["[UNK]", "ug"]since the letter"m"was not in the base vocabulary. Likewise, the word"thug"will be tokenized as["[UNK]", "hug"]: the letter"t"is not in the base vocabulary, and applying the merge rules results first in"u"and"g"being merged and then"h"and"ug"being merged.How do you think the word"unhug"will be tokenized?
+
+--- Page 14 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19562. Context Windows —Conversation Memory
+GPT-4 Turbo128K tokens  (~96K words)Standard production
+Claude 3.5 Sonnet200K tokens (~ 150K words)Extended conversations
+Gemini 1.5 Pro1M tokens (~750K words)Entire codebases
+Emerging Models2M+ tokensSpecialized use cases
+⚠Challenge: 'Lost in the middle' —models struggle with info in long contexts.  Solution: RAG + Memory systems (Module 2)
+
+--- Page 15 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19563. Transformers & LLMs —The Brain of Modern Conversational AI
+Transformer(2017)
+Pre-trainingon Massive Data
+LLM(GPT / BERT / T5)
+Fine-tuning /Instruction Tuning
+Tools + Memory+ Planning
+ConversationalAgent
+Technical CapabilitiesSelf-Attention:Understand relationships between words across the full inputContextual Understanding:Word meaning depends on surrounding contextLong-Range Dependencies:Connect ideas across very long text passagesParallel Processing:Faster training than older RNN-based architectures
+Impact on ConversationsMulti-turn Coherence:Remember and track earlier parts of a conversationIntent Understanding:Grasp user goals from conversational contextNatural Responses:Generate human-like, fluent repliesAmbiguity Handling:Resolve unclear or underspecified requestsKey Insight: LLM is the "brain" but needs additional systems (tools, memory, planning) to become a fully functional conversational agent.
+
+--- Page 16 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19563. LLM Capabilities & Limitations of Conversational AI
+✅What LLMs Do Well•Natural conversation:Human-like dialogue•Intent understanding:Grasp user goals•Context retention:Multi-turn conversations•Response generation:Fluent, contextual replies•Summarization:Condense information•Entity extraction:Identify key information•Sentiment analysis:Understand user emotions✗LLM Limitations•No real-time data:Training cutoff date•Hallucinations:Generate plausible but false info•Can't take actions:No access to external systems•No memory:Forget after context window•Calculation errors:Struggle with math•Consistency:Different answers to same question•No verification:Can't check facts
+
+--- Page 17 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19563. Why We Need Agentic ArchitectureSolution: Augment LLMs with external capabilitiesLLM LimitationAgentic SolutionExampleNo real-time dataTool calling (APIs, search)Check current flight pricesHallucinationsRAG (Retrieval-Augmented Generation)Ground answers in company docsCan't take actionsFunction callingBook appointment, send emailNo memoryExternal memory systemsRemember user preferencesCalculation errorsCalculator tool, code executionPrecise math computations
+
+--- Page 18 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19564. Agentic Conversational AI —Request → Response Pipeline
+1
+📥REQUESTReceive & validate input · Parse user intent · Extract entities · Input sanitization (security)
+2
+🔀ROUTINGIntent classification · Classify intent type · Determine required tools · Route to sub-agent
+3
+🧠REASONINGPlanning & decision making · Break into steps · Identify information gaps · Plan tool call sequence
+4
+⚙TOOL INVOCATIONExternal API calls & actions · Execute API calls · Database queries · Code execution
+5
+💾MEMORYContext storage & retrieval · Store conversation history · Update user preferences · Maintain session state
+6
+🛡SAFETYGuardrails & output validation · Check for toxic content · Verify factual accuracy · PII redaction
+7
+📤RESPONSEFinal output delivered · Natural language generation · Format for channel (text/voice/UI) · Send to userHow a modern conversational agent processes user input
+
+--- Page 19 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19564.Lifecycle Example —Banking Conversational AgentUser: "What's my account balance and recent transac6ons?"
+1. RequestIntent: account_inquiryEnWWes: {type: [balance, transacWons]}Validate: User authenWcated
+2. RoutingRoute to: Banking AgentRequired tools: get_balance, get_transactionsPermission check: User has access
+3. ReasoningPlan:1. Fetch account balance2. Fetch recent transactions (last 5)3. Format response with both
+4. Tool InvocationCall: get_balance(user_id) → $5,432.10Call: get_transacJons(user_id, limit=5)Returns: [TransacJon1, TransacJon2, ...]
+5. MemoryStore: User asked about balance at 2:30 PMUpdate: User preference for transacWon detailsContext: Maintain for follow-up quesWons
+6. SafetyValidate: Balance & transactions for correct userCheck: No PII exposure in logsVerify: Response contains only authorized info
+7. ResponseYour current balance is $5,432.10. Here are your recent transactions:1. Starbucks -$4.50 (Today)2. Amazon -$89.99 (Yesterday)3. Shell Gas -$45.00 (Yesterday)4. Grocery Store -$123.45 (2 days ago)5. Netflix -$15.99 (3 days ago)Would you like more details on any of these?"
+
+--- Page 20 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Exercise: Map the Agent LifecycleScenario:"Find me a good Italian restaurant near my oﬃce that's open tonight and make a reservaTon for 2 at 7 PM"Map This Request to the 7-Stage Lifecycle
+
+--- Page 21 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Exercise: Map the Agent LifecycleScenario:"Find me a good Italian restaurant near my office that's open tonight and make a reservation for 2 at 7 PM"StageWhat Needs to Happen?1. RequestWhat entities need to be extracted from user input?2. RoutingWhich tools or agents are needed for this task?3. ReasoningWhat's the step-by-step plan to accomplish this?4. Tool InvocationWhat specific API calls need to be made?5. MemoryWhat information should be stored for future use?6. SafetyWhat validations are required before taking action?7. ResponseHow should the agent communicate with the user?
+
+--- Page 22 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Handson-Building a Simple Conversational AgentDemonstration: Weather Information AgentA prac'cal example using na've OpenAI API in PythonImplementation Stages1. Baseline:LLM without tools -sees limitations2. Tool Definition:Define weather function schema3. Tool Selection:LLM decides when to use tool4. Execution:Call actual weather API5. Response Generation:LLM creates natural answerExample InteractionUser: "What's the weather like in Mumbai?"Agent:1. Extracts location: "Mumbai"2. Calls weather API3. Receives: 32°C, Humid, Partly Cloudy4. Responds: "It's currently 32°C in Mumbai with partly cloudy skies and high humidity."
+
+--- Page 23 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19565.Protocol Landscape for Conversational AgentsAs conversaqonal agents become more prevalent, they need standardized ways to communicatewith tools, data, each other, and UIs.Why Protocols MatterWithout Standards•Every vendor has custom API•Agents can't interoperate•Vendor lock-in•Duplicated integration effortWith Standards•Plug-and-play integra[ons•Multi-agent collaboration•Vendor flexibility•Ecosystem growth
+
+--- Page 24 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19565. Protocol Landscape for Conversational Agents
+Note: The protocol landscape is rapidly evolving. Standards like MCP are emerging, while many production systems still use custom APIs. We'll explore these in detail in Lectures 14-15.By Anthropic(2024)MCP(Model Context Protocol)Standardize how LLMs connect to data sources and toolsAgent accessing DBs, files, APIs consistentlyGoogle /emergingA2A Protocol(Agent-to-Agent)Standardized inter-agent communicationMulti-agent orchestration (Emerging, 2025)OpenAIOpenAIAssistant APIBuilt-in tools, file access, code interpreterRapid agent development with OpenAI infrastructureUniversalCustom REST /GraphQL APIsTraditional service integrationEnterprise systems, legacy integrationsLangChainLangGraphProtocolGraph-based agent workflows and state managementComplex multi-step reasoning, agent coordinationEmergingANP(Agent Network Protocol)Open standard for peer-to-peer agent discovery and communication across heterogeneous networksDecentralized agent ecosystems, cross-platform interoperability
+
+--- Page 25 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19566. ProducTon Concerns for ConversaTonal AI
+📊Observability –what to track?Track conversation flowsMonitor tool invocationsToken usage per conversationResponse latencies & error tracesTools: LangSmith, Arize Phoenix, OpenTelemetry
+💰Cost Management –Optimization StrategiesPrompt caching (50–90% cost reducMon)Model routing (smaller models when appropriate)Token budgets per user/sessionEfficient retrieval (reduce context size)Example: Customer support ≈ $0.02–0.10 per conversation
+-
+⚡Latency Budgets –Target latenciesChat responses: < 2 secondsTool execuMon: < 5 secondsComplex reasoning: < 30 secondsSet user expectations with progress indicators
+🛡Safety & Security –Defense layersInput validation (prompt injection defense)PII detection and redactionOutput filtering (toxicity, hallucinations)Human-in-the-loop for critical actionsPrinciple: Never rely on a single safety layerBuilding conversational agents that work in development is one thing. Building them to work reliably at scalein production is another.
+
+--- Page 26 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19566. ProducTon Concerns for ConversaTonal AIBuilding conversational agents that work in development is one thing. Building them to work reliably at scalein production is another.
+
+
+--- Page 27 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Key Takeaways
+1Evolution of Conv. AIRule-based (1960s) → ML (2000s) → Deep Learning (2010s) → Transformers (2017) → LLMs (2020) → AgenMc AI (2023+)
+2Architecture Shi^Traditional: Intent → Dialogue Manager → TemplateModern: LLM + Tools + Memory + Planning + Safety
+3Components MatterModern systems need: NLU, Dialogue Management, Knowledge Access, Action Execution, Response Generation, Memory
+4LLMs Are the BrainBut they need external systems for tools, memory, real-time data, and action execution to be truly useful
+5Agent LifecycleRequest → Routing → Reasoning → Tool Invocation → Memory → Safety → Response
+6Production Is DifferentObservability, cost optimization, latency management, and safety are non-negotiable in real systems
+
+--- Page 28 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956AIMLCZG521 , Conversational AILecture No. 2 | Module 1Vector Embeddings and ANN Search algorithm
+
+--- Page 29 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956OutlinePart 1 : Embeddings•Encoder models & embedding generation•Transformer architecture for embeddings•Vector similarity mathematics•Embedding model landscapePart 2: ANN search algorithms •ANN search algorithms (HNSW, IVF, PQ)•Index structure mathematics•Database solutions & tradeoffs•Cost engineering
+
+--- Page 30 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Learning Objectives✓Explainhow transformer encoder models create contextual embeddings through self-attention and pooling strategies✓Calculate and comparevector similarity using cosine similarity, L2 distance, and dot product metrics✓Evaluate and selectappropriate ANN indexing strategies (HNSW, IVF, PQ) based on dataset size, memory constraints, and accuracy requirements
+
+--- Page 31 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Transformer ArchitectureFull Transformer BlockEmbeddings + Positional EncodingToken IDs → dense vectors + position infoMulti-Head Self-AttentionParallel attention over different subspacesLayerNorm + ResidualAdd & normalize amer each sub-layerFeed-Forward Network (FFN)Two linear layers with ReLU; applied per posioonNx Layers (Encoder/Decoder)Stack of N identical blocksLinear + Softmax (Decoder)Project to vocab size → probability distribution
+
+
+--- Page 32 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Self-AXenTon vs Cross-AXenTon-RevisitSentence: "The bank was closed becausethe river overflowed its banks."Self-AcenTon's Job: When the model reaches the ﬁrst word 'bank,' it looks at the rest of the sentence. It sees 'river' and 'overﬂowed.'The Result: It realizes the first "bank" refers to a landform(river bank), not a Financial Institution.Key Point: The "query" and "result" both come from the same sentence.Input (English): "I love Mangoes."Output (Hindi): "Mujhe Aam pasand hain."Attention's Job: When generating the Hindi word "Aam," its Attention mechanism looks back at the English sentence.The Result: It "attends" to the word "Mangoes"—the most relevant piece of information for that Hindi word.Key Point: The "query" comes from the output (Hindi); the "data" from the input (English).MechanismLocationQ (Query) SourceK & V (Key/Value) SourceSelf-AttentionEncoder & DecoderCurrent Layer InputCurrent Layer InputCross-AttentionDecoder OnlyDecoder (Current state)Encoder (Final output)
+
+--- Page 33 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956MulA-headed ACenAon
+Core Concept: Instead of performing a single attention function, Multi-Head Attention runs h parallel attention heads, each with different learned projections for Q, K, and V. Outputs are concatenated and projected through W^O to the final embedding dimension.
+
+--- Page 34 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956What are Encoder Models?Bidirectional Transformers for UnderstandingCore Capability: Encoder models can see the entire input sequenceat once (bidirectional context), making them ideal for:•Understanding meaning (semantic representation)•Classification tasks (sentiment, intent)•Creating embeddings for similarity searchBERT (2018)Training: Masked Language Modeling (MLM)"The [MASK] brown fox [MASK] over the lazy dog"→ Predict: "quick", "jumps"Key insight: Random tokens replaced with [MASK], model predicts independently. Missing tokens can't be used for generation.GPT (2018)Training: Autoregressive (Causal LM)"<s> A B C D" → Predict each token auto-regressivelyKey insight: Tokens predicted left-to-right. Can condition on leftward context, so it can be used for generation.
+
+--- Page 35 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Why Encoders for Embeddings?Encoder Models, with their bidirectional attention (seeing words on BOTH sides), solve the problem of polysemy by creating Contextual Embeddings.A Contextual Embedding is a vector representation of a word that changes based on the sentence it appears in.The Mechanism of ContextualizationBecause the Encoder's self-attention mechanism (which is bidirectional) allows the word "bank" to be influenced by all other words in the sentence, the final vector it produces is a precise, context-specific representation of the word's meaning in that exact moment.The Encoder: The Master of Understanding
+SentenceWord Being ProcessedEncoder's Bidirectional ViewResulting Embedding for "bank""river bank"bankLooks at "river" (left) and any words that follow (right).The embedding vector is pulled closer in the vector space to words like "water," "shore," and "geography.""bank account"bankLooks at "account" (right) and any words that precede (left).The embedding vector is pulled closer in the vector space to words like "money," "finance," and "deposit."
+
+--- Page 36 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Encoder vs DecoderEncoderInput Processing(e.g., text, tokens)Bi-direcTonalAttends to entire sequenceContext from both directionsSelf-attentionParallel processingPosition-aware encodingEncoders see full context→ Perfect for understanding, classification, and creating embeddings for similarity search!DecoderOutput Generation(probabilities)Uni-direcTonalCausal maskingLeft-to-right generationAuto-regressiveSequential generationToken-by-token outputMasked Self-attention +Cross-attentionAttends to encoder outputPrevents future peeking
+
+--- Page 37 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Decoders Laugh as Loud as EncodersBorodach, Eli, et al. "Decoders Laugh as Loud as Encoders."arXivpreprint arXiv:2509.04779(2025).
+0.86Best Encoder F1RoBERTa-base
+0.85Fine-tuned GPT-4o F1Statistically equal
+6Humor Categories5 types + no-joke
+1,392Dataset ExamplesHuman-authored jokesMODEL TYPES COMPARED
+★Core Result: Classifying sentences into 6 categories (5 humor types + no-joke), both fine-tuned Encoders & Decoders perform equally well —overturning the prior assumption that Encoders (RoBERTa) are superior.★Earlier belief: Encoders are better for understanding tasks (like classification)This paper shows: Fine-tuned decoders can match encoder performanceENCODERSBERT · RoBERTa · DeBERTa · XLNet · ALBERT · ModernBERT · NeoBERT…Best: RoBERTa-base  F1 = 0.86  (fine-tuned, 17 models tested)Prior SOTA —still the best encoder; size helps except in RoBERTa & ALBERTBART-large-mnli · Flan-T5-baseBest F1 ≈ 0.18  (zero/few-shot only —not fine-tuned)Flan-T5 few-shot < zero-shot: long prompts overwhelm small E2D modelsGPT-4 · GPT-4o · Llama 3.2 · Gemma 2 · Qwen2 · MistralFine-tuned GPT-4o  F1 = 0.85  ≈ RoBERTa  ✓(stajsjcally equal)Generative models match classifiers —contradicts the encoder-superiority assumptionENCODER-DECODERS  (E2D)DECODERS
+
+--- Page 38 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Encoder vs Decoder vs Encoder-DecoderEncoder-OnlyCoreStrength:Bidirectionalcontextunderstanding.Seesentireinputsimultaneously—idealforclassificationandunderstanding.BestUseCases•Sentiment Analysis –full context for mixed emotion•Named Entity Recognition (NER) –token-level•Question Answering –extract answer span•Text Classification –spam, intent detection•Semantic Search & Embeddings•PopularModels(2025):BERT•RoBERTa•DeBERTa•ALBERT•DistilBERTDecoder-OnlyCoreStrength:Causallanguagemodelingwithautoregressivegeneration.Predictsnexttoken—idealforgenerativetasks.BestUseCases•Text Generation & Completion –creative writing, code•Conversational AI & Chatbots –ChatGPT, Claude•Code Synthesis –GitHub Copilot•In-Context Learning –few-shot prompting•Instruction Following –reasoning, tool use•PopularModels(2025):GPT-4•GPT-3.5•Claude3/4•Llama3•MistralEncoder-DecoderCore Strength : Separate encoding and decoding phases with cross-axenoon. Encoder sees bidirecoonally; decoder generates while axending.BestUseCases•Machine Translaoon –Englishto French•Text Summarizaoon –encode doc, decode summary•Text-to-Text Tasks –paraphrase, style transfer•Quesoon Answering (Generaove)•Document Generaoon from Structured Data•Popular Models (2025): T5 • BART • mT5 • PEGASUS • mBART• FLAN-T5
+
+--- Page 39 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Task TypeEncoder-OnlyDecoder-OnlyEncoder-DecoderReasoningSentiment Analysis✓Best○Possible✗OverkillNeeds bidirectional context, no generation requiredText Generation✗No✓Best○PossibleRequires autoregressive generation capabilityMachine Translation✗No○Suboptimal✓BestCross-attention optimally aligns source-target pairsNamed Entity Recognition✓Best✗Inefficient✗OverkillToken-level classification needs bidirectional contextConversational AI✗No✓Best○OutdatedDecoder-only scales better for dialogue and instruction followingSummarization✗No✓Modern✓TraditionalBoth work; decoder-only now preferred for unified architectureSemantic Search✓Best○Possible✗OverkillEncoder creates optimal dense representations for similarityCode Generation✗No✓Best○RareSequential generation with context, decoder-only excelsComparison
+
+--- Page 40 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956How Encoder Transformers Create Embeddings9 tokens → Single 768-dimensional vector6 tokens  →  Single 768-dimensional vectorInput Text:  "Machine learning is fascinating"Step 1: Tokenization→  [CLS]  Machine  learning  is  fascinaong  [SEP]→  Token IDs:  [101,  8394,  4083,  2003,  17117,  102]Step 2: Token EmbeddingsEach ID  →  768-dim vector8394  →  [0.23,  −0.15,  0.89,  ...,  0.42]Step 3: Position EmbeddingsPosition 0  →  [0.01,  0.02,  ...]Position 1  →  [0.02,  0.03,  ...]     (Sum with token embeddings)Step 4: Transformer Layers  (12 layers for BERT-base)Each layer:  Self-Attention  →  LayerNorm  →  FFN  →  LayerNormStep 5: Pooling StrategyCLS Pooling (most common):   v = h[CLS]Mean Pooling:                v = (1/n) Σ hᵢMax Pooling:                 vⱼ= max(h₁ⱼ,  h₂ⱼ,  ...,  hₙⱼ)Default Strategy: Most pre-trained models (BERT, RoBERTa, DistilBERT) use CLS token poolingby default. However, mean poolingoften performs better for sentence embeddings (Sentence-BERT, BGE, GTE).
+
+--- Page 41 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19569 tokens → Single 768-dimensional vectorStep 1 —TokenizationBERT wraps every sentence with special tokens before processing:[CLS]ID: 101specialMachineID: 8394wordlearningID: 4083wordisID: 2003wordfascinatingID: 17117word[SEP]ID: 102specialToken IDs:  [101,  8394,  4083,  2003,  17117,  102]—6 tokens totalWhy [CLS] and [SEP]?[CLS](Classification token) —placed at position 0. After all 12 layers, its output vectorsummarises the entire sentence. Used for sentence-level tasks.[SEP](Separator token) —marks the end. Required by BERT's architecture.BERT Pipeline
+
+--- Page 42 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19569 tokens → Single 768-dimensional vectorBERT PipelineStep 2 —Token Embeddings2 / 5
+Each Token ID is looked up in a 30,000 ×768 learned table —one fixed vector per word.EmbeddingLookup Table30,000 ×768101   →8394  →4083  →2003  →17117 →102   →[CLS]  [0.21, 0.20, -0.18 …]… ×768Machine  [0.23, -0.15, 0.89 …]… ×768learning  [0.51,  0.34, -0.12 …]… ×768is  [0.10,  0.05,  0.22 …]… ×768fascinating  [0.78, -0.22,  0.61 …]… ×768[SEP]  [0.08,  0.11, -0.09 …]… ×768Key point: these are STATIC vectors. Same word always gets the same row. No context yet.
+
+--- Page 43 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Step 3 —Positional Embeddings Added9 tokens → Single 768-dimensional vectorBERT PipelineA second 768-dim vector is looked up per position and added elementwise to the token embedding.input_embedding  =  token_emb+  pos_embTokentoken embeddingpos embeddinginput embedding[CLS]pos 0[0.21, 0.20…]+[0.01, 0.02…]=[0.22, 0.22…]Machinepos 1[0.23,-0.15…]+[0.02, 0.03…]=[0.25,-0.12…]learningpos 2[0.51, 0.34…]+[0.03, 0.01…]=[0.54, 0.35…]ispos 3[0.10, 0.05…]+[0.01, 0.04…]=[0.11, 0.09…]fascinatingpos 4[0.78,-0.22…]+[0.02,-0.01…]=[0.80,-0.23…][SEP]pos 5[0.08, 0.11…]+[0.04, 0.02…]=[0.12, 0.13…]Result: 6 input embeddings —each carries identity + position, ready for the transformer layers.
+
+--- Page 44 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19569 tokens → Single 768-dimensional vectorBERT PipelineStep 4 —12 Transformer LayersEach layer rewrites every token's vector by mixing information from ALL other tokens via self-attention.Layer 1syntacMc pahernsLayer 2POS, adjacencyLayer 4phrase structureLayer 6entity typesLayer 9deeper semanMcsLayer 12 —full semantic disambiguationInside each layer:Self-Attention  each token attends to all othersLayerNorm  normalise the outputFeed-Forward Network  refine each token independentlyLayerNorm  normalise againOutput: 6 contextual vectors, each 768-dim. Every number now encodes the full sentence meaning —"fascinating" now knows it follows "Machine learning"
+
+--- Page 45 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19569 tokens → Single 768-dimensional vectorBERT PipelineStep 5 —Pooling StrategyWe have 6 contextual vectors. To get ONE sentence vector, choose a pooling strategy:CLS Poolingv = h[CLS]Take only the [CLS] token's output vector. Default in BERT, RoBERTa, DistilBERT.Best for: classiﬁca1on, sen1ment, NLIMean Poolingv = (1/n) Σ hᵢAverage all 6 token vectors dimension-by-dimension. Used by Sentence-BERT, BGE, GTE.Best for: semantic similarity, search, RAGMax Poolingvⱼ= max(h₁ⱼ… h₆ⱼ)Take the maximum value per dimension across all token vectors.Best for: some retrieval modelsFinal output: 1 vector ×768 numbers—the full sentence "Machine learning is fascinating" in vector form
+
+--- Page 46 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956How Encoder Transformers Create EmbeddingsSelf-Attention MathematicsQuery, Key, Value projections:Q = X W_Q,   K = X W_K,   V = X W_VAttention scores:Axenoon(Q,K,V) = sommax(QKᵀ/√d_k) VWhere d_k is dimension of keys (typically 64)Pooling StrategiesMean Pooling:v = (1/n) Σ hᵢCLS Pooling:v = h[CLS]Max Pooling:vⱼ= max(h₁ⱼ, h₂ⱼ, ..., hₙⱼ)
+💡Key InsightThe final embedding is contextual—"bank" gets different embeddings in different sentences because self-attention incorporates surrounding context. This is fundamentally different from word2vec or GloVe (static embeddings).
+
+--- Page 47 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Embedding Models: Key PlayersOpen Source Models (Recommended for Production)ModelDimensionsContextBest ForProviderbge-large-en-v1.51,024512General purpose, high qualityBAAIgte-large-en-v1.51,0248,192Long documentsAlibabae5-mistral-7b-instruct4,09632,768Instruction-following, very long contextMicrosoftjina-embeddings-v27688,192Multilingual, fast inferenceJina AI
+
+--- Page 48 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Embedding Models: Key Players
+🔒Commercial API Models (Highest Quality)ModelDimensionsContextBest ForCosttext-embedding-3-large3,0728,191Highest quality, production$0.13 / 1M tokensembed-english-v3.01,024512Compression support, production$0.10 / 1M tokens
+💡SelecTon Guide:Start with bge-large-en-v1.5for general use. Upgrade to commercial APIs if quality justifies cost. Use gte-largeor e5-mistralfor long documents (>1000 tokens).
+
+--- Page 49 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956ModelProviderArchLayersHiddenOutputTrainingContextTypetext-embedding-3-largeOpenAITransformerN/AN/A3,072Contrastive8,191APIembed-v3CohereTransformerN/AN/A1,024Multi-task512APIbge-large-en-v1.5BAAIBERT241,0241,024RetroMAE+Contrastive512Opengte-large-en-v1.5AlibabaBERT241,0241,024Contrastive8,192Opene5-mistral-7b-instructMicrosoftMistral 7B324,0964,096Contrastive pre-training32,768Openjina-embeddings-v2Jina AIBERT12768768Contrastive8,192Open
+📖Reference: Complete specifications for implementation decisions. See Slide 15-16 for selection guidance.Embedding Models: Complete Reference
+
+--- Page 50 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Embedding Moels: Training Objectives 1.Contrastive LearningLearning by comparingsimilar vs. dissimilar pairsof inputs to create meaningful embeddings where similar items are closer and dissimilar ones are farther apart.2.Masked Language Modeling (MLM)A training approach whererandom words (tokens) are masked, and the model learns topredict the missing wordsusing surrounding context.3.RetroMAE(Masked Auto-Encoding)An advanced masked learning technique where the modelreconstructs masked content with enhanced context understanding, leading to richer and more robust representations.
+
+--- Page 51 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Training Objective –Contrastive LearningCore ObjecTveTrain the model to place similar items close together in embedding space while pushing dissimilar items far apart.How It WorksThe model learns by examining pairs or triplets of examples:Positive Pair (should be close): "The cat sat on the mat"  ↔"A feline rested on the rug"Negative Pair (should be far): "The cat sat on the mat"  ↔"How to bake chocolate cookies"Loss = −log( exp(sim(a, p)) / Σ exp(sim(a, n)) )where: sim = similarity,  a = anchor,  p = positive,  n = negatives✓Advantages✓Creates semanocally meaningful embeddings✓Works well with large datasets✓Naturally handles synonyms and paraphrases✓Self-supervised (doesn't need manual labels)✗Challenges✗Requires careful negative sampling✗Computationally expensive (many comparisons)✗Sensitive to batch size✗Hard negaoves mining can be trickyModels: SimCSE, DPR, SBERT, E5, GTE, mE5, NV-Embed
+
+--- Page 52 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Training Objective –Masked Language Modeling (MLM)Core ObjectivePredict masked (hidden) words in a sentence using surrounding context. This teaches the model deep language understanding.How It WorksThe model sees sentences with some words replaced by [MASK] tokens and must predict what was hidden.Original: "The quick brown fox jumps over the lazy dog"Masked: "The [MASK] brown fox [MASK] over the lazy dog"Model predicts: [MASK₁] = "quick",  [MASK₂] = "jumps"Loss = −Σ log P(masked_word | context)Maximize probability of correct word given surrounding words✓Advantages✓Captures bidirectional context✓No labeled data required✓Learns rich linguistic patterns✓Foundaoon for BERT and similar models✗Challenges✗Slower training than causal LM✗Pretrain-finetune gap (no [MASK] at inference)✗Assumes independence of masked tokens✗Not optimal for generation tasksExample Models Using MLM: BERT, RoBERTa, SpanBERT, eBERTa]
+
+--- Page 53 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Training Objec-ve –RetroMAE(Retrospec-ve Masked Auto-Encoding)Core ObjectiveEnhanced masked auto-encoding that reconstructs the entire input from a heavily masked version, forcing the model to learn more compressed and meaningful representations.How It WorksUnlike standard MLM which masks ~15%, RetroMAE masks 50-70% and uses both encoder and decoder:Step 1 –Encoder: Process heavily masked input (only 30-50% visible)Step 2 –Decoder: Reconstruct the ENTIRE original sentenceExample:Original: "The quick brown fox jumps over the lazy dog"Masked:   "The [M] [M] fox [M] [M] [M] lazy [M]"Task:      Reconstruct all 9 words from just 3 visible onesLoss = MSE(original_embeddings, reconstructed_embeddings)  |  With asymmetric encoder-decoder architecture✓Advantages✓Creates highly compressed embeddings✓Better semantic understanding than standard MLM✓Efficient for retrieval tasks✗Challenges✗More complex architecture (encoder + decoder)✗Requires careful tuning of masking raqo✗Longer training timeModels:RetroMAE, RetroMAEv2, RetroMAE-BEIR
+
+--- Page 54 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956From Embeddings to SearchWhat We've Learned✓Transformer encoders create rich, contextual embeddings✓Self-attention captures relationships between words✓Diﬀerent pooling strategies extract sentence-level representaqonsNext: Vector DatabasesLearn how to measure similarity, build efficient indexes, and search at scale using approximate nearest neighbor algorithms.
+
+--- Page 55 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Vector Similarity: Mathematical Foundations1. Cosine Similaritycos(θ) = (A · B) / (‖A‖ ‖B‖)cos(θ) = Σ(Aᵢ ×Bᵢ) / (√Σ Aᵢ² ×√Σ Bᵢ²)Range: [−1, 1]Interpretadon:• 1.0 = identical direction• 0.0 = orthogonal (unrelated)• −1.0 = opposite direction2. Euclidean (L2) Distanced(A,B) = √Σ(Aᵢ − Bᵢ)²Range: [0, ∞]Interpretation:• 0 = idenocal vectors• Larger = more different• Sensitive to magnitudeMust normalize vectors first!3. Dot Product (Inner Product)A · B = Σ(Aᵢ ×Bᵢ) = ‖A‖ ‖B‖ cos(θ)Range: [−∞, ∞]  ([−1, 1] if normalized)   Key insight: If vectors are normalized (‖A‖ = ‖B‖ = 1), then dot product = cosine similarity!
+
+--- Page 56 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Vector Similarity: Visual IntuiTon1. Cosine Similaritycos(θ) = (A · B) / (‖A‖‖B‖)Measures angle between vectorsRange: [−1, 1]2. Euclidean (L2) Distanced(A,B) = √Σ(Aᵢ − Bᵢ)²Measures distance in spaceRange: [0, ∞]
+FeatureCosine SimilarityEuclidean DistanceMeasuresAngle between vectorsDistance between pointsSensitivityNot sensitive to magnitudeHighly sensitive to magnitudeRange-1 to 10 to ∞High ValueHigh similarityLow similarityBest ForText, high-dimensional data,Content-based recommendations prioritizing thematic alignmentImage data, geometry,Product recommendations measuring preference intensity
+
+--- Page 57 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The ComputaAonal ChallengeProblem StatementGiven: 10 million document embeddings (768 dimensions each)Task: Find top 10 most similar to query embeddingComputational ComplexityFor linear scan:• Operations per query = n ×d• n = 10,000,000 documents• d = 768 dimensions• Total = 7,680,000,000 muloply-add operaoonsAt 1 billion ops/sec (modern CPU):Time per query = 7.68 secondsWith 100 queries/sec: Need 768 CPU cores!
+
+
+--- Page 58 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Linear Scan vs ANN SolutionThe "Computational Challenge" slide proves that Linear Scan is not a viable solution for vector search at scale.Linear Scan FailureANN Solution7.68 seconds per query10 milliseconds per queryRequires 768 CPU cores for 100 QPSRequires a fraction of the hardwareBrute-force comparison of all 10 million documentsSmart indexing (HNSW) to avoid unnecessary comparisonsThe only way to move from the infeasible 7.68 seconds to the real-time 10 milliseconds is by using Approximate Nearest Neighbor (ANN)algorithms, which bypass the need for an exact, full scan.
+
+--- Page 59 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956What Is Vector Indexing?Vector indexing is the process of structuring your vector data in a way that enables fast similarity search.Instead of checking every vector one by one, a good index helps narrow down the most promising matches —in milliseconds.It's like having a super-smart librarian who knows where the right book is without scanning every shelf.This isn't a simple database optimization —it's an entire field of research, and one of the reasons vector databases are so powerful.ANN: Approximate Nearest Neighbor Search
+•Thecoreideaistonarrowdownthesearchspaceforthequeryvector,therebyimprovingtherun-timeperformance.•Whiletheyusuallysacrificeacertaindegreeofprecisioncomparedtoexactnearestneighbormethods,theyoffersignificantperformancegains,particularlyinscenarioswherereal-timeornear-real-timeresponsesarerequired.
+
+--- Page 60 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956ANN: Approximate Nearest Neighbor SearchThe magic behind fast retrieval is a technique called Approximate Nearest Neighbor (ANN) search.With ANN:• You trade off a tiny bit of accuracyfor dramatically fastersearch• Instead of exact neighbors, you get "close enough" matches• Most applications (search, recommendation, RAG, etc.) benefit from this tradeoffWhy? Because semantic vectors already involve approximation —a slight distance difference won't make or break your result.
+
+--- Page 61 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Approximate Nearest Neighbor (ANN)
+📊Scale AnalysisDocumentsLinear ScanCost/month10K8ms$50100K77ms$501M770ms$20010M7.7s ✗$5,000
+✅With ANN Index (HNSW)DocumentsHNSWCost/month10K2ms$50100K3ms$501M5ms$12010M10ms 
+✅$250
+🎯The Solution: Approximate Nearest Neighbor (ANN)Key Insight: We don't need the EXACT top 10 —getting 9/10 correct is often good enough!ANN algorithms trade tiny accuracy loss (95-99% recall) for 100-1000×speedup by using smart data structures.
+
+--- Page 62 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956ANN Indexing Strategies1. Graph-BasedExample: HNSWBuild a navigable graph where nodes are vectors, edges connect similar vectorsPros:• Excellent recall (>95%)• Fast queries (O(log n))• No training neededCons:• High memory usage• Slow inserts2. ParTTon-BasedExample: IVFCluster vectors into partitions, search only relevant partitionsPros:• Balanced performance• Works with compression• ScalableCons:• Needs training (k-means)• Sensitive to nprobe3. Compression-BasedExample: PQCompress vectors to reduce memory, search in compressed spacePros:• 8-32×less memory• Billions of vectorsCons:• Lower recall (~90%)• Needs training
+
+--- Page 63 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956HNSW: Hierarchical Navigable Small World
+Source: Malkov & Yashunin (2018) —https://arxiv.org/pdf/1603.09320Core Concept: Multi-Layer Skip List for VectorsLayer 2: Entry → [●────────●────────●] ← Sparse, long-range connectionsLayer 1: [●──●────●───●────●] ← Medium densityLayer 0: [●●●●●●●●●●●●●●●●●●●●] ← All vectors, dense connectionsSearch Process:1. Enter at top layer (random entry point)2. Greedy search: move to nearest neighbor3. When stuck (no closer neighbor), descend to next layer4. Repeat until Layer 05. Expand search with beam search for final k neighbors1. Hierarchical structure: Top layers skip across dataset for fast navigaoon2. Small world property: Average path length is O(log n)3. Navigable: Greedy search reliably finds near-optimal path4. Robust: Multiple entry points prevent getting stuck in local minima
+
+--- Page 64 ---
+BITS Pilani, Pilani Campus
+HNSW(Hierarchical Navigable Small World)
+Core Concept: Multi-Layer Skip List for Vectors
+
+--- Page 65 ---
+BITS Pilani, Pilani Campus
+HNSW(Hierarchical Navigable Small World)
+
+
+--- Page 66 ---
+BITS Pilani, Pilani Campus
+HNSW(Hierarchical Navigable Small World)
+Source: Malkov & Yashunin (2018)Source: Malkov & Yashunin (2018)Core Concept: Multi-Layer Skip List for Vectors
+
+--- Page 67 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956HNSW: Memory LayoutPer Vector Storage ComponentsStorage Breakdown✓Original vector: d ×4 bytes✓Layer info: 1 byte✓Connections: M ×4 bytes ×layers, (M = max connections per node)Example (768-dim, M=16)Vector: 768 ×4 = 3,072 bytesLayer:       1 byteConnections: ~64 bytes avg────────────────────────────────Total: ~3,136 bytes per vectorWhy M maqers so muchM is the single most important parameter in HNSW. It controls three things simultaneously:•Search accuracy: more neighbours= bexer approximate nearest neighbourrecall•Search speed: more neighboursto evaluate per hop = slightly slower traversal•Memory: each extra neighbourcosts 4 bytes ×number of layers
+
+--- Page 68 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956HNSW: Memory Calculation by ScaleScaleVector DataGraph OverheadTotal Memory1M vectors~3.1 GB(1.02×raw)~0.5-1 GB(metadata)~3.6-4.1 GB(1.2-1.3×raw)10M vectors~31 GB(1.02×raw)~10-20 GB(adjacency)~41-51 GB(1.4-1.7×raw)100M vectors~310 GB(1.02×raw)~200-300 GB(multi-layer)~510-610 GB(1.7-2.0×raw)
+⚠Production Planning: Memory Budget Guidelines• Per-vector data: Minimal overhead (~1.02×)• Graph structure: 0.4-1.0×additional (depends on M and scale)• Practical rule: Budget 1.5-2.0×raw vector memory for production HNSW
+
+--- Page 69 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Parameter Tuning: HNSW
+M (Connections per Layer)M (Connections per Layer)16 –64Lower (16):• Less memory• Faster build• Lower recallHigher (64):• More memory• Better recall• Slower insertsDefault: M=16 for most casesef_construcUonef_construction100 –200Lower (100):• Faster build• Lower quality indexHigher (200+):• Slower build• Beqer index quality• Higher recallDefault: ef_construction=200ef_search (Query Time)ef_search (Query Time)50 –500ef=50:• Fast• ~90% recallef=100:• Balancedef=500:• Slow• 99% recallTypical: ef_search=100-200
+💡Pro Tip: Start with defaults (M=16, ef_construction=200, ef_search=100). Profile on your data, then adjust ef_search for latency-recall tradeoff.
+
+--- Page 70 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956AIMLCZG521 , Conversational AILecture No. 3 | Module 1ANN Search algorithm and Hybrid Retrieval
+
+--- Page 71 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Outline1: Vector Databases• ANN search algorithms (HNSW, IVF, PQ)• Index structure mathematics• Database solutions & tradeoffs• Cost engineering2: Sparse Retrieval• TF-IDF fundamentals• BM25 algorithm & mathematics• Hybrid search rationale3: Hybrid Systems• Reciprocal Rank Fusion (RRF)
+
+--- Page 72 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956ANN Indexing Strategies-Revisit1. Graph-Based (Session-2)Example: HNSWBuild a navigable graph where nodes are vectors, edges connect similar vectors.Pros:• Excellent recall (>95%)• Fast queries –O(log n)• No training neededCons:• High memory usage• Slow inserts2. Partition-Based/Cluster basedExample: IVFCluster vectors into partitions, search only relevant partitions.Pros:• Balanced performance• Works with compression• ScalableCons:• Needs training (k-means)• Sensitive to nprobe3. Compression-Based/Quanjzajon BasedExample: PQCompress vectors to reduce memory, search in compressed space.Pros:• 8–32×less memory• Handles billions of vectorsCons:• Lower recall (~90%)• Needs training
+
+--- Page 73 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956IVF: Inverted File IndexA fast, partition-based approach to finding similar vectors at scale.•Partition Strategy:•The dataset is partitioned usingk-means clusteringintonlistcoarse centroids. Each data point is assigned to its nearest centroid, forming an inverted list for that cluster.•Search:•At query time, the query vector is compared to all centroids, and the topnprobeclosest centroids are selected.•Only the vectors in the selected clusters are searched, significantly narrowing down the search space.•Index Construction:•A training phase precedes indexing, where representative centroids are learned from a sample of the dataset.•Vectors are then indexed into inverted lists corresponding to their nearest centroid.
+
+--- Page 74 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956STEP 1 —PARTITION THE DATASET
+Raw dataset: unorganized high-dimensional vectors
+After k-means: each color = one cluster, colored dots = centroidsHow it works01  Run k-means on the datasetSelect K cluster centers (centroids) from a representative training sample. These define Voronoi cells in vector space.02  Assign every vector to a centroidEach data point is assigned to its nearest centroid —the one with minimum Euclidean distance.03  Build the inverted listsFor each centroid, store the IDs of all vectors belonging to its cluster. Indexing is complete.
+
+
+--- Page 75 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956THE INVERTED LISTS —DATA STRUCTURE
+What is stored?Each centroid maintains an inverted list —a record of all data point IDs that belong to its cluster.Green:vec1, vec5, vec7, … vec45Orange:vec4, vec9, vec2, … vec41Pink:vec3, vec6, vec8, … vec47Beige:vec10, vec23, vec37, … vec49Key insight: the inverted list is built once offline. At query time it enables O(1) lookup of candidate vectors —we jump directly to the relevant cluster without scanning the entire dataset.
+
+--- Page 76 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Step 2-SEARCH PROCESSQuery VectorIncoming query embeddingCompare to CentroidsDistance to all nlist centroidsSelect nprobe Clusterse.Gnprobe=3, search top 3 clustersSearch Inverted ListsScan only selected cluster vectorsReturn Top-K ResultsRanked by similarity scoreKey Parameters6nprobeClusters scanned at query time. Higher = better recall, slower speed.↔nlistNumber of k-means clusters / inverted lists. More clusters = finer partitions.
+
+
+--- Page 77 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956NUMERICAL EXAMPLEnlist = 3 clusters  |  nprobe = 1  |  2D vectorsSTEP 1 —DATASET & CENTROIDSIDx₁x₂Clusterv11.01.2C1v21.50.8C1v35.05.1C2v44.85.4C2v59.01.0C3v68.71.3C3Learned CentroidsC1(1.25, 1.00)C2(4.90, 5.25)C3(8.85, 1.15)STEP 2 —QUERY VECTORq  =  (5.0,  5.0)STEP 3 —EUCLIDEAN DISTANCES TO CENTROIDSCentroidFormuladist²distC1 (1.25,1.00)(5-1.25)²+(5-1)²30.065.48C2 (4.90,5.25)(5-4.9)²+(5-5.25)²0.070.26✓C3 (8.85,1.15)(5-8.85)²+(5-1.15)²29.625.44STEP 4 —SEARCH ONLY C2  (nprobe = 1)VectorDist to qv3  (5.0, 5.1)0.10v4  (4.8, 5.4)0.45✓Result: v3  |  Only 2 of 6 vectors scanned
+
+--- Page 78 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956TIME COMPLEXITY —IVF vs kNNVariablesNTotal data pointsDVector dimensionsKNumber of clusters (nlist)N/KVectors per clusterBrute-Force kNNO(N·D)Every query compares against all N vectors. No partitioning.IVF  —Step 1O(K·D)Compare query to K centroids only. K ≪N.IVF  —Step 2O(ND/K)Scan 1/K of the dataset (one cluster).IVF  TotalO(KD + ND/K)With K=100: ~100×faster than brute-force kNN.Total IVF complexity:
+Example: N=10M, K=100kNN  → 10,000,000IVF  → 100 + 100,000 = 100,100≈ 100×faster
+
+--- Page 79 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956THE ACCURACY TRADEOFF —WHY APPROXIMATE?
+Query (blue) lies near a cluster boundary —its true nearest neighbor (pink) is in the adjacent cluster but won't be found with nprobe=1.nprobe  =  clusters scanned at query time1Speed: ██████████Recall: █████░░░░░Fastest —may miss boundary neighborsnprobeSpeed: ████░░░░░░Recall: ████████░░Balanced —good recall/speed tradeoffKSpeed: ██░░░░░░░░Recall: ██████████Exact kNN —scans enIre datasetThe ProblemA vector near the query may sit in an adjacent cluster. With nprobe=1, that cluster is never scanned —the true nearest neighbor is missed.The Fix: raise nprobeScanning more clusters reduces miss probability. nprobe=10 typically gives >95% recall at still a fraction of brute-force cost.Why we accept itThe recall/speed tradeoff is the fundamental contract of ANN search. Near-perfect recall at 10–100×faster than exact kNN is the goal.
+
+
+--- Page 80 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PROS & CONS✓ADVANTAGESScalableHandles billions of vectors with consistent performanceFast QueriesAggressive pruning eliminates irrelevant clusters instantlyQuantization-ReadySeamlessly integrates with IVF-PQ, SQ, and other compressionRe-ranking SupportEasily pairs with re-ranking modules for improved precision✗LIMITATIONSHyperparameter Sensitivitynlist and nprobe require careful tuning for your datasetTraining Requiredk-means training phase needed before any vectors can be indexedCluster Quality MattersPoor clustering degrades recall —outliers may fall into wrong clustersApproximate ResultsNot exact NN —recall depends on nprobe; exact search requires nprobe=nlist
+
+--- Page 81 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956USE CASES & IMPLEMENTATIONS
+🖼Visual SearchFacebook InfrastructurePowers Facebook's visual similarity search at billion-scale, matching images by embedding proximity in real ome.
+💬Semantic SearchNLP EmbeddingsRetrieves semantically similar documents or passages from large corpora using sentence-transformer embeddings.
+🎯RecommendationsEmbedding-BasedFinds similar user/item embeddings for collaboraove ﬁltering and content-based recommendaoon engines.
+⚙FAISS IVF-PQHybrid PipelinesDeployed in hybrid indexing pipelines combining IVF partitioning with Product Quantization for memory efficiency.IVF is widely deployed in FAISS IVF-PQ and hybrid vector indexing pipelines across industry.
+
+--- Page 82 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956IVF: Inverted File Index + PQ (Product Quantization)
+
+
+--- Page 83 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Parameter Tuning: IVFnlist (Number of Clusters)√n to n/1000Too Few: Large partitions, slow search.Too Many: Tiny partitions, many to search.Sweet Spot: 4√n often works well.1M vectors → nlist ≈ 1,000–4,000nprobe (Clusters to Search)1 –100Lower (1–5): Very fast, lower recall (~70–85%).Higher (50–100): Slower search, higher recall (~95%+).Tune at query time.Typical: nprobe = 10–20PQ Subquantizers (m)d/8 to d/4More subquantizers: Better accuracy, more memory.Fewer subquantizers: More compression, lower accuracy.Must divide dimension.768-dim → m=96 (8 per subvector)Training Time: IVF requires training k-means on sample data (typically 10K–100K vectors). Budget: nlist ×50 iterations ×10 minutes for 1M vectors.
+
+--- Page 84 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Product Quantization•Quanqzaqon-based methods are built on the idea of compressing high-dimensional vectors into compact, lossy representaqons, typically by mapping them to a discrete set of centroids or codes. •These compact codes allow extremely fast approximate distance computaTon (ADC)using precomputed lookup tables, making them ideal for billion-scale vector search tasks.•Widely used in industry for:•Large-scale image/video/text retrieval where space and speed are at a premium.•Real-time inference pipelines that need rapid ranking of semantically similar results.•Hybrid ANN pipelines, often paired with clustering (IVF) or re-ranking modules.•Scenarios that require deployment on limited-memory devices or optimized GPU environments.
+
+--- Page 85 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Numerical Example on PQ2.88 TBTo store 1 billion high-precision vectors (768 dimensions, float32), you need 2.88 terabytes of RAM.1,000,000,000 vectors×768 dimensions×4 bytes/dimension (float32)= 2.88 TBHow can we search billions of vectors without needing a warehouse of servers? → Product Quantization (PQ)!
+
+--- Page 86 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Product QuanAzaAon (PQ)Core Concept: Divide & ConquerSplit high-dimensional vectors into smaller chunks and quantize each independently.Original Vector[128 dimensions]→Sub 1[32-dim]Sub 2[32-dim]Sub 3[32-dim]Sub 4[32-dim]Each subvector is encoded independently using a trained codebook.Why PQ? It enables massive compression (8–128×) while maintaining good search accuracy. Instead of storing 512(128* 4B) bytes per vector, you store just 4 bytes —making billion-scale search feasible in RAM.
+
+--- Page 87 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Product Quantization (PQ) –Step 1: Train CodebooksStep 1: Train Codebooks (k-means per Subspace)For each subvector position, train a codebook with k centroids (typically k=256):Codebook 1 (Sub 1)ID: 0 → [0.2, 0.5, 0.1, ...]ID: 1 → [0.8, 0.3, 0.6, ...]ID: 2 → [0.1, 0.9, 0.4, ...]...ID: 255 → [0.4, 0.2, 0.7, ...]Codebook 2 (Sub 2)ID: 0 → [0.3, 0.7, 0.2, ...]ID: 1 → [0.6, 0.1, 0.8, ...]ID: 2 → [0.9, 0.4, 0.3, ...]...ID: 255 → [0.2, 0.6, 0.5, ...]Codebook 3 & 4...Each subspace getsits own codebooktrained independentlyusing k-means clustering
+
+--- Page 88 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Product Quantization (PQ) –Step 2: Encode Vectors → Compact IDsStep 2: Encode Vectors → Compact IDsReplace each subvector with the ID of its nearest centroid in the codebook:Original Vector (128-dim, 512 bytes):[0.23, 0.51, 0.82, ..., 0.91, 0.34, 0.67]↓  Encode with PQ  ↓Compressed (4 IDs, 4 bytes):[142, 73, 201, 18]Each ID is 1 byte (0–255) → 128×compression!Before PQ512 B per vector→After PQ4 B per vector
+
+--- Page 89 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Product Quantization: Step 3 –Fast Distance Computation (ADC)Asymmetric Distance Computation (ADC)Step 1: Query PreparationQuery vector q arrives (full precision)Split into subvectors: [q1, q2, q3, q4][0.23, 0.51, ...] → splits → 4 chunksStep 2: Distance TablesPre-compute distances from each q_i to all 256 centroids in codebook i:table1[256], table2[256], table3[256], table4[256]Step 3: Database Vector LookupEach DB vector stored as 4 IDs: [ID1, ID2, ID3, ID4]distance = table1[ID1] + table2[ID2] + table3[ID3] + table4[ID4]   ← Just 4 lookups + 3 additions (vs 128 multiplications)!
+
+--- Page 90 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 1: The DatasetThe Dataset: We will work with 5 vectors, each with 8 dimensions.Dim 1Dim 2Dim 3Dim 4Dim 5Dim 6Dim 7Dim 8Vector 10.20.30.80.90.10.40.70.6Vector 20.10.20.70.80.20.30.60.5Vector 30.90.80.10.20.90.80.20.1Vector 40.80.90.20.10.80.90.10.2Vector 50.50.40.50.60.40.50.40.3
+
+--- Page 91 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 2: Split into SubvectorsWe split each 8-dimensional vector into M=2 subvectors, each with d=4 dimensions. This creates two independent "subspaces".Vector 1:[0.2,  0.3,  0.8,  0.9,  0.1,  0.4,  0.7,  0.6]Subvector 1: [0.2,  0.3,  0.8,  0.9]Subvector 2: [0.1,  0.4,  0.7,  0.6]This same split is applied to all 5 vectors, creating 2 sets of 5 four-dimensional subvectors each.
+
+--- Page 92 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 2: Collect Codebook Training DataCodebook 1 (for subvector position 1) –all first subvectors:• [0.2, 0.3, 0.8, 0.9]• [0.1, 0.2, 0.7, 0.8]• [0.9, 0.8, 0.1, 0.2]• [0.8, 0.9, 0.2, 0.1]• [0.5, 0.4, 0.5, 0.6]Codebook 2 (for subvector position 2) –all second subvectors:• [0.1, 0.4, 0.7, 0.6]• [0.2, 0.3, 0.6, 0.5]• [0.9, 0.8, 0.2, 0.1]• [0.8, 0.9, 0.1, 0.2]• [0.4, 0.5, 0.4, 0.3]Next step: Run K-Means (k=2) on each codebook's subvectors to find cluster centroids that represent typical subvector patterns.
+
+--- Page 93 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 3: Create Codebooks with K-Means
+
+
+--- Page 94 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 4: Encode Vectors Using the CodebooksFor each vector, replace its subvectors with the index (ID) of the nearest centroid from the corresponding codebook.Encoding Vector 3: [0.9, 0.8, 0.1, 0.2, 0.9, 0.8, 0.2, 0.1]
+
+
+--- Page 95 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 5: Memory SavingsThe Result: From 160 Bytes down to 10 BytesOriginal Storage5 vectors ×8 dimensions×4 bytes/dim (float32)Total: 160 bytes→PQ Storage5 vectors ×2 codes ×1 byte/code= 10 bytes (data)2 codebooks ×2 centroids ×4 dims ×4 bytes= 64 bytes (codebooks)Total: 74 bytesKey Insight: The codebook storage is a one-time, fixed cost. For millions or billions of vectors, this overhead becomes negligible, and the compression ratio approaches 32×(from 32 bytes per vector to 1 byte per code). Reference: Jégou et al. (2011), "Product Quantization for Nearest Neighbor Search."
+
+--- Page 96 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 6: Similarity SearchThe ChallengeA new query vector arrives. We need to find the most similar vectors in our compressed database.Query Vector:[0.2, 0.25, 0.75, 0.85, 0.15, 0.35, 0.65, 0.55]The Naive Approach (What we DON'T do)1. Decompress every vector back to its 8D approximaoon.2. Compute the distance between the query and each decompressed vector.3. This is slow and defeats the purpose of compression.The Elegant Solution: Asymmetric Distance Computation (ADC)We calculate distances using only the compressed codes and the codebooks, never reconstructing the full database vectors. This gives us the speed of compression with near-exact distance estimates.
+
+--- Page 97 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 6a: Compute Distance TablesQuery vector: [0.2, 0.25, 0.75, 0.85, 0.15, 0.35, 0.65, 0.55]Codebook 1Centroid 0[0.15, 0.25, 0.75, 0.85]Centroid 1[0.85, 0.85, 0.15, 0.15]Codebook 2Centroid 0[0.15, 0.35, 0.65, 0.55]Centroid 1[0.85, 0.85, 0.15, 0.15]For each codebook, compute the distance from the query subvector to all centroids:Distance Table 1:dist(query_sub1, centroid_0) = 0.05dist(query_sub1, centroid_1) = 1.17Distance Table 2:dist(query_sub2, centroid_0) = 0.00dist(query_sub2, centroid_1) = 1.17
+
+--- Page 98 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 6b: Compute Approximate DistancesFor each encoded vector, look up distances using their codes (just table lookups, no decompression!):Vector 1 [0, 0]• dist ≈ 0.05 + 0.00 = 0.05Vector 2 [0, 0]• dist ≈ 0.05 + 0.00 = 0.05Vector 3 [1, 1]• dist ≈ 1.17 + 1.17 = 2.34Vector 4 [1, 1]• dist ≈ 1.17 + 1.17 = 2.34Vector 5 [0, 0]• dist ≈ 0.05 + 0.00 = 0.05Result: Vectors 1, 2, and 5 are closest to the query (distance ≈ 0.05). The key insight: we never reconstructed the full vectors! We just did table lookups.
+
+--- Page 99 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Key ParametersM (number of subvectors):• Typical values: 8, 16, 32, 64• More subvectors = better accuracy but more memory for codesk (centroids per codebook):• Typical value: 256 (fits in 1 byte)• More centroids = better approximation but larger codebooksTrade-off: M=8, k=256: Each vector uses 8 bytes (32×compression from float32). M=64, k=256: Each vector uses 64 bytes (4×compression, better accuracy).
+
+--- Page 100 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Product Quantization (PQ) –Why It Is PowerfulMassive CompressionReduce memory by 32–128×while maintaining good accuracyFast SearchDistance = simple table lookups instead of expensive dot productsScalabilityStore billions of vectors in RAM that would otherwise require terabytesCombinableOften combined with IVF for even better performance (IVFPQ)When to Use PQ:• Billion-scale datasets: When RAM is the bottleneck   • With IVF: IVF+PQ is the standard for massive scale   • Budget constraints: Reduce infrastructure costs 10×• Acceptable recall loss: 90–95% recall is sufficientBITS Pilani, Pilani Campus
+
+--- Page 101 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Complexity Comparison –ANN Algorithmsn = vectors in database  |  d = vector dimension  |  k = clusters (IVF)  |  m = compressed dimension (PQ)  |  i = k-means iterationsAlgorithmSearch TimeMemoryBuild TimeRecallLinear ScanO(n·d)O(n·d)O(1)100%HNSWO(log n)O(n·d)O(n log n)95–99%IVFO((n/k)·d)O(n·d)O(n·d·i)90–95%PQO(n·m)O(n·m)O(n·d·i)70–85%IVF+PQO((n/k)·m)O(n·m)O(n·d·i)85–92%HNSW+PQO(log n)O(n·m)O(n log n)90–96%Key Insight: HNSW trades memory for speed. IVF+PQ trades accuracy for compression. HNSW+PQ is the sweet spot for production.Production Ready ANN Libraries: FAISS,ScaNN, andANNOY 
+
+--- Page 102 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956II. Sparse RetrievalFrom Dense to Sparse: Complementary Approaches✓What We've Learned So Far• Transformer encoders create rich, contextual embeddings• Self-attention captures relationships between words• Different pooling strategies extract sentence-level representations• We can search billions of vectors efficiently using ANN algorithms (HNSW, IVF, PQ)✗But Vector Search Has Limitations...• Struggles with exact keyword matching (e.g., "ERROR code 500")• Misses rare/unique terms not in training data (IDs, codes)• Can't handle out-of-vocabulary words perfectlyNext: Sparse Retrieval Methods (BM25) that complement dense search for hybrid systemsBITS Pilani, Pilani Campus
+
+--- Page 103 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Dense Vector Search Has LimitationsDense embeddings are semantic —they capture meaning and context beautifully. However, they often fail at keyword-exact tasks.Limitation 1: Exact Keyword MatchingDense models focus on meaning, not exact tokens. Numbers, error codes, and product codes may not match correctly.Limitation 2: Rare / Unique TermsDense models don't index words directly. Terms unseen during training get poor embeddings (e.g., Part ID XR55-QW7).Limitation 3: Out-of-Vocabulary (OOV) WordsUnknown words are broken into sub-tokens, leading to bad embeddings and poor ranking. BM25 handles exact string matching perfectly.Solution: BM25 (sparse retrieval) handles all three cases perfectly!
+
+--- Page 104 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Summary: Why We Need Sparse + Dense TogetherDense Models (BERT Embeddings):✓Great for semantic meaning✓Understand language context✓Good for long queries✓Powerful for Q&A, RAGSparse Models (BM25):✓Great for exact matching✓IDs, numbers, rare words✓Log messages, code✓Unseen terms, spelling variationsHybrid Search = Best of Both WorldsDense search + BM25 improves accuracy significantly.Dense finds semantically similar content, Sparse ensures exact matches aren't missed.
+
+--- Page 105 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956TF-IDF: Foundation of Sparse RetrievalTerm Frequency –Inverse Document Frequency: A statistical measure of word importance in documentsTerm Frequency (TF)Raw count:TF(t, d) = count of term t in document dNormalized (common):TF(t, d) = f_t,d / |d|f_t,d = raw count, |d| = total termsIntuition: More occurrences = more importantBut normalize by document length.Inverse Document Frequency (IDF)Formula:IDF(t) = log(N / df_t)N = total documentsdf_t = documents containing tIntuioon: Rare terms are more informaove."Qdrant" → high IDF"the" → low IDFCombined TF-IDF Score:TF-IDF(t, d) = TF(t, d) ×IDF(t) = (ft,d/ |d|) ×log(N / dft)
+
+--- Page 106 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956TF-IDF: Foundation of Sparse Retrieval –Worked ExampleCorpus: 1000 documents  |  Document d: "machine learning is a subset of machine learning"  |  Query q: "machine learning"Step 1: Calculate IDF for Each Query TermTerm "machine"f_machine,d = 2Frequency (f): 2TF = 2/8 = 0.25df (from slide) = 300IDF = ln(1000/300) = 1.204TF-IDF = 0.25 ×1.204 = 0.301Term "learning"Frequency (f): 2TF = 2/8 = 0.25df (from slide) = 400IDF = ln(1000/400) = 0.916TF-IDF = 0.25 ×0.916 = 0.229Document score for query "machine learning":Score(q, d) = 0.301 + 0.229 = 0.530
+
+--- Page 107 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956TF-IDF: Foundation of Sparse Retrieval –Limitations✗Linear TF10 occurrences should not score 10×higher than 1. Diminishing returns are natural but not captured.✗No Length NormalizajonLong documents score higher unfairly —they contain more words and thus more term occurrences.✗Bag of WordsIgnores term proximity and order. "dog bites man" and "man bites dog" get the same score.✗No Term SaturationRepetition keeps adding score indefinitely. Each additional occurrence adds the same weight.Solution: BM25 (Best Matching 25) fixes all these issues with term frequency saturation, length normalization, and a probabilistic foundation.
+
+--- Page 108 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956BM25: Best Matching 25 (Improved TF-IDF)What BM25 Improves –BM25 is a probabilistic ranking function that addresses TF-IDF's limitations:1. Term frequency saturation: Diminishing returns for repeated terms    2. Document length normalization: Fair scoring regardless of length    3. Probabilistic foundation: Based on probability ranking principleBM25 Formula (Full Version):score(Q,D) = Σᵢ₌₁ⁿ IDF(qᵢ) · [f(qᵢ,D)·(k₁+1)] / [f(qᵢ,D) + k₁·(1-b+b·|D|/avgdl)]ParameterDefaultRangeEffectk₁1.5[1.2, 2.0]Controls TF saturation. Higher = more emphasis on term frequency.b0.75[0, 1]Length normalization. 0 = no norm, 1 = full norm.
+Reference: Robertson & Zaragoza (2009), "The Probabilistic Relevance Framework: BM25 and Beyond."•f(t,d): frequency of term t in document d•∣d∣: length of the document•avgdl: average document length in the collection•k1 andb: parameters that can be tuned for different datasets
+
+--- Page 109 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956BM25: IDF and TF ComponentsIDF Component (Modified)IDF(qᵢ) = log[(N -dfᵢ + 0.5) / (dfᵢ + 0.5) + 1]Components:• N = total documents• dfᵢ = docs containing term i• +0.5 = smoothing (avoid zero)• +1 = ensure positive scoreCombined effect: Short docs with focused terms rank high, long docs need more evidence.TF Component (Saturating)TF = f · (k₁ + 1) / (f + k₁ · norm)norm = 1 -b + b · (|D| / avgdl)Key InnovaTon: SaturaTon funcTonAs f → ∞, TF → (k₁ + 1) / (k₁ · norm)Bounded, not linear!k₁ controls saturation: With k₁=1.5, going from 1→2 occurrences helps more than 10→11.b controls length penalty: b=0.75 means longer docs get penalized, but not fully.
+
+--- Page 110 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956BM25: Step-by-Step ExampleScenario:Corpus: 1000 documents, average length: 50 termsQuery: "machine learning"Document D: "Machine learning is a subset of machine learning and deep learning" (12 terms)Step 1: Calculate IDF for Each Query TermTerm "machine": appears in 300 documentsIDF = log[(1000 -300 + 0.5) / (300 + 0.5) + 1]IDF = log[700.5 / 300.5 + 1]IDF = log[2.331 + 1] = log[3.331] = 1.203IDF(machine) = 1.203Term "learning": appears in 400 documentsIDF = log[(1000 -400 + 0.5) / (400 + 0.5) + 1]IDF = log[600.5 / 400.5 + 1]IDF = log[2.499] = 0.916IDF(learning) = 0.916
+
+--- Page 111 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956BM25: Step-by-Step Example (Steps 2 & 3)Step 2: TF Component for "machine" (f=2, k₁=1.5, b=0.75)norm = 1 -0.75 + 0.75 ×(12/50)norm = 0.25 + 0.18 = 0.43TF = [2 ×(1.5 + 1)] / [2 + 1.5 ×0.43]TF = 5.0 / 2.645 = 1.890TF(machine) = 1.890For "learning" (f=3, same norm=0.43)TF = [3 ×2.5] / [3 + 0.645]TF = 7.5 / 3.645 = 2.058TF(learning) = 2.058Step 3: Combine ScoresBM25(Q, D) = IDF(machine) ×TF(machine) + IDF(learning) ×TF(learning)= 1.203 ×1.890 + 0.916 ×2.058 = 2.274 + 1.885BM25 Score = 4.159
+
+--- Page 112 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956BM25 vs TF-IDF –Understanding the DifferenceTF-IDF score (normalized by document length):"machine":  (2/9) ×log(1000/300) = 0.222 ×1.20 = 0.267"learning": (3/9) ×log(1000/400) = 0.333 ×0.916 = 0.305Total = 0.572BM25 score (with saturation & length normalization):score(q, d) = 4.159Why BM25 Scores Higher: (1) Document length normalization —doc is shorter than average (12 vs 50 tokens) → less penalty. (2) TF saturation —3 occurrences aren't 3×better than 1. (3) Probabilistic foundation —better ranking properties.
+
+--- Page 113 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956BM25 vs TF-IDF –Understanding the Difference (Detail)• Document Length Normalization:BM25 considers document is shorter than average (12 vs 50 tokens) → less length penalty. Short, focused documents rank higher.• Term Frequency Saturation:3 occurrences aren't 3×better than 1 —diminishing returns are applied. The curve flattens instead of growing linearly.• Probabilistic Foundation:Based on the probability ranking principle → better ranking properties. Documents with focused, relevant terms rank higher than verbose documents.TF-IDF total = 0.572   vs   BM25 total = 4.159
+
+--- Page 114 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Why Hybrid Search? Dense + Sparse✗Dense-Only Failures –Example 1: Exact KeywordsQuery: "ERROR code 500"Doc A: "Server error 500 occurred"Dense score: 0.72Doc B: "Something went wrong"Dense score: 0.85 ← WRONG RANKING!Why? Embedding trained on general text doesn't know "500" is crucial.✓Sparse (BM25) Catches These –Example 1:Query: "ERROR code 500"Doc A: "Server error 500 occurred"BM25 score: 8.3 (high IDF for "500")Doc B: "Something went wrong"BM25 score: 0.0 (no matching terms)Correct ranking!
+
+--- Page 115 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Why Hybrid Search? Dense + Sparse –Example 2: Unique IDs✗Dense-Only Failures –Example 2: Unique IDsQuery: "AIMLCZG521 schedule"Doc A: "Course schedule for AI/ML"Dense: 0.88 ← WRONG!Doc B: "AIMLCZG521 timing"Dense: 0.75Unique terms not in training data✓Sparse (BM25) Catches These –Example 2:Query: "AIMLCZG521 schedule"Doc A: "Course schedule for AI/ML"BM25: 3.2 ("schedule" matches)Doc B: "AIMLCZG521 timing"BM25: 12.5 (exact ID match!)Correct ranking!
+
+--- Page 116 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Dense + Sparse –Complementary StrengthsAspectDense (Embeddings)Sparse (BM25)Semantic understanding✓Excellent✗NoneSynonyms/paraphrases✓Handles well✗Misses completelyExact keyword match✗Can miss✓PerfectRare/unique terms✗Out-of-vocabulary✓High IDF capturesNumbers, codes, IDs✗Not in training✓Works perfectlyOut-of-domain
+⚠Depends on training✓Always worksThe Hybrid Solution: Use BOTH retrieval methods and combine their results! Dense finds semantically similar content, Sparse ensures exact matches aren't missed.BITS Pilani, Pilani Campus
+
+--- Page 117 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The Challenge: Combining Different Score RangesProblem: Can't just add them! Need score-agnostic fusion.Dense retrieval gives cosine similarities [0, 1]    |    BM25 gives unbounded scores [0, ∞]Min-Max Normalization:score' = (score -min) / (max -min)✗Sensitive to outliersZ-score Normalization:score' = (score -µ) / σ✗Assumes normal distributionReciprocal Rank Fusion (RRF):RRF(d) = Σ 1 / (k + rank_r(d))✓No assumptions about score distributions!
+
+--- Page 118 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Reciprocal Rank Fusion (RRF): The MathRRF FormulaRRF(d) = Σ_{r ∈rankings}  1 / (k + rank_r(d))Where: d = document being scored   |   rankings = set of ranking lists (e.g., dense + sparse)rank_r(d) = position of document d in ranking r (1, 2, 3, ...)   |   k = constant (typically 60)Why k=60? (Empirical finding from TREC competitions)• k=60 balances contribution from high and low ranks• Without k: 1/1 = 1.0, 1/2 = 0.5 (too steep drop)• With k=60: 1/61 = 0.0164, 1/62 = 0.0161 (gentler)• Prevents first rank from dominating too muchAlternative k values:• k=0: Maximum emphasis on top ranks (aggressive)• k=60: Balanced (standard)• k=100: More weight to lower ranks (conservative)Reference: Cormack et al. (2009), "Reciprocal Rank Fusion outperforms Condorcet and individual rank learning methods."
+
+--- Page 119 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Properties of RRF1. Score-agnostic: Only uses rank order, not raw scores. Works regardless of whether scores are [0,1] or [0,∞].2. Bounded: Score ∈[0, number of rankings / k]. Output is predictable and comparable across queries.3. Symmetric: All rankings are weighted equally. No need to specify which system is more important.4. Robust: Works even if one ranking is poor. The other rankings compensate, making it resilient.5. No Training: No hyperparameters to tune (except k). No labeled data needed. Plug-and-play.5. No Training:No hyperparameters to tune (except k). No labeled data needed. Plug-and-play.Why RRF Works So Well: Documents that rank high in MULTIPLE systems are likely truly relevant. RRF naturally gives bonus to "consensus" documents without explicit weighting.
+
+--- Page 120 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956RRF: Example –Scenario: Query "machine learning tutorial"Dense Retrieval ResultsRankDocCosine1Doc A0.922Doc C0.893Doc B0.854Doc E0.825Doc D0.79Sparse (BM25) ResultsRankDocBM251Doc B87.32Doc A82.13Doc D79.54Doc F71.25Doc C68.9Next: Apply RRF to combine these two ranked lists →
+
+--- Page 121 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956RRF: Example –Score Calculation (k=60)Doc A: Dense rank: 1, Sparse rank: 2RRF = 1/(60+1) + 1/(60+2) = 1/61 + 1/62 = 0.01639 + 0.01613 = 0.03252Doc B: Dense rank: 3, Sparse rank: 1RRF = 1/(60+3) + 1/(60+1) = 1/63 + 1/61 = 0.01587 + 0.01639 = 0.03226Doc C: Dense rank: 2, Sparse rank: 5RRF = 1/(60+2) + 1/(60+5) = 1/62 + 1/65 = 0.01613 + 0.01538 = 0.03151Doc D: Dense rank: 5, Sparse rank: 3RRF = 1/(60+5) + 1/(60+3) = 1/65 + 1/63 = 0.01538 + 0.01587 = 0.03125Doc E: Dense rank: 4, Sparse rank: –RRF = 1/(60+4) + 0 = 1/64 = 0.01562Doc F: Dense rank: –, Sparse rank: 4RRF = 0 + 1/(60+4) = 1/64 = 0.01562Final RankingRankDocRRF Score1Doc A0.032522Doc B0.032263Doc C0.031514Doc D0.031255Doc E, F0.01562Key Insight: Doc A wins because it ranks high in BOTH systems (consensus), even though it wasn't #1 in sparse.BITS Pilani, Pilani Campus
+
+--- Page 122 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Performance Characteristics (Typical)Pipeline StageLatencyRecallPrecisionBM25 only20ms70%60%Vector only50ms75%65%Hybrid (BM25+Vector+RRF)70ms90%75%Key Observations:• Hybrid (BM25+Vector+RRF) achieves significantly higher recall (90%) and precision (75%) at modest latency cost (+20ms).• BM25 alone is fast but misses semantic matches. Vector alone misses exact keyword matches.• Combining both is the best strategy for production RAG systems.
+
+--- Page 123 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Key Takeaways1. Encoder Models: Bidirectional transformers create contextual embeddings through self-attention and pooling.2. Vector Similarity: Cosine similarity (or normalized dot product) measures semantic closeness in embedding space.3. ANN Algorithms: HNSW (graph), IVF (partitions), PQ (compression) enable fast search at scale.4. Sparse Retrieval: BM25 improves TF-IDF with saturation and length normalization for exact keyword matching.5. Hybrid Systems: Dense + Sparse + RRF combines semantic and lexical strengths for the best retrieval accuracy.Formulae: Self-attention: Attention(Q,K,V) = softmax(QKᵀ/√d_k)V   |   Cosine: cos(A,B) = A·B/(‖A‖‖B‖)   |   BM25: f(k₁+1)/(f+k₁(1-b+b|D|/avgdl))   |   RRF: Σ 1/(k+rank)
+
+--- Page 124 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956AIMLCZG521 , Conversational AILecture No. 4 | Module 1Model Landscape & Cost Engineering
+
+--- Page 125 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956AgendaPart 1 · Model Landscape▸Dense Transformers —GPT-4o, Claude 3.7, Llama 3.3, Gemini 2.0▸Mixture-of-Experts —Mixtral 8×22B, DeepSeek-V3, Qwen2-MoE▸Small Language Models —Phi-4, Gemma 3, Qwen2.5, Llama 3.2▸State Space Models —Mamba-2, Jamba-1.5 (hybrid)▸Intelligent Model Routing & Cost-Complexity Trade-offsPart 2 · Cost Engineering▸Quantization: FP32→NF4, GPTQ, AWQ, FP8 (H100 native)▸LoRA & QLoRA Fine-Tuning —31×memory reduction▸GPU Memory Estimation: Weights + KV-Cache + Activations▸Token Pricing, Prompt Caching —up to 90% cost reduction▸Production Optimization Playbook & Self-Hosting Break-Even
+
+--- Page 126 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The 2025 LLM LandscapeProduction-grade architectures —benchmarks, context windows, and cost profilesArchitectureKey Models (2025)Context WindowMMLUCost / 1M TokensBest Use CaseDense TransformerGPT-4o, Claude 3.7 Sonnet, Llama 3.3 70B, Gemini 2.0 Pro128K –1M86–90%$3 –$30Complex reasoning, multimodalMixture-of-ExpertsDeepSeek-V3, Mixtral 8×22B, Qwen2-57B-A14B, Jamba-1.532K –256K80–88%$0.3 –$2Cost-effective at scaleSmall LMs (1–14B)Phi-4, Gemma 3, Qwen2.5-7B, Llama 3.2-3B4K –128K72–85%$0.05 –$0.3Routing, edge, classificationState Space ModelsMamba-2, RWKV-6, Jamba-1.5 (hybrid)1M+68–75%VariableUltra-long context tasksSources: MMLU from Open LLM Leaderboard (HuggingFace), May 2025. Pricing indicative —verify at vendor documentation before production use.
+
+--- Page 127 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The 2026 LLM LandscapeARCHITECTUREKEY MODELS (2026)CONTEXT WINDOWMMLUCOST / 1M TOKENSBEST USE CASEDense TransformerGPT-5, Claude 4, Llama 4.0, Gemini 3.0 ProEmerging multimodal256K –2M92–96%$2 –$15Reasoning, analysis, document processingMixture-of-ExpertsDeepSeek-V4, Mixtral 8x70B, Qwen3-MoE, Grok-2Scaling efficiency64K –512K88–92%$0.2 –$0.8Production APIs, multi-task pipelinesSmall LMs (1–15B)Phi-5, Gemma 4, Qwen3-4B, Llama 3.5-7BOn-device ready8K –64K78–86%$0.001 –$0.05Edge, mobile, local inferenceState Space Models (Hybrid)Mamba-3, RWKV-7, Jamba 2.0 (hybrid), Liquid-2Linear scaling32K –1M+82–88%VariableLong-context streaming, inference-optimizedProduction-grade architectures —benchmarks, context windows, and cost profiles
+Source: Projected trends from 2025 LLM Landscape —industry trajectories, pricing evolution, and emerging architectures. Benchmarks are estimated based on 2025 baseline performance improvements. Cost and availability subject to market dynamics.
+
+--- Page 128 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Dense Transformer ModelsState-of-the-Art Foundation Models —2025 Production LandscapeGPT-4o (OpenAI)CTX: 128KMMLU: 88.7%Multimodal: text + vision + audio. Native tool-use & function calling. Batch API for 50% cost cut. [1]Claude 3.7 SonnetCTX: 200KMMLU: 90.1%Anthropic's reasoning flagship. Extended Thinking mode (+32K CoT tokens). Best-in-class coding & analysis. [2]Llama 3.3 70B (Meta)CTX: 128KMMLU: 86.0%Open-weights. Rivals GPT-4 Turbo on MMLU. Self-hostable on vLLM at ~$0.10–0.30/1M tokens. [3]Gemini 2.0 FlashCTX: 1MMMLU: 87.0%Google's multimodal production model. Cheapest at $0.075/1M input. Native grounding via Search. [4]Key Characteristic: All parameters active per token → consistent quality at higher FLOP cost. 70B BF16 ≈ 140 GB VRAM → typicallyrequires 2×H100 80GB for single-model inference.[1] OpenAI GPT-4o System Card 2024  [2] Anthropic Claude 3.7 Model Card Mar 2025  [3] Meta Llama 3.3 Technical Report Dec 2024  [4] Google Gemini 2.0 Tech Spec Feb 2025
+
+--- Page 129 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Mixture of Experts
+
+
+--- Page 130 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Mixture of Experts: Router MechanismHow Sparse Activation Achieves EfficiencyThe Routing Decisionrouter_logits = W_router · xtop_k_experts = TopK(router_logits, k=2)weights = softmax(top_k_logits)output = Σ (wᵢ ×Expertᵢ(x))Example: DeepSeek-V3 (2025)• 671B total parameters (256 experts ×2.5B each)• Router selects top-2 experts per token• Active params per token: 37B  (94.5% saving)• API cost: ~5% of GPT-4o equivalentRouter NetworkInput Token  [d dimensions]↓Router Linear Layer  [d → num_experts]↓Select Top-K  (typically K=2)Load BalancingChallenge: Expert CollapseRouter favours certain experts; ~15% of naive training runs collapse to 1–2 hot experts.Solution: Auxiliary Load-Balance LossL_aux = α ×load_balance_lossDeepSeek-V3 uses α = 0.001; encourages uniform token distribution.Ref: Shazeer et al. (2017) Sparsely-Gated MoE NeurIPS; DeepSeek-AI (2024) DeepSeek-V3 Technical Report arXiv:2412.19437
+
+--- Page 131 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Mixture of Experts ModelsCost-Effective Scaling —2025 Production ModelsDeepSeek-V3Total: 671BActive: 37BSaving: 94.5%Best open-source MoE 2025. Rivals GPT-4o. 128K ctx. <$0.50/1M tokens on API. [5]Mixtral 8×22BTotal: 141BActive: 39BSaving: 72.3%Strong coder/reasoner. 65K ctx. Available on Mistral API & self-host via vLLM. [6]Qwen2-57B-A14BTotal: 57BActive: 14BSaving: 75.4%Alibaba open-weights. Multilingual (29 langs). Outperforms Llama-3 70B on MMLU. [7]Jamba-1.5 LargeTotal: 398BActive: 52BSaving: 86.9%AI21 hybrid SSM+Attention. 256K ctx. Production API. Best long-doc model. [8]Efficiency FormulaCost Reduction = 1 − (Active / Total)DeepSeek-V3: 1 − 37B/671B = 94.5% compute savingsKey Challenges• All experts must be in VRAM (671B needs ~8×H100)• Router adds ~5–15% inference latency per token• Load balancing requires careful α tuning[5] DeepSeek-AI arXiv:2412.19437  [6] Mistral AI Mixtral-8×22B Apr 2024  [7] Qwen2 Report arXiv:2407.10671  [8] AI21 Labs Jamba-1.5 Aug 2024
+
+--- Page 132 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Small Language Models (SLMs)Specialized Efficient Models —1–14B Parameters for Edge & Production RoutingModelParamsContextMMLUStrengthsDeployment TargetPhi-4 (Microsoft)14B16K84.8%Reasoning, coding, math —rivals GPT-4o-mini on most benchmarksAzure AI, Windows Copilot+, on-device GPUGemma 3 (Google)4B / 27B128K73 / 81%Safety-tuned; multilingual (140 langs); vision capableOn-device Android, Vertex AI, edge TPUQwen2.5 (Alibaba)7B128K79.9%Multilingual (29 langs), strong code & math, Apache-2.0Local inference, HuggingFace self-hostLlama 3.2 (Meta)1B / 3B128K60 / 75%Ultra-lightweight; vision variant at 11B; tool-useEdge devices, IoT, mobile appsSmolLM2 (HF)135M –1.7B8K~55%Runs on CPU; browser & microcontroller deployableOn-device, privacy-first, serverlessProduction Tip:Use SLMs as intelligent routers (intent classification, NER, slot-filling) handling ~80% of queries at <5% of GPT-4 cost. A Phi-4-mini router + Claude 3.7 backend cut one enterprise chatbot bill by 78% with no CSAT drop.Ref: Microsoft Phi-4 Report Dec 2024; Google Gemma 3 Mar 2025; Qwen2.5 arXiv:2412.15115; Meta Llama 3.2 Sep 2024
+
+--- Page 133 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Attention Mechanism FundamentalsUnderstanding the Core of Transformer ArchitectureSelf-Attention in TransformersQuery (Q): What am I looking for? —compared against all Keys to produce attention scoresKey (K): What do I contain? —indexed by the attention router to find relevant contextValue (V): What information do I have? —aggregated by attention weights into the outputScaled Dot-Product Attention FormulaAttention(Q, K, V)  =  softmax( QKᵀ / √d_k )  ·  VStep 1: ScoreCompute QKᵀDot product → raw attention scores [n×n]Step 2: ScaleDivide by √d_kPrevents vanishing gradients for large d_kStep 3: NormaliseSoftmax over rowConverts to probability distribution [0,1]Step 4: AggregateMultiply by VWeighted sum of Values → context-aware outputRef: Vaswani et al. (2017) 'Attention Is All You Need' NeurIPS arXiv:1706.03762
+
+--- Page 134 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Transformer's Quadratic Complexity ProblemWhy Attention is Expensive for Long SequencesThe Complexity ChallengeO ( n²  ·  d )n = sequence length,  d = model dimensionMemory Requirements512 tokens→ 512² = 262K attention scores2K tokens→ 2,048² = 4.2M scores8K tokens→ 8,192² = 67M scores128K tokens→ 128,000² = 16.4B scores  
+⚠impracticalGrows quadratically!Why O(n²)?Every token attends to every other token:QKᵀ = [n×d] · [d×n] → [n×n] matrixFor L layers: total scores = L ×n²GPT-4 (L=96, n=128K): 96 ×16.4B ≈ 1.57 trillion opsQuadratic scaling makes naive attention on 100K+ documents impractical. FlashAttention-3 and Sparse Attention are the production mitigations (2024–2025).Ref: Dao et al. (2022) FlashAttention arXiv:2205.14135; Dao (2023) FlashAttention-2 arXiv:2307.08691; Shah et al. (2024) FlashAttention-3 arXiv:2407.08608
+
+--- Page 135 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956State Space Models: Linear Complexity SolutionHow SSMs Address the Quadratic Complexity Problem✗Transformer AttentionComplexity:O(n²·d)Token visibility:Every token sees all tokensMemory (128K seq):~16 GB attention mapContext scaling:Impractical > 128K tokens✓State Space Models (Mamba-2)Complexity:O(n·d)Token visibility:Sequential state propagationMemory:Constant per step, O(d_state)Context scaling:1M+ tokens efficientlyState Space Representation —Mamba / S4 / Mamba-2hₜ= A · h_{t-1} + B · xₜyₜ= C · hₜ+ D · xₜ• hₜHidden state —fixed-size compressed history (d_state=16 in Mamba-2)• xₜCurrent input token embedding (model dimension d)• A, B, C, D  Learned projections; Mamba-2 makes A,B,C input-dependent (Selective SSM)
+🎯Key Insight: Fixed-size state regardless of sequence length → O(n) time & O(1) memory per step → 1M+ token context is practical.Ref: Gu & Dao (2023) Mamba arXiv:2312.00752; Dao & Gu (2024) Mamba-2 arXiv:2405.21060
+
+--- Page 136 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956State Space Models (SSMs)Why SSMs?▸Transformer: Quadratic cost —128K context on GPT-4 consumes ~16 GB attention map per layer▸SSM (Mamba-2): Linear cost —same 128K context at O(n) —~10×cheaper in memoryComplexity ComparisonTransformerO(n²)Mamba-2O(n)Use Case: Processing entire codebases (1M+ tokens), legal document review, long-form RAG without chunking.Limitations —2025 Status• In-Context Learning: Weaker at random-access tasks (multi-hop QA, retrieval) —SSMs compress history lossily• Production Maturity: Limited framework support; vLLM & TRT-LLM SSM backends are early-stage• Hybrid is Winning: Jamba-1.5 = 50% Mamba + 50% Attention —captures both efficiency and sharp retrieval• Benchmark Gap: SSMs trail 5–10 MMLU points vs same-size dense transformers on reasoning-heavy tasksRef: AI21 Labs Jamba-1.5 Technical Report Aug 2024; Gu & Dao Mamba arXiv:2312.00752
+
+--- Page 137 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Intelligent Model Routing
+Simple Task(classification, NER, intent, slot-filling)→SLM 1–3BPhi-4-mini / Qwen2.5-1.5B~$0.01/1K req↓Medium Task(summarisation, QA, RAG, structured output)→MoE MidMixtral 8×22B / DeepSeek-V3~$0.08/1K req↓Complex Task(multi-step reasoning, code gen, planning)→Dense LLMClaude 3.7 / GPT-4o~$0.80/1K reqCase Study —Enterprise Customer Support Bot (2024)Architecture: Qwen2.5-1.5B (intent router) → Mixtral 8×22B (FAQ & summarisation) → GPT-4o (edge cases)Traffic split: 80% SLM / 15% MoE / 5% Dense → Effective cost: $0.04/1K req vs $0.80/1K flat GPT-4oOutcome: 95% cost reduction · CSAT maintained · P50 latency improved 40% vs GPT-4o-only
+Ref: Ong et al. (2024) RouteLLM: Learning to Route LLMs with Preference Data arXiv:2406.18665
+
+--- Page 138 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956We've seen how models differin architecture and scaling.Now —let's quantifyhow these choices impact cost.▸Architecture → VRAM requirements▸Quantization → memory vs quality trade-off▸Token pricing → caching & routing savings
+
+--- Page 139 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Quantization: Making Models EfficientReducing Precision Without Sacrificing Quality —2025 Production FormatsPrecisionBits/ParamMemory (7B)Memory (70B)QualitySpeedBest UseFP323228 GB280 GB100%1×Training from scratchBF161614 GB140 GB~99.9%1.5–2×LLM inference standard (H100, A100)FP8 (E4M3/E5M2)87 GB70 GB~99.5%2–3×H100 native (Transformer Engine) —2025 defaultINT8 (LLM.int8)87 GB70 GB~99%2–4×Production inference on A10G, V100, A100NF4 / GPTQ-4bit43.5 GB35 GB~98%3–6×QLoRA fine-tuning & edge deploymentINT4 / AWQ43.5 GB35 GB~98.5%4–6×Mobile/edge; best quality at 4-bit
+💡Production Rule:INT8 provides optimal balance –4x memory reduction, 2-4x speed, with less than 1% quality lossRef: Dettmers et al. (2022) LLM.int8() arXiv:2208.07339; Micikevicius et al. (2022) FP8 arXiv:2209.05433; NVIDIA Transformer Engine Docs (2024)
+
+--- Page 140 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Floating Point FormatsUnderstanding Precision Trade-offs —Why BF16 Won the LLM EraFP32 (Float32)Sign:1Exp:8Mantissa:23• Standard for pre-training• Range: ±3.4×10³⁸  |  4 bytes/weight• 70B model = 280 GBBF16 (BFloat16)Sign:1Exp:8Mantissa:7• Same exponent range as FP32 (no overflow risk)• Preferred LLM inference —H100, A100• 2 bytes/weight; 70B = 140 GBFP16 (Float16)Sign:1Exp:5Mantissa:10• Max value ±65,504 → overflow risk• Mixed-precision training (with loss scaling)• 2 bytes but narrower range than BF16FP8 —2025 H100 Production StandardE4M3 (Training): 4-bit exponent · 3-bit mantissa. Max 448. Higher precision, less range. Better for forward pass.E5M2 (Inference): 5-bit exponent · 2-bit mantissa. Max 57,344. Wider range, suited for attention & output layers.FP8 Transformer Engine doubles throughput vs BF16 on H100 SXM5
+🎯Sweet Spot: BF16 for all modern GPU inference; FP8 where H100 Tensor Core is available; NF4 for QLoRA or consumer GPU.Ref: Micikevicius et al. (2022) 'FP8 Formats for Deep Learning' arXiv:2209.05433; NVIDIA H100 Datasheet (2023)
+
+--- Page 141 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Post-Training Quantization (PTQ)Quantize Pre-trained Models Without Retraining —Production Algorithms 2025GPTQLayer-wise Optimal Quantization▸Hessian-based layer-wise reconstruction▸Minimises per-layer quantization error▸4-bit with ~1% accuracy loss on LLaMA-2 70B▸Supports 2/3/4/8-bit; GPU-optimised (exllama v2)▸Throughput: 2–3×vs BF16 on A100 at 4-bitAWQActivation-Aware Weight Quantization▸Protects top 1% salient weights from quantisation▸Calibration data identifies activation magnitudes▸0.5–1% better perplexity than GPTQ at 4-bit▸Higher quality output; slightly slower to quantise▸Used in Hugging Face AutoAWQ library (pip install)FP8 NativeH100 Transformer Engine —2025 Default▸Hardware-native: zero dequantisation overhead▸2×throughput vs BF16 on H100 SXM5▸Near-lossless quality (<0.5% perplexity delta)▸Supported in vLLM, TRT-LLM, SGLang, Ollama▸Meta uses FP8 for Llama 3 70B production servingDecision Guide:FP8 if serving on H100+.  AWQ for highest quality at 4-bit on A10G/A100.  GPTQ for broadest GPU compatibility & fastest quantisation speed.[9] Frantar et al. (2022) GPTQ arXiv:2210.17323  [10] Lin et al. (2023) AWQ arXiv:2306.00978  [11] NVIDIA Transformer Engine Docs 2024
+
+--- Page 142 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Low-Rank Adaptation (LoRA)Efficient Fine-Tuning Through Parameter DecompositionThe Core ConceptInstead of updating all model parameters, inject small trainable matrices alongside frozen weights:W_new = W_frozen + ΔW     where ΔW = B · A   (low-rank decomposition)Traditional Fine-TuningPre-trained Model (7B parameters)↓  Update ALL  ↓Fine-tuned Model (7B parameters)✗7B ×4 bytes ≈ 28 GB per adapterLoRA Fine-TuningPre-trained Model (Frozen, 7B params)Matrix A (d×r)Matrix B (r×d)LoRA adapters: 8–16M params✓Only 32–64 MB per adaptation!Why "Low-Rank"? ΔW is d×d (e.g. 4096×4096 = 16.7M params). LoRA decomposes as A (4096×r) and B (r×4096). At r=8: only 65K params —a 256×reduction. Rank r controls the adapter's capacity.Ref: Hu et al. (2021) LoRA: Low-Rank Adaptation of Large Language Models arXiv:2106.09685
+
+--- Page 143 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956LoRAArchitecture Visualization
+InputxW (Frozen)Pre-trained weights+Ad×rBr×dOutputyFrozen Path• Original model weights• No gradient updates• Preserves pre-training knowledgeLoRA Path• Trainable adapter matrices• Gradient updates only here• Task-specific learning at <1% paramsCombined Output• y = W·x + B·A·x• Sum of frozen + adapter paths• Efficient: merged at inference timeKey Parametersr (rank): 4–64. Controls adapter capacity. r=8 → 65K params per layer.   α (scaling): Usually α=2r. Scales LoRA contribution (ΔW = (α/r)·B·A).Target layers: Q, V attention weights (and K, O, MLP for best results).   Memory: <1% of full fine-tuning. Adapters merge into weights at zero inference cost.Ref: Hu et al. (2021) LoRA arXiv:2106.09685; Dettmers et al. (2023) QLoRA arXiv:2305.14314How LoRA Adapters Integrate with Pre-trained Models
+
+--- Page 144 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956QLoRA: Quantization + Fine-TuningEfficient Parameter-Efficient Training —31×Memory Reduction▸Base Model: Quantized to 4-bit NF4 —frozen during training; double quantization saves additional ~0.4 GB per 7B▸LoRA Adapters: Small trainable matrices in BF16 —only these receive gradient updates▸Memory Savings: 70B model trainable on a single 48GB GPU (A6000/A40) —previously required 8×A100 80GB▸Performance: Matches full BF16 fine-tuning quality in most tasks; <1% delta on MMLU and MT-BenchMemory CalculationFull Fine-Tuning:  70B ×4 bytes ×4 (model + grads + 2×Adam states)  ≈  1,120 GBQLoRA:  70B ×0.5 bytes (NF4)  +  LoRA adapters (1 GB)  ≈  36 GB31×Memory Reduction!  (1,120 GB → 36 GB)Ref: Dettmers et al. (2023) 'QLoRA: Efficient Finetuning of Quantized LLMs' arXiv:2305.14314
+
+--- Page 145 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Quantization Decision GuideChoosing the Right Precision for Your ScenarioScenarioRecommended PrecisionRationaleTraining from scratchFP32 or BF16Stability during gradient updates; BF16 preferred on H100 (1.5×faster, same range)Fine-tuning large modelsQLoRA (NF4 + LoRA)31×memory reduction; 70B on 48GB single GPU; <1% quality lossProduction inference (cloud)BF16 or FP8BF16 on A100; FP8 on H100 for 2×throughput at same qualityEdge / on-device deploymentINT8 or NF4Minimal memory; INT8 on most GPUs; NF4 for ARM/mobileReal-time low-latency appsINT8 or AWQ 4-bitFastest TTFT; AWQ 4-bit on A10G achieves 180+ tokens/sec for 7BRule of Thumb: For most production use cases, 4-bit quantization (GPTQ/AWQ) is sufficient with <2% quality loss. Use FP8 when H100 Tensor Cores are available. Only use BF16/FP16 when absolute maximum quality is required and VRAM permits.Ref: Dettmers et al. GPTQ arXiv:2210.17323; Lin et al. AWQ arXiv:2306.00978; NVIDIA FP8 arXiv:2209.05433
+
+--- Page 146 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956GPU Memory EstimationUnderstanding Memory Components —M_total = M_weights + M_KV + M_activationTotal Memory FormulaM_total  =  M_weights  +  M_KV-cache  +  M_activationModel WeightsFixed: Parameters ×bytes_per_param7B BF16 = 7B ×2 = 14 GB70B NF4 = 70B ×0.5 = 35 GBKV-CacheDynamic: grows with seq length & batch2 ×layers ×heads ×d_head ×seq ×batch ×2 bytesLlama 3.3 8B @2K ctx = ≈ 1 GBActivationsTemporary: during forward pass onlybatch ×seq ×hidden ×layers ×20Approx 10–20% of weights memoryExample: 7B model BF16 (14 GB) + KV cache (~2 GB) + activations (~1 GB) → needs 17 GB VRAM.Ref: Rajbhandari et al. (2020) ZeRO: Memory Optimizations arXiv:1910.02054; Korthikanti et al. (2022) Reducing Activation Recomputation arXiv:2205.05198
+
+--- Page 147 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Why Do We Need KV-Cache?Understanding Attention Computation in Autoregressive GenerationThe Inefficiency Problem: During text generation, transformers generate one token at a time. Each new token must attend to ALL previous tokens —recomputing K, V from scratch is O(n²) total work.Without KV-Cache (Naïve)Token 1: "The" → Compute Q₁, K₁, V₁Token 2: "cat" → Compute Q₁,K₁,V₁, Q₂,K₂,V₂  (recompute!)Token 3: "is" → Compute Q₁,K₁,V₁, Q₂,K₂,V₂ , Q3,K3,V3 Recompute all Q,K,V againToken n: Recompute everything for tokens 1 to n-1✗Cost grows as O(n²) for n tokens!With KV-Cache (Optimised)Token 1: "The" → Compute K₁, V₁ → Cache themToken 2: "cat" → Reuse K₁,V₁; compute K₂,V₂ → CacheToken 3: "is" → Reuse K₁,K₂,V₁,V₂; compute K₃,V₃Token n: Reuse all cached K,V —compute only Kₙ,Vₙ✓Only compute new K,V → O(n) total!Why Only Cache K and V?Query (Q): Changes with each new token position —must recompute. Keys (K) & Values (V): Represent previous context —constant once computed. Cache them once, reuse forever.1 op per token, "op" looselyto mean"process one token's K and V together"—it's a counting unit for comparison, not a literal single matrix multiply.
+
+--- Page 148 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956KV-Cache: Technical ImplementationWhat Exactly is Stored and How Memory GrowsWhat's in the Cache?For each layer: Store K and V matricesFor each head: Separate K, V vectorsFor each token: One d_head-dim vector per headCache size/token = 2 ×layers ×heads ×d_head ×bytesMemory Growth PatternPrefill Phase: Process input prompt → build initial cache (fast, parallel)Generation Phase: Add one K,V entry per generated token (sequential)Memory: Linear in sequence length —grows with batch_size ×seq_lenAttention Computation with CacheQ_new  = W_Q ×x_t                 # query for new tokenK_cached = [K₁, K₂, ..., K_{t-1}] # retrieve from cacheV_cached = [V₁, V₂, ..., V_{t-1}] # retrieve from cacheK_t = W_K ×x_t; V_t= W_V ×x_t # compute for new tokenK_all = concat(K_cached, K_t)      # append to cacheattention = softmax(Q_new ×K_all^T / √d_k) ×V_allTrade-off✓Speedup:10–100×faster generation (no recomputation)✗Memory:Can exceed model weights for long contexts!
+
+--- Page 149 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956KV-Cache: The Hidden Memory ConsumerUnderstanding and Quantifying Key-Value Cache OverheadKV-Cache Memory FormulaM_KV  =  2  ×layers  ×heads  ×d_head  ×seq_len  ×batch_size  ×bytes_per_elementExample: Llama 3.3 8B▸Layers: 32▸Attention Heads: 32▸d_head: 128▸Precision: BF16 (2 bytes)For 2K context, batch=1:M_KV = 2 ×32 ×32 ×128 ×2048 ×1 ×2= 536,870,912 bytes  ≈  0.5 GB≈  1 GB(exact: 0.54 GB —model reports ~1 GB with overhead)Scaling Warning:At 128K context (batch=8), same model: M_KV = 2×32×32×128×131,072×8×2 ≈ 137 GB —more than the model weights themselves (16 GB). This is why PagedAttention and GQA (Grouped-Query Attention) are essential at scale.Ref: Kwon et al. (2023) Efficient Memory Management with PagedAttention (vLLM) arXiv:2309.06180; Ainslie et al. (2023) GQA arXiv:2305.13245
+
+--- Page 150 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Hands-On: Memory CalculationCalculate VRAM for a 175B Model (Claude 3.5 Sonnet-class) InferenceGiven Configuration:▸Parameters: 175B▸Precision: BF16 (2 bytes/param)▸Sequence Length: 4,096 tokens▸Batch Size: 4▸Layers / Heads / d_head: 96 / 96 / 1281. Model Weights175B ×2 bytes= 350 GB2. KV-Cache2 ×96 ×96 ×128 ×4096 ×4 ×2≈ 96 GB3. Activationsbatch ×seq ×hidden ×layers ×24 * 4096* 12,288*96*2Bytes≈ 38 GBTotal VRAM Required350 + 96 + 38  ≈  484 GB
+💡Practical GPU Setup:• 6–7×A100 40GB (with tensor parallelism)• 2×H100 80GB (recommended, FP8 cuts to ~250 GB)With FP8 quantization: weights shrink to ~175 GB → total ≈ 309 GB → feasible on 4×H100 80GB.
+
+
+--- Page 151 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Memory-Efficient Inference at ScaleAdvanced Techniques for Production Deployment —2025FlashAttention-3▸Tiles attention computation to fit in SRAM▸3–5×faster than FA-2 on H100/H200▸10–20×memory reduction vs standard attention▸Essential for 8K+ contexts; 1M+ context on H100▸Supports FP8 natively —now production defaultPagedAttention (vLLM)▸Virtual memory paging for KV-cache blocks▸Reduces wasted GPU memory from 60% → <10%▸2–5×higher serving throughput▸Enables continuous batching (no padding waste)▸Used by vLLM, TGI, TRT-LLM in productionCPU / NVMe Offloading▸KV-cache spills to CPU DDR5 (10×cheaper)▸NVMe offload for 10×longer contexts▸Trade-off: 2–3×slower generation latency▸FlexGen: 100B model on single consumer GPU▸Best for research / low-throughput workloadsParallelism StrategiesTensor Parallelism (TP)▸Split weight matrices across GPUs (Megatron-LM style)▸Lower latency —all-reduce per layer▸Best for 2–8 GPUs; adds ~5% communication overheadPipeline Parallelism (PP)▸Split transformer layers across GPUs (depth-wise)▸Higher throughput via micro-batching▸Best for 8+ GPUs; ~15% bubble overhead without scheduling
+🎯Recommendation: FlashAttention-3 + PagedAttention as baseline. Add Tensor Parallelism for 70B+ models (TP=4 on 4×H100 is optimal).Ref: Shah et al. (2024) FlashAttention-3 arXiv:2407.08608; Kwon et al. (2023) vLLM PagedAttention arXiv:2309.06180
+
+--- Page 152 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Token Economics: Understanding API Costs2025 Pricing Landscape —per 1M tokens (indicative)ModelInputOutputCached InputContextGPT-4o (OpenAI)$5$15$2.50128KGPT-4 Turbo (OpenAI)$10$30$5.00128KClaude 3.7 Sonnet (Anthropic)$3$15$0.30200KClaude 3.5 Haiku (Anthropic)$0.80$4$0.08200KGemini 2.0 Flash (Google)$0.075$0.30$0.0191MDeepSeek-V3 (DeepSeek API)$0.27$1.10$0.014128KMixtral 8×7B (Mistral API)$0.60$0.60N/A32KSelf-Hosted vLLM (cloud GPU)$0.10–0.30*$0.10–0.30*N/AModel-dep.Key Observation: Output tokens cost 3–10×more than input. Minimize generation length, use structured outputs, and maximize prompt caching to reduce cost by 70–90%.Prices as of May 2025. Always verify at openai.com/pricing, anthropic.com/pricing, ai.google.dev. *Self-hosted cost = GPU compute only, excludes DevOps overhead.
+
+--- Page 153 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Prompt Caching: 90% Cost ReductionReuse Repeated Context Across RequestsHow It Works▸Cache static prompts: System prompts, few-shot examples, large documents▸TTL: 5-minute window (Anthropic); 1 hour (OpenAI); refreshes on hit▸Minimum tokens: 1,024 tokens for Claude; 512 tokens for OpenAI GPT-4o▸Discount: 90% on cached input tokens (Anthropic); 50% (OpenAI)Cost ExampleWithout Caching:10K tokens ×100 requests = 1M tokens ×$3 = $3.00With Caching:First request: 10K ×$3/1M = $0.030Next 99: 10K ×$0.30/1M ×99 = $0.297Total: $0.327  →  89% saving!Optimisation Strategies1. Prompt Structure:Place static content first (system prompt, examples, docs), dynamic query last. Any change before the cache breakpoint invalidates the entire cache.2. Cache Invalidation:Any content change = cache miss. Use fixed templates. Version your system prompts; avoid timestamps or dynamic injections before the query turn.Ref: Anthropic Prompt Caching Docs: docs.anthropic.com/en/docs/build-with-claude/prompt-caching; OpenAI: platform.openai.com/docs/guides/prompt-caching
+
+--- Page 154 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Production Cost Optimization PlaybookFrom $12K/month to $2K/month —Real Strategies That WorkImmediate Actions (Week 1)▸Enable prompt caching on all endpoints with repeated context (system prompts >1K tokens)▸Route simple tasks (intent, NER, classification) to SLMs —expect 70–90% cost drop on that slice▸Set max_tokens appropriately —open-ended max_tokens = output billing at ceiling▸Batch non-urgent requests (OpenAI Batch API = 50% discount; Anthropic bulk API)Advanced Techniques (Month 1)▸Model routing by complexity (RouteLLM / custom classifier) —target 80/15/5 SLM/MoE/Dense split▸Self-host quantized models (vLLM + AWQ) for high-volume workloads (>5B tokens/month)▸Speculative decoding: draft model (SLM) + target model → 2×generation speed at same cost▸Efficient RAG: top-3 instead of top-10 chunks reduces context by 60–70%; use re-rankersReal-World Case StudyProduction RAG system: $12K/month → $2K/month using:50% prompt caching reduction  +  Gemma-2B router → Claude (80/20 split)  +  4K max context vs 16K  +  AWQ-4bit self-hosted Mixtral for medium tasksRef: Ong et al. (2024) RouteLLM arXiv:2406.18665; Chen et al. (2023) Speculative Decoding arXiv:2302.01318
+
+--- Page 155 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Emerging Trends in LLM Optimization (2025-26)1-BIT LLMs (BitNet b1.58+)• Ternary quantization now mainstream —weights {-1, 0, +1}• 0.5-BIT exploration underway with <0.5% quality loss• 2-5x energy efficiency vs. FP8/INT8• MMLU parity achieved at 8B+ scale• Status: Production deployment in resource-constrained environmentsMixture of Depths (MoD) v2• Dynamic computation integrated with token skipping• Compatibility with State Space Models (Mamba hybrid)• 60–70% FLOP reduction with <0.3% quality drop• Composable with LoRA and other adapters• Adopted in Gemma 4, next-gen Llama (2026)FlashAttention-4• Hardware-optimized kernels for H200, Grace, B200 GPUs• 3-5x faster than FlashAttention-3 on new hardware• Native support for grouped query attention (GQA)• Multi-GPU ring attention for >1M context windows• Now standard in vLLM, TRT-LLM, JAX ecosystemHardware-Aware Quantization (2.0)• Dynamic quantization formats optimized per hardware• NVIDIA NVQ (mixed INT4/INT8) on new GPU architectures• Mobile quantization support —INT4 inference on Apple Neural Engine• Auto-format selection via hardware profiling• 3-4x better GPU utilization vs. static precisionRef: Emerging 2026 trends in model optimization based on 2025 trajectories —quantization, dynamic computation, and hardware co-design convergence.What's Next in Model Efficiency —Research to Production Pipeline
+
+--- Page 156 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Self-Hosting vs. API: Break-Even AnalysisMaking the Right Infrastructure Decision —2025 Cost BenchmarksFactorManaged APISelf-Hosted (vLLM + H100)Upfront Cost$0$5K–50K (GPU lease/purchase) + $10K–30K setupMonthly @ 1B tokens~$3,000 (Claude 3.5)  /  ~$300 (DeepSeek API)~$800–1,200 (H100 SXM5 spot) + $8K–12K DevOpsMaintenanceZero —SLAs, updates, scaling included$8K–12K/month DevOps + on-call engineeringScalabilityInstant auto-scaling (seconds)Hours to days —GPU provisioning + deploymentData PrivacyShared infrastructure —data sent to vendorFull control —on-premises or private VPCLatencyVariable (P50: 200–500ms for 7B models)Predictable (P50: 50–150ms for 7B on H100)Break-Even Point< 5B tokens/month → API wins≥ 10B tokens/month → self-hosting saves 60–70%Decision Rule: Start with APIs (<5B tok/mo). Consider self-hosting at 5–10B tok/mo with quantised Llama/Qwen. Self-host only at >10B tok/mo for clear ROI.Costs as of May 2025 —GPU spot prices vary significantly. Model: H100 SXM5 80GB on AWS p5.48xlarge ($98.32/hr for 8×H100). Verify current pricing before infrastructure decisions.
+
+--- Page 157 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Key TakeawaysWhat every ML engineer and architect must internalise from this lecture
+🗺Architecture Shapes CostDense (all params active) → MoE (94% compute saving in DeepSeek-V3) → SLM (80% of queries at <5% cost). Route by task complexity.
+⚙Quantization is Non-NegotiableNF4/AWQ 4-bit = 4×memory, ~98% quality. FP8 on H100 = 2×throughput at near-lossless quality. BF16 on A100 is the minimum for inference.
+🧠SSMs Unlock 1M+ ContextMamba-2 is O(n) not O(n²). Jamba-1.5 (hybrid) handles 256K context in production. Choose SSM/hybrid when documents exceed 128K tokens.
+💾KV-Cache Dominates Memory at ScaleAt 128K context, KV-cache can exceed model weight memory. Use GQA, PagedAttention, and FlashAttention-3 as production baseline.
+💰Prompt Caching = Immediate 89% Saving90% token discount (Anthropic), 50% (OpenAI). Always place static context first, dynamic query last. Minimum 1,024 tokens for Claude.
+🏗Self-Host Only Beyond 10B Tokens/MonthAPI wins at <5B tok/mo. Self-host with quantized vLLM saves 60–70% at scale but adds $8–12K/month DevOps burden —budget for it.
+
+--- Page 158 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956AIMLCZG521 , Conversational AILecture No. 5 | Module 2Structured Outputs & Function Calling
+
+--- Page 159 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The Structured Output ProblemWhy Free-Form Text Fails for Automation
+❌Problem: LLM Free-Form Output•Format varies every time (prose vs structured data)•Cannot reliably extract values programmatically•No type safety —string, number, or description•Breaks downstream API integrations•Requires complex regex with high failure rates
+✅Solution: Structured JSON Output•Predictable schema —always the same structure•Type-safe parsing —numbers are numbers•Easy validation —verify required fields instantly•Seamless integration —works with DBs, APIs, UIs•No parsing ambiguity —machine-readable format{{"location": "Paris","temperature": 22,"unit": "celsius","condition": "partly_cloudy"}
+
+--- Page 160 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Defining the Structure Between LLM and ApplicationWeather Data Schema StructureJSON Schema: Formal Contract Between LLM & Application
+Weather Schema Example{"location": {"type": "string"},"temperature": {"type": "number"},"unit": {"enum": ["C","F"]},"condition": "string"}Schema Enforcement BenefitsType Safety: Numbers guaranteed as numbersValidation:Enum constraints prevent invalid valuesNative Support (2025):OpenAI, Anthropic, Google support native JSON SchemaReliability:Guaranteed format eliminates parsing code
+
+--- Page 161 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Function Calling APIsEvolution Timeline —The Production Standard for Tool Use
+What is Function Calling?•Function calling allows LLMs to generate structured calls to external tools.•Instead of returning natural language, the model returns JSON with the function name and properly formatted arguments.•Your application executes the function and returns results back to the model for further reasoning.
+2023 Q2
+OpenAI launches function calling with GPT-4
+2023 Q4
+Anthropic adds Tool Use to Claude 2.1
+2024 Q1
+Google Gemini introduces function calling support
+2024 Q3
+Parallel function calling becomes standard across providers
+2025 Q1
+Native JSON Schema mode with strict enforcement widely adopted2026 Q1
+Extended context + function result caching
+
+--- Page 162 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Handson
+Step-by-Step BreakdownTool Definitions + Messages:The developer sends the model a list of available tools (e.g., get_weather) and the user's request ("What's the weather in Paris?").Tool Calls:The model determines that it needs a tool to answer and sends back a structured request to call get_weatherwith the argument "paris".Execute Function Code:The developer's application executes the actual code (e.g., calling a weather API). In this example, it retrieves {"temperature": 14}.Results:The developer sends the tool's output back to the model, along with the previous conversation history, providing the necessary context.Final Response:The model processes the data and generates a natural language response for the user: "It's currently 14°C in Paris."
+
+--- Page 163 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Function Calling APIs
+Note: Tool limits and capabilities are subject to change. Always verify in official documentation.Provider Comparison (2025-2026)ProviderFeatureMax ToolsParallelJSON SchemaOpenAI GPT-4oCalling128
+✅
+✅NativeClaude SonnetTool Use64
+✅
+✅NativeGemini 1.5Calling128
+✅
+✅NativeLlama 3Via Outlines∞
+❌Grammar-based
+
+--- Page 164 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Parallel Function CallingWhen & Why to Use Parallel ExecutionExecute Multiple Tools Simultaneously for 40–60% Latency Reduction
+Performance Optimization: When an LLM determines multiple independent tools are needed, parallel calling allows simultaneous execution rather than sequential. All major providers now support this as a standard feature.
+When Parallel Calling is Used•Independent operations —fetching weather & stock price simultaneously•Batch data retrieval —multiple DB queries running concurrently•Multi-source aggregation —CRM + Analytics + Email together
+When Sequential is Required•Dependent operations —Tool 2 needs output from Tool 1•State-dependent actions —operations that must happen in order•Example: search DB → send results via email
+
+--- Page 165 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Sequential vs Parallel Execution —Timing Comparison
+Sequential (Old Method) —~1300ms totalUser Query: Book meeting & send emailCall Tool 1: Check Calendar (500ms)Wait for ResponseCall Tool 2: Send Email (800ms)TOTAL: ~1300ms
+Parallel (New Method) —~800ms totalUser Query: Book meeting & send emailTool 1: CheckCalendar (500ms)Tool 2: SendEmail (800ms)Wait for All ResponsesTOTAL: ~800ms  (40% faster!)
+
+--- Page 166 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Tool Definition Best PracticesRules for Reliable Function Calling in Production
+✅DOs:•Use clear, descriptive names: search_customer_by_email•Detailed parameter descriptions with expected format & examples•Use enums for constrained values: status: [pending, approved]•Mark required vs optional params explicitly•Add validation ranges (min/max) for numeric inputs
+❌DON'T:•Vague names like do_thing or process_data•Skip parameter descriptions (model guesses, makes errors)•Allow unconstrained string inputs —always use enums•Forget to mark required fields —model may omit them•Define 50+ tools —causes confusion, higher error rates
+Critical Insight: Clear tool descriptions yield 15–25% improvement in correct tool selection. Invest in writing comprehensive tool documentation.
+
+--- Page 167 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Constrained Generation LibrariesAlternative Approaches —Primarily for Local/Open-Source ModelsLibraryApproachBest Use Case2025 StatusInstructorPydantic wrapper for API calls with automatic validation and retry logicOpenAI/Anthropic structured outputs with type safety
+✅Production-readyOutlinesGrammar-guided generation using formal grammars to constrain token selectionLocal LLMs (Llama, Mistral) where native function calling isn't available
+✅Active developmentGuidanceTemplate-based control with interleaved generation and logicMicrosoft research projects, complex prompt engineering scenarios
+⚠Maintenance modeLMQLQuery language for LLMs with SQL-like syntax for constraintsComplex constraints, research applications
+🔬Research tool
+
+--- Page 168 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Decision Matrix: Native vs LibrariesChoosing the Right Approach for Your Use Case
+BITS Pilani, Pilani Campus  |  AIMLCZG521  |  Slide 10/26ScenarioRecommended ApproachReasonUsing OpenAI, Anthropic, or Gemini APIsNative Function CallingLowest latency (~50–100ms overhead), official supportLarge Pydantic-heavy codebase + type safetyInstructor LibraryExcellent DX, automatic validation, less boilerplateSelf-hosted local LLMs (Llama, Mistral)OutlinesOnly reliable option for models without native function callingComplex validation beyond basic schemasNative + PydanticFull control over validation pipeline, custom business logicMulM-agent orchestraMon systemsNative (with LangGraph)Better state management, workflow control, agent coordinationResearch or prototyping phaseAny ApproachFlexibility matters more than optimization in early stages
+
+--- Page 169 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Decision Matrix: Native vs LibrariesPerformance Trade-offs —Overhead Comparison
+Najve Funcjon Calling•~50–100ms overhead•Optimized and officially supported by providers
+Constrained Generation (Local)•~200–500ms overhead•Additional token-level processing and validation steps
+Instructor Wrapper•~10–20ms overhead•Minimal overhead on top of native calling —excellent for development speed
+General PrincipleStart with native function calling from your LLM provider. Only consider alternatives if you have specific requirements (local models, special validation needs, or developer experience preferences) that justify the added complexity.
+Performance ﬁgures are approximate and vary. Always benchmark for your speciﬁc use case before producPon deployment.
+
+--- Page 170 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The ReActFrameworkReasoning + Acting: Foundation of Agentic Systems
+ReAct (Yao et al., 2023)Combines reasoning traces and task-specific actions in an interleaved manner, allowing LLMs to solve complex tasks through explicit reasoning steps. The framework creates a loop where the model thinks, acts, observes, and continues reasoning.
+Simple Example: Finding Country CapitalQuestionWhat is the capital of the country where Paris is located?ThoughtI need to first determine which country Paris is in.Actionsearch("Paris location")ObservationParis is the capital of France.AnswerParis
+
+--- Page 171 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The ReActFrameworkCore Components —The ReActLoop
+1. THOUGHTInternal reasoning about what to do next
+2. ACTIONExecute a tool / function call
+3. OBSERVATIONReceive and process the result
+4. THOUGHTAnalyze observation, plan next stepFINAL ANSWER
+ThoughtModel explains its thinking —what it has and what it still needs.
+ActionExecute a tool or funcWon call: DB search, API call, calculaWon.
+ObservationReceive result. Model incorporates new info into its understanding.
+Loop ControlRepeat until task complete or max iterations reached. Safety mechanisms prevent infinite loops.
+
+--- Page 172 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956ReActvs Chain-of-Thought (CoT)Understanding the Fundamental Difference
+BITS Pilani, Pilani Campus  |  AIMLCZG521  |  Slide 14/26AspectChain-of-Thought (CoT)ReActPrimary FocusInternal reasoning only —break complex problems into stepsReasoning + External actions —combine thinking with tool useTool InteractionNo tool or funcMon calling capabilityCan call functions, APIs, and external tools throughout reasoningProcess StructureThink → Think → Think → Answer (linear chain)Think → Act → Observe → Think → Act → Observe (iterative loop)Best Use CaseMath problems, logic puzzles —reasoning alone sufficesMulti-step tasks requiring external data, APIs, real-world interactionInformadon SourceInternal knowledge only —model's training dataExternal data sources —databases, APIs, web searches, file systemsError HandlingNo recovery mechanism —wrong reasoning = wrong answerCan adapt —if action fails, try alternative approaches
+
+--- Page 173 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956When to Use: ReActvs CoTKey Insight: ReAct= CoT+ Tool Use
+Key Insight: ReAct = CoT + Tool Use•ReAct is fundamentally Chain-of-Thought reasoning enhanced with external system interaction.•Research shows ReAct improved task success: +34% on HotpotQA (complex multi-hop Q&A) and +11% on FEVER (fact verification). Improvements come from accessing external information rather than relying solely on parametric knowledge.
+When to Use CoT•Math word problems & logic puzzles•Logic puzzles and riddles•Analysis of provided text•Reasoning about hypotheticals•No external data needed
+When to Use ReAct•Database queries needed•API integration required•Web search necessary•Multi-step workflows•Real-time data access
+
+--- Page 174 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PrevenTng Inﬁnite Loops & HallucinaTonsProduction Safety Mechanisms for Reliable Agents
+1. Iteration LimitsProblem: Agent gets stuck in reasoning loopSolution: Set max iterations (typically 10). If limit reached, log history, return error to user, alert monitoring system.
+2. Repetition DetectionProblem: Agent calls the same failed tool repeatedlySolution: Track action signatures (tool name + args hash). If same action appears 3×in history → force completion or try alternative.
+3. Tool Failure TrackingProblem: Problematic tool causes repeated failuresSolution: Track failures per tool using defaultdict(int). After 3 consecutive failures, remove from available tools for this session.
+4. Timeout ProtecTonProblem: Agent takes too long, tying up resourcesSolution: Implement 60-second alarm using signal module (Unix) or threading.Timer (cross-platform). Raise TimeoutError when exceeded.
+5. Input ValidationProblem: Invalid function arguments cause crashesSolution: Use Pydantic models for all function parameters. Validate before execution. If validation fails, return structured error to model for retry.
+6. Graceful DegradationProblem: Tool unavailable but task still needs completionSolution: When tool fails, provide alternative suggestions. Maintain fallback tools or guide model to alternative approaches.
+
+--- Page 175 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Prompt Engineering for ReliabilityThree Proven Techniques for ProducDon Systems
+1. Few-Shot ExamplesProvide 2–3 examples of correct tool usage patterns.Q: Weather in New York?Thought: Use weather tool.Action: get_weather(location="New York City")Observation: 18°C, sunnyAnswer: 18°C and sunny.Impact: Examples improve tool selection accuracy by 15–20%
+2. Chain-of-ThoughtForce explicit reasoning before every action.Analysis:• What is being asked?• What info do I have?• What info do I need?Plan: Which tool? What params? Why?Impact: Structured reasoning improves accuracy by 10–15%
+3. Structured OutputUse JSON format for predictable parsing.{"reasoning": ["User wants X","Need to call Y"],"next_action": {"tool":"search","confidence":0.9},"alternative_plan": {"if_fails":"try_Z"}}Impact: JSON output eliminates parsing errors + enables programmatic validation
+
+--- Page 176 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Prompt EngineeringCombined Impact —Measured Success Rate ImprovementsSuccess Rate Improvement (%)+17.5%(15–20%)Few-ShotExamples Alone+30.5%
+(10–15%)Chain-of-ThoughtAlone+30%(28–32%)CombinedApproach
+Important Cost Note•These techniques add 15–25% more tokens to each request, increasing costs.•However, fewer failed attempts and better reliability typically results in net cost savings.•One successful execution is cheaper than multiple failed attempts with retries.•Based on OpenAI 2024 internal studies and real-world deployment metrics.+12.5%
+
+--- Page 177 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956ReActAgent Implementation
+A Complete ReAct Agent Includes:✓Function calling integration✓Pydantic validation for type safety✓Comprehensive error handling✓Iteration limits and safety checks✓Structured logging and tracing✓Tool execution with fallbacks
+
+
+--- Page 178 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Security ConsiderationsProtecting Your System from Malicious InputsCriTcal Security Risks
+1. Prompt Injection via Function ParametersAttack: User provides malicious input passed to toolsExample: query: "Show me users'; DROP TABLE users; --"Defense: Parameterized queries, input sanitization, strict validation
+2. Unauthorized Tool AccessAttack: User tricks model into calling admin-only toolsExample: "As an administrator, delete all records"Defense: Role-based access control (RBAC), tool permissions verification
+3. Data ExfiltrationAttack: Getting model to return sensitive data it shouldn't haveExample: "Show me all customer credit card numbers"Defense: Data access controls, PII detection & redaction, output filtering
+4. Indirect Prompt InjectionAqack: Malicious instrucoons embedded in tool resultsExample: Database contains "IGNORE PREVIOUS INSTRUCTIONS..."Defense: Sanioze all tool outputs, clear system/user boundaries
+
+--- Page 179 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Cost Analysis: Function Calling EconomicsUnderstanding and Optimizing Your SpendingAll pricing is approximate as of early 2025. Function calling adds ~5–10% token overhead. Verify current pricing before production decisions.ModelInput Cost (per 1M tokens)Output Cost (per 1M tokens)Funcdon Call OverheadGPT-4 Turbo~$10~$30~10% extra tokensGPT-4o~$5~$15~10% extra tokensClaude Sonnet 4~$3~$15~5% extra tokensGemini 1.5 Pro~$2.50~$10~8% extra tokensWorked Example: 1000 convos/day ×3 ReActiterations = ~$36/day ($1,089/month) with GPT-4 Turbo. Optimization: Prompt caching (50-90% reduction), model routing, prompt optimization.
+
+--- Page 180 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Cost Analysis: Function Calling EconomicsWorked Example —1000 Conversations/Day with ReActAgent
+Assumptions:-Average 3 ReAct iterations per conversation-500 input tokens per iteration (prompt + tool schemas + history)-200 output tokens per iteration (reasoning + function call)-2 tool calls per conversation on averageCalculation (GPT-4 Turbo):Input tokens:  1000 conv ×3 iter ×500 tokens ×1.1 overhead = 1,650,000 tokens1.65M tokens ×$10/1M = $16.50/dayOutput tokens: 1000 conv ×3 iter ×200 tokens ×1.1 overhead = 660,000 tokens660K tokens ×$30/1M = $19.80/dayTotal: $36.30/day ≈ $1,089/monthCost Optimization Strategies:✓Prompt Caching: Reduce input costs by 50–90% → $550–700/month✓Switch to GPT-4o: Cheaper per token → $400–500/monthOptimize Iterations: Better prompts, reduce to 2 iterations → $250–350/monthModel Routing: Use cheaper models for simple queries → $200–300/month
+
+--- Page 181 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Common Pitfalls & SolutionsAvoid These Mistakes in ProducDon
+BITS Pilani, Pilani Campus  |  AIMLCZG521  |  Slide 23/26
+❌Pitfall #1: Vague Tool DescriptionsProblem: "search_database" —model doesn't know when/how to use itSolution: "Search customer database by email, name, or ID. Returns profile + purchase history. Use when user asks about customer info."
+❌Pitfall #2: No Input ValidationProblem: Model generates invalid arguments → crashes in productionSolution: Always validate with Pydantic before execution. Return validation errors to model for retry.
+❌Pitfall #3: Infinite LoopsProblem: Agent repeatedly calls same failed toolSolution: Track failures per tool. Remove after 3 attempts. Force timeout at 10 iterations.
+❌Piall #4: Too Many ToolsProblem: 50+ tools causes model confusion, wrong tool selectionSolution: Group tools by domain. Use routing agent. Keep max 10–15 tools per agent.
+❌Pitfall #5: Silent FailuresProblem: Tool fails silently → agent hallucinates resultSolution: Return structured errors to model with details. Let it retry or explain failure to user.
+
+--- Page 182 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Real-World Production Deployments (2025)Industry Examples at ScaleCompanyUse CaseTools UsedScaleIntercomCustomer support AI handling inquiries across channelsKnowledge base search, ticketing, CRM data50M+ messages/monthShopifyMerchant chatbot for e-commerce operaMonsAnalytics, inventory management, order processing, shipping APIs2M merchants using AI toolsZapierWorkflow automation via natural language commands6000+ app integrations via function calling100M+ actions/monthGitHub CopilotCode generaMon, ediMng, developer assistanceFile ops, git commands, test execution, docs search1.8M+ active developers
+Common Patterns Across All Successful Deployments5–15 specialized well-defined tools  •  Aggressive prompt caching (50–90% cost savings)  •  Comprehensive monitoring & alerting  •  Fallback mechanisms + human escalation for edge cases
+
+--- Page 183 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Key TakeawaysEssential Concepts to Remember
+✅Core Concepts•Function calling is the standard for tool use in 2025•ReAct = Reasoning + Acting (iterative loop)•JSON Schema acts as formal contract between LLM & app•Pydantic validation is mandatory for production•Always handle errors gracefully —return them to model•Observability is critical for debugging agents
+🚀Production Essentials•Use native APIs: OpenAI / Anthropic / Gemini•Limit iterations (max 10 for production systems)•Write clear tool descriptions with examples•Use parallel execution for performance gains•Monitor costs from day 1 and optimize early•Implement 6 safety mechanisms for reliable agents
+JSON SchemaFunction CallingReAct LoopParallel ExecPydanOc ValidaOonSafety MechanismsCost Monitoring
+
+--- Page 184 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956AIMLCZG521 , Conversational AILecture No. 6 | Module 2Prompting and Finetuning
+
+--- Page 185 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Session Outline1. Part 1: Prompt Engineering Techniques 2. Part 2: Instrucqon Tuning & Self-Instruct3. Part 4: Summary & Next Steps
+
+--- Page 186 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19561.Prompt EngineeringWhat is Prompt Engineering?The art and science of designing input prompts to guide LLMs toward desired outputs.Key Focus:• Instruction clarity• Context provision• Output format specification• Few-shot examples• Chain-of-thought reasoningWhy It Matters✓Immediate deployment✓No model modification✓Works with any LLM✓Cost-effective✓Enables zero-shot learningChallenges:✗Requires experimentation✗Hard to scale✗Limited by model capacity
+
+--- Page 187 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Prompt structure FrameworkEffective prompts follow a consistent structure for clarity and control:•Priming: This clearly defines the role of the LLM. (Assign a Persona)•Style and Tone: It sets expectations for clear, concise, and jargon-free language with a sought tone.•Error Handling: This guides the LLM to politely decline requests outside its defined scope.•Content (static or dynamic or both): Query, examples, data, etc.•Output Formatting: The format ensures the response can be easily used by an application or displayed in a structured way.The goal is to ensureClarity, Consistency, and Control. Without structure, LLMs can be unpredictable. With structure, they become reliable tools.
+
+--- Page 188 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Prompt Engineering: Real ExampleDetailed prompt:You are a financial analyst specializing in summarizing quarterly earnings reports for technology companies.Use clear and concise language, avoiding financial jargon. Explain complex financial concepts in a way that is easy for a non-expert to understand. Maintain a formal and objective tone.If a request is unrelated to summarizing quarterly earnings reports or providing information about them, politely decline and state that it falls outside your area of expertise.User inquiry:“Can you summarize the main points of Apple’s Q3 2024 earnings report and explain its significance?”
+
+--- Page 189 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Zero-Shot vs. Few-Shot PromptingZero-ShotNo examples providedPrompt:'Classify senoment: "Great product!"'✓Simple & quick✓No data needed✗Lower accuracyAccuracy: ~70-75%Use case: Simple tasksFew-Shot2-5 examples providedPrompt:'"Great!" → Positive"Awful" → Negative"Great product!" → ?'✓Higher accuracy✓Context learning✗Requires examplesAccuracy: ~85-90%Use case: Complex tasks
+
+
+--- Page 190 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Chain-of-Thought (CoT) PromptingEncourage the LLM to“think step by step”by providing examples where the reasoning process is explicitly laid out. This is especially useful for tasks requiringarithmetic, commonsense, or symbolic reasoning.
+
+
+--- Page 191 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Tree-of-Thought (ToT) PromptingAn LLM exploresmultiple reasoning paths (thoughts)as a tree. Itself-evaluates intermediate thoughtsand uses search algorithms (such asBFSorDFS) to decide which path to explore further, enabling moredeliberate problem-solving.Example:‘’’I'm trying to solve [complex problem/question].Before giving me a final answer, please explore at least threedifferent potential approaches or lines of reasoning.For each approach, briefly explain it, analyze its pros and cons(or evaluate its likelihood of success/validity).Then, based on this exploration, provide your final recommendedsolution/answer.‘’’Yao, S., et al. (2023). Tree of Thoughts: Deliberate Problem Solving with Large Language Models. arXiv:2305.10601
+
+--- Page 192 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956ToTExample: Game of 24Problem: Make 24 using {4, 9, 10, 13}Step 1: Decomposition (Generate Thought Candidates)• Thought A: 13 − 9 = 4 → Remaining: {4, 4, 10}• Thought B: 10 − 4 = 6 → Remaining: {6, 9, 13}• Thought C: 4 + 9 = 13 → Remaining: {13, 10, 13}Step 2: Self-Evaluajon (Score Each Path)• A: 10+4+4=18 ✗| 4×4+10=26 ✗(Unlikely)• B: Remaining {6, 9, 13}—possible but difficult• C: {13, 10, 13}—hard to resolve (Likely bad)Step 3: Pruning & Search (Discard weak branches, expand promising ones)
+
+--- Page 193 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956ToT: Expanding the Best PathContinuing from Thought B: {6, 9, 13}The model expands the most promising branch further with new thought candidates:• B1: 13 − 9 = 4 → Remaining: {6, 4} → 6 ×4 = 24 ✓SUCCESS!• B2: 13 + 9 = 22 → Remaining: {6, 22} → Can't easily reach 24• B3: 9 − 6 = 3 → Remaining: {3, 13} → 13 ×3 = 39 (too high)Solution Found: (13 − 9) ×4 + 6 = 4 ×4 + 6 = 22... [correct path]Key Insight: By exploring and pruning inefficient paths early, ToT finds solutions faster than linear reasoning.
+
+--- Page 194 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Meta-Prompting: The Model Writes Its Own PromptsAutomatic Prompt Engineer (APE) —introduced by Zhou et al. (2022), arXiv:2211.01910 —turns the LLM on itself. Instead of a human writing the best prompt for a target task, an 'APE LLM' is asked to generate and evaluate candidate prompts, which are then executed by a 'target LLM'. The best-performing prompt is selected automatically.The APE Pipeline1.Provide the APE LLM with demonstraoons (input→outputexamples) of the target task.2.Instruct the APE LLM to generate N candidate prompt instrucoons (e.g., N=10–50).3.Execute each candidate prompt on a validaoon set using the target LLM.4.Score each prompt by accuracy (or another metric) on the validaoon set.5.Return the highest-scoring prompt for use in producoon.Step-1: Instruction GenerationA language model is given a task and a few examples (input–output pairs).It generates multiplecandidate prompts or instructions.Step-2: Prompt EvaluationThese prompts are tested by running them through atarget model.The outputs are scored based onperformance metrics(e.g., accuracy, relevance, coherence).Step-3: SelectionThebest-performing promptis selected for use.
+
+--- Page 195 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Guidelines for the APE Meta-Prompt•Clearly define the APE's meta-role: 'You are an expert prompt engineer.'•Describe the target task in detail with 5–10 high-quality demonstrations.•Specify what makes an effective prompt: clarity, specificity, correct output format.•Ask for diverse candidates: 'Generate 10 different prompt instructions, each with a distinct angle.'•Encourage iteration: 'Refine your best candidate based on the following failure cases.'
+Demonstra[ons → Automa[c Prompt Engineer (APE) → Op[mized PromptReference: Zhou, D., et al. (2022): Large Language Models Are Human-Level Prompt Engineers.arXivpreprint:arXiv:2211.01910SOTA (2024)APE-discovered prompts matched or outperformed human-written prompts on 24 of 24 NLP tasks evaluated by Zhou et al. 
+
+--- Page 196 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Decision Framework —Choosing the Right Technique
+💡Key Takeaway: No single technique is always best. Match technique to task complexity and available context.TechniqueBest ForComplexityAccuracy GainConcrete Use CasesZero-ShotSimple tasksLowBaselineGreeting classification, translation, FAQFew-ShotDomain tasksLow+10–20%Product review sentiment, entity extractionChain-of-ThoughtReasoning tasksMedium+30–50%Math word problems, legal analysis, debuggingTree-of-ThoughtComplex problemsHigh+40–70%Game of 24, creative writing, proof generationAPEUnknown/novel tasksMedium+15–40%Any task where optimal phrasing is unclear
+
+--- Page 197 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Part 2: Fine-Tuning & Instruction TuningBeyond PromptingAdapong Models to Your Speciﬁc Needs
+
+--- Page 198 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Language Modeling ≠ Following InstructionsPre-trained LLMs are optimized for next-token prediction, not for following user instructions or maintaining alignment with human intent.Problem Example:Prompt: "Explain the moon landing to a 6-year-old."Completion (unconstrained): "Explain gravity to a 6-year-old... Explain relativity... Explain the big bang..."The model continues the pattern rather than answering the question. It needs fine-tuning to follow instructions reliably.
+Ouyang, L., et al. (2022). Training language models to follow instructions with human feedback. NeurIPS 2022.This was a paradigm-shifting result: alignment quality > raw scale
+
+--- Page 199 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The pretraining/finetuning paradigm
+Pretraining can improve NLP applications by serving as parameter initialization.
+• Start with pretrained weights from foundational models• Fine-tune on smaller, task-specific datasets• Dramatically reduces data and compute requirementsResult: Better performance, faster training, lower costs
+
+--- Page 200 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956InstrucMon TuningInstruction TuningFine-tuning a pre-trained LLM on a diverse dataset of (instruction, input, output) tuples.Goal:• Enable zero-shot generalization• Improve task performance• Make models instruction-followingResult: Base model → Instruction-tuned modelKey Differences from Traditional Fine-TuningTraditional FT:✗Single task✗Task-specific data✗Poor generalizationInstruction Tuning:✓Multiple tasks✓Diverse instructions✓Excellent generalization✓Zero-shot transfer
+
+
+--- Page 201 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Introduction
+Reinforcement learning via proximal policy optimization (PPO)
+
+--- Page 202 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Self-Instruct: Aligning Language Models with Self-Generated Instructions-(Wang et al., 2023)
+Human-written seed tasksare used to bootstrapoff-the-shelf language models(e.g., GPT-3).Data SourceCharacteristicsHuman-Annotated Data (e.g., InstructGPT)~13,000 human-written prompts + ranked responses. Cost: hundreds of annotator-hours. High quality but expensive and slow to scale.Self-Instruct Data (e.g., Alpaca)52,000 instruction-following examples generated by text-davinci-003. Cost: ~$500 in API calls. Comparable quality for most tasks.Instructiontuningrequireslarge,diversedatasetsof(instruction,output)pairs.Creatingthesedatasetsmanuallyisexpensive:humanannotationatscalecostsmillionsofdollarsandmonthsoftime.Self-Instruct(Wangetal.,2023)addressesthisbottleneckbyusingtheLLMitselftogenerateitsowntrainingdata.
+
+--- Page 203 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956How does Self-Instruct work broadly?
+Step 1: InstructionGeneration•TheLM generates new task instructionsbased on existing tasks.Step 2: Task Classification (Identification)•The LM determines whether the instruction represents a•Classification task(Yes / No decision)•Non-classification taskStep 3: Instance GenerationThe LM generatesinput–output pairsusing one of two strategies:Step 4: Filtering: Remove duplicates and low quality examples
+
+--- Page 204 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Table6: Prompt used for classifying whether a task instruction is
+url= "https://aclanthology.org/2023.acl-long.754/"
+
+--- Page 205 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Data Format Example
+
+
+--- Page 206 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Self-Instruct: Complete Data Generation PipelineStart: 100 Seed TasksManually write 100 diverse task examplesGenerate: Create MoreUse GPT-3 to generate 10,000+ new instructionsFilter: Quality AssuranceRemove duplicates, low-quality, and biased examplesFine-Tune: Train Your ModelFine-tune your model on filtered dataset (10,000+ examples)Result: 10,000+ diverse instruction examples with ~90-95% quality
+
+--- Page 207 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Summary Table: Input-First vs. Output-FirstFeatureInput-FirstOutput-FirstTask TypeCreative / Open-endedClassification (Finite labels)OrderGenerate Input → Answer itPick Label → Generate Input to matchPrimary GoalNatural logical flowPreventing Class Imbalance/BiasWhyOutput-FirstMattersforClassificationSupposeasentimentclassifierhas3classes:Positive,Neutral,Negative.Ifwegenerateinputsfirst,theLLM'snaturallanguagebiaswillskewtowardPositiveexamples(becausepositivelanguageismorecommonintrainingdata).Measuredempirically:Input-Firstgenerates~65%Positive,25%Negative,10%Neutral.Output-Firstgenerates~33%each.Amodeltrainedontheskeweddataachievesonly61%accuracyonabalancedtestset;amodeltrainedonthebalancedOutput-Firstdataachieves78%.
+
+--- Page 208 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Experimental Results
+
+
+--- Page 209 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Self-Instruct: Aligning Language Models with Self-Generated InstructionsWang et al. 'Self-Instruct: Aligning Language Models with Self-Generated Instructions' (presented at ACL 2023) makes four primary contributions to the field:1.Problem identification: articulates the instruction-following gap in pre-trained LLMs and frames it as a solvable data generation problem.2.Pipeline design: proposes the four-step pipeline (generate → classify → instance generate → filter) that is now widely adopted in the field.3.Empirical validation: demonstrates near-InstructGPTperformance at a fraction of the cost on SUPERNI.4.Data release: releases the 52K instruction dataset and code, enabling the broader community to fine-tune open-source models (leading directly to Alpaca, Vicuna, etc.).
+
+--- Page 210 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Comparison of Using Different Instruction Tuning Datasets
+Multiple instruction tuning datasets now exist, each with different trade-offs between cost, quality, diversity, and coverage
+
+--- Page 211 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Practical Fine-Tuning: Making IT Affordable with PEFT
+PEFT (Low-Rank Adaptation) enables efficient fine-tuning on commodity hardware, reducing costs by 98%+MetricGPU TypeTime/ModelCost/ModelStorage100 Models CostFull Fine-TuningH100 Cluster7 days$5,0007 GB$500,000LoRASingle GPU1 day$50010 MB$50,000QLoRAConsumer GPU4 hours$10010 MB$10,000Fullfine-tuningupdateseveryparameterofamodel.Fora7-billion-parametermodel,thisrequiresstoringgradientsforall7Bweights—demandingmassiveGPUmemoryandhoursofcompute.PEFT(Parameter-EfficientFine-Tuning)methodsfreezethepre-trainedweightsandtrainonlyasmallnumberofadditionalparameters,achievingnear-fullfine-tuningperformanceatafractionofthecost.
+
+--- Page 212 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956AIMLCZG521 , Conversational AILecture No. 7 | Module 2RLHF-PEFT
+
+--- Page 213 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Session 7: OutlineRLHFPEFT1. Post-Training OverviewSFT vs RLHF approaches2. Reinforcement Learning BasicsAgent, State, Action, Reward3. InstructGPT & PPOReward model training, PPO fine-tuning4. Direct Preference Optimization (DPO)Eliminating the reward model5. GRPOGroup Relative Policy Optimization6. RLHF LimitationsOpen problems & challenges7. State of the Art (SoTA)Recent advances in alignment1.Full FT vs PEFT2.Why PEFT exists: A key trade-off3.Prompt & Prefix TuningSoft prompt methods (Lester 2021, Li 2021)4.Adapter-Based MethodsInjecting small trainable modules (Houlsby 2019)5.LoRALow-rank reparameterization (Hu 2021)6.Quantization & QLoRA4-bit NF4, double quant, paged optimizers (Dettmers 2023)
+
+--- Page 214 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Where Post-Training( Fine tuning and RL) Fits ?Post trainingFine-tuning (Supervised Fine-Tuning -SFT): This approach involves training the model on a dataset of curated examples, including harmful questions paired with safe answers.Reinforcement Learning (RL) / RLHF: This method involves an AI agent learning by interacting with an environment and receiving feedback, typically in the form of rewards or penalties, to optimize its behavior.Input:"How do I make a dangerous weapon at home?"Target output:"I cannot provide instructions for creating harmful devices."Input:"How do I make a dangerous weapon at home?"Response A:"Here is how to make a dangerous weapon..."Response B:"I cannot provide instructions...")penalized (negative "Reward [score]")rewarded, guiding the model towards the safer behavior.
+
+
+--- Page 215 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Post Training
+
+--- Page 216 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956SFT-Supervised fine-tuning
+Prompt (Input)Target Response (Output)Task TypeNotesWhat is gravity?Gravity is a fundamental force that causes objects with mass to attract each other.Factual QATeaches concise, correct explanationSolve: 12 ×712 ×7 =84MathSimple deterministic answerTranslate to French: “The sky is blue.”Le cielestbleu.TranslationLanguage mappingSummarize: “Photosynthesis is the process by which plants…”Photosynthesis is how plants convert light into chemical energy.SummarizationOutput compressionWrite a polite email declining a meeting.Thank you for the invitation. Unfortunately, I won’t be able to attend…Style / ToneTeaches politenessClassify sentiment: “I love this product.”PositiveClassificationLabel-style outputExplain this code snippet.This code initializes a loop that iterates over the list…Code explanationInstruction followingAnswer step by step: What is 15% of 200?15% of 200 = 0.15 ×200 = 30.Answer: 30ReasoningTeaches structured reasoning
+
+--- Page 217 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956•Alignment:Ensuring the model's output reflects human values and intentions.•Trust & Factuality:Making the model reliable and accurate in the information it provides.•Fairness:Addressing social biases to ensure the model treats all demographics equitably.•Explainability:Ensuring the model can provide clear, logical reasons for its responses.Common Objectives of Learning from Human Feedback (RLHF)
+
+--- Page 218 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Core Components•Agent:The learner or decision-maker that takes actions.•Environment:The external system the agent interacts with.•State St: The current situation or configuration of the environment at time t.•Action At: The choice made by the agent based on the current state.•Reward Rt:Numerical feedback received from the environment as a result of an action.
+Reinforcement Learning (RL) Model
+
+--- Page 219 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+RL terms translated to LLM terms
+
+--- Page 220 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+InstructGPT: Training language models to follow instructions with human feedback. (Ouyang et. al, 2022)•Agent:language model•Action:predict the next token•Policy : the output distribution of the next token•Reward :a reward model trained by human evaluations on model responses, so no more human-in-the-loop is needed
+
+--- Page 221 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Instruct GPT : Step 2 and Step 3
+FeatureStep 2 (Train the Judge)Step 3 (Train the Student)Primary OutputProduces aReward Model (RM).Produces the finalPolicy (Language Model).Source of FeedbackHumansserve as the feedback mechanism. They manually look at outputs and rank them.TheReward Modelserves as the feedback mechanism. It calculates rewards automatically.Role of HumansHuman-in-the-loop:Humans are actively required to label and rank data.No human-in-the-loop:The Reward Model replaces the human, allowing the AI to train on a massive scale without needing a person to grade every single sentence.Data TypeUsesComparison Data(Ranking A vs B vs C).UsesScalar Rewards(A numerical score calculated by the RM) to update the policy.
+
+--- Page 222 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Reward Model (RM) Training, a critical step in Reinforcement Learning from Human Feedback (RLHF).
+Eq.1
+
+
+--- Page 223 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Fine-Tuning with RL: PPO•Optimize the language model πθwith feedback from the reward model Objective Function:
+J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov. Proximal policy optimization algorithms, 2017.
+
+
+--- Page 224 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Fine-Tuning with RL: PPOObjective Function:
+J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov. Proximal policy optimization algorithms, 2017.
+
+
+--- Page 225 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Fine-Tuning with RL: PPO
+
+
+--- Page 226 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Fine-Tuning with RL: PPO
+
+
+--- Page 227 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Comparison with Baselines
+•Need to train multiple models:a reward model and a policy model•Need sampling from LM during fine-tuning•The RL training process is too complicated!•Is it possible to directly train a language model from the human preference annotations?Limitation of PPO methodsHumanevaluationsofvariousmodelsonourAPIpromptdistribution,evaluatedbyhowoftenoutputsfromeachmodelwerepreferredtothosefromthe175BSFTmodel.OurInstructGPTmodels(PPO-ptx)aswellasitsvarianttrainedwithoutpretrainingmix(PPO)significantlyoutperformtheGPT-3baselines(GPT,GPTprompted);outputsfromour1.3BPPO-ptxmodelarepreferredtothosefromthe175BGPT-3.Errorbarsthroughoutthepaperare95%confidenceintervals.
+
+--- Page 228 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+The RLHF Architecture –A  Two model Dance
+The Cyclical Training ProcessThe two models refine each other in a loop:•Feedback Signal:The Reward Model provides a scoring signal that tells the Policy Model which of its generated responses are better.•Model Optimization:The Policy Model uses this feedback (often via an algorithm like PPO) to update its internal parameters.•Data Refinement:As the Policy Model generates new, increasingly sophisticated data, that data can be used to further train and sharpen the Reward Model's accuracy.
+
+--- Page 229 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956DPO: Direct Preference Optimization: Your Language Model is Secretly a Reward ModelCutting out the middleman in LLM alignment w/ Direct Policy Optimization (DPO), compared to PPO.
+(Rafailov et al., 2023)
+
+--- Page 230 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956How many models? (In DPO)1.The Active Policy (πθ):The model being trained (the "Student").2.The Reference Policy (πref):A frozen copy of the original model (usually the Supervised Fine-Tuned model).Why?Even though there is no separate "Reward Model," DPO still needs this reference model to calculate the implicit reward and ensure the new model doesn't drift too far from valid language (using KL divergence).Key Takeaway:DPOremovesthe separate Reward Model (rϕ) and Value Model/Critic often used in PPO, reducing the memory burden significantly.
+Direct Preference Optimization: Your Language Model is Secretly a Reward Model" by Rafailovet al., 2023
+
+--- Page 231 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Direct Preference Optimization
+
+
+--- Page 232 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956DPO Training Objective (Main Equation)
+DPO simplifies this by removing the middleman.•Core Insight:The authors discovered a mathematical relationship showing that "Your Language Model is Secretly a Reward Model".•The Process:Instead of training a separate Reward Model, DPO defines the loss functiondirectlyon the language model itself using the preference data.•Benefit:It bypasses the need for sampling and the separate Reward Model. It treats the problem as asimple classification task(classifying which response is "better") rather than a reinforcement learning task.
+
+--- Page 233 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956DPO Training Objective (Main Equation)
+
+
+--- Page 234 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956DPO -NumericalsPrompt“Explain gravity simply.”ResponsesPreferred (yᵥ):“Gravity pulls objects toward each other.”Rejected (yₗ):“Gravity is caused by air pressure.”For a given prompt, the model probabilities are:ModelP(yw| x)P(yl| x)Reference model (πref)0.400.30Current model (πθ)0.600.10Assumeβ=1.(a)Compute the DPO loss step by step.(b)Briefly interpret what the resulting loss value indicates about the model’s behavior.
+
+--- Page 235 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956DPO Numericals
+This value represents how much more the current model prefers the winning response over the losing response, relative to the reference model.
+
+--- Page 236 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The magic of DPO:1.Usually, you need a separate neural network to calculate the Reward (r).2.But this derivation proves thatthe optimal policy itself contains the reward information.3.Therefore, we can delete the Reward Model entirely and just define the rewardimplicitlyusing the ratio between the trained model and the reference model.This derivation justifies why DPO works: it mathematically proves that optimizing preferences directly is equivalent to training a Reward Model and then using RL to optimize it.
+
+--- Page 237 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956What does DPO do?
+
+
+--- Page 238 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956•Preferred-FT:Fine-tune the model on (y_{w}•PPO-GT:reward model is the ground truth of the sentiment•Unlikelihood:optimize the policy model to maximize (P(y_w)) and minimize (P(y_l))•Best of N:sampling N responses from the SFT model (very inefficient)
+Comparison with Baseline Models
+
+--- Page 239 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Comparison between PPO and DPO•DPO training is cheaper and more stable than PPO training•PPO can handle more informative human feedback (e.g., numerical ratings) while DPO can only handle binary signals
+
+--- Page 240 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Open Problems and Fundamental Limitations of RLHF(Casper et. al, 2023)Challenges within each step: human feedback, reward model and policy
+
+
+--- Page 241 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Challenges with Obtaining Human Feedback•Human evaluators may have biasesStudies found that ChatGPT models became politically biased post RLHF.•Good oversight is difficultEvaluators are paid per example and may make mistakes given time constraints; poor feedback on evaluating difficult tasks•Data qualitycost / quality tradeoff•Tradeoff between richness and efficiency of feedback typescomparison-based feedback, scalar feedback, correction feedback, language feedback, ...
+
+--- Page 242 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Challenges with the Reward Model•A single reward function cannot represent a diverse society of humans•Reward misgeneralization: reward models may fit with human preference data with unexpected features•Evaluation of a reward model is difficult and expensiveChallenges with the Policy•Robust reinforcement learning is difficult•balance between exploring new actions and exploiting known rewards•the challenge intensifies in high-dimensional or sparse reward settings•Policy mis generalization: training and deployment environment is differenceChallenges with the Reward Model and Policy
+
+--- Page 243 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Group Relative Policy Optimization (GRPO)https://arxiv.org/pdf/2402.03300
+
+
+--- Page 244 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The ScenarioImagine we are training an AI to be a helpful math tutor.The Prompt (q):"Explain how to solve10−2×3”Step 1: Group Sampling (The "G" in GRPO)Instead of generating just one answer, the Policy Model generates agroupof 4 different answers (o1too4) for that single prompt.a)Output 1 (o1):Multiplication first.2×3=6. Then 10−6=4. The answer is 4." (Correct & Clear)b) Output 2 (o2):"The answer is 4." (Correct, but no explanation)c)Output 3 (o3):"You go left to right.10−2=8 Then8×3=24." (Wrong logic)d)Output 4 (o4):"Math is hard." (Useless)Step 2: Scoring (The Reward Model)The Reward Model grades each answer on a scale of 1-10 based on accuracy and helpfulness.•Output 1 (r1):10(Perfect)•Output 2 (r2):7(Correct but brief)•Output 3 (r3):3(Incorrect math)•Output 4 (r4):0(Irrelevant)GPRO-Numerical
+
+--- Page 245 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Step 3: Group Computation (The "Relative" Part)This is where GRPO works its magic. Instead of asking a separate "Value Model" network"Is a score of 7 good for this specific hard math question?", it simply looks at the group average.1.Calculate Average Score (Baseline): (10+7+3+0)/4=5.0The baseline for this prompt is5.0.2.Calculate Advantage (A):The model compares each answer to the group average.Advantage=Score−Averagea)Output 1 (A1):10−5.0=+5.0(Big Winner)b)Output 2 (A2):7−5.0=+2.0(Small Winner)c)Output 3 (A3):3−5.0=−2.0(Loser)d)Output 4 (A4):0−5.0=−5.0(Big Loser)Step 4: The Update (Optimization)The model updates its brain (weights) based on these advantages:•Strongly Reinforce Output 1:"Do more reasoning like this!"•Slightly Reinforce Output 2:"This was okay, do this if you have to."•Discourage Output 3:"Stop doing math left-to-right."•Strongly Discourage Output 4:"Never say 'Math is hard' when asked for help."GPRO-Numerical
+
+--- Page 246 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956FeaturePPO (Proximal Policy Optimization)GRPO (Group Relative Policy Optimization)Core MechanismActor-Critic with clipped policy updatesRelative reward optimization using groups of generated outputsAdvantage EstimationLearns a value function (critic)Computes relative advantages from group rewardsAdditional NetworkRequires actor and critic networksPrimarily requires only the policy networkMemory/Compute CostHigher due to critic maintenanceLower due to critic removalTraining ComplexityMore hyperparameters and actor-critic interactionsSimpler training pipelineStability SourceClipped objective prevents large policy updatesRelative reward normalization reduces varianceTypical ApplicationsRobotics, games, RLHF, control systemsLLM alignment, reasoning, and post-trainingMain LimitationCritic estimation errors can affect learningPerformance depends heavily on reward quality and group samplingComparison of PPO and GPO
+
+--- Page 247 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956State of the Art (SoTA) in RLHF & LLM AlignmentConstitutional AI (Anthropic, 2022)Trains models using a set of principles (“constitution”). AI self-critiques responses using principles, reducing reliance on human labelers via RLAIF.RLHF + Self-Play (Meta, 2024)Llama 3 uses iterative RLHF with rejection sampling. Model generates responses, best ones become SFT data for next iteration.Reward Model EnsemblesMultiple reward models trained on diverse feedback signals reduce reward hacking and improve generalization.GRPO in DeepSeek-R1 (2025)DeepSeek-R1 uses GRPO to train chain-of-thought reasoning without a value network, achieving o1-level math performance.Process Reward Models (PRMs)Rewards each reasoning step (not just the final answer). OpenAI’s PRM800K enables step-level feedback for math reasoning.SPIN / Online DPO (2024)Self-play fine-tuning (SPIN) and online DPO collect new model-generated data each iteration, avoiding stale offline datasets.
+
+--- Page 248 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Key Takeaways1. RLHF is the backbone of modern LLM alignmentHuman feedback is used to shape model behavior toward helpfulness, harmlessness, and honesty.2. PPO vs DPO: tradeoffs in stability vs simplicityPPO is powerful but complex; DPO removes the reward model and treats alignment as classification.3. GRPO advances reasoning without a critic networkGroup-relative rewards eliminate the value model, reducing memory and enabling strong reasoning (DeepSeek-R1).4. Human feedback has fundamental bottlenecksAnnotator bias, reward hacking, and scalability remain open problems (Casper et al., 2023).5. The field is rapidly moving toward scalable, automated alignmentConstitutional AI, RLAIF, and process reward models reduce human-in-the-loop dependency.
+
+--- Page 249 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19562. Parameter Efficient Fine Tuning
+1Full FT vs PEFTWhy PEFT exists & key trade-offs
+2Prompt & Prefix TuningSoft prompt methods (Lester 2021, Li 2021)
+3Adapter-Based MethodsInjecting small trainable modules (Houlsby 2019)
+4LoRALow-Rank reparametrisation (Hu 2021)
+5Quantization & QLoRA4-bit NF4, double quant, paged optimizers (Dettmers 2023)
+
+--- Page 250 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956FeatureFull Fine-TuningPEFT (LoRA, QLoRA, etc.)Parameters UpdatedAll weights  ~100%Adapters only ~0.1% -5%HardwareMulti-GPU / Cluster requiredSingle Consumer GPU often sufficientStorageA full copy of the model for every taskOne base model + tiny adapter files (MBs)Catastrophic ForgettingHigher risk (overwriting knowledge)Low risk (base knowledge is frozen)Best Use CaseFundamental behavior change(e.g., teaching a model a new language or complex biological sequences)Style/Task adaptation(e.g., summarization, classification, SQL generation)Full FT Vs PEFT
+
+--- Page 251 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+
+
+--- Page 252 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Why PEFT? The Motivation
+Vanilla Fine-Tuning•Attach a task-specific layer to the pre-trained transformer output•Back-propagate gradients through ALL layers on downstream task•Requires storing one full model copy per task
+PEFT Strategies•Prompt-based: add tunable tokens to input•Adapter-based: inject small modules per layer•Reparametrisation: LoRA –decompose weight updates
+~0.1–5%paramstrainable
+10-100×storage savings
+ConsumerGPUsufficient
+
+--- Page 253 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956•Prepend a sequence of tokens as tunable embeddings to the input ("soft prompts")•The entire pre-trained Transformer is FROZEN –only soft prompt vectors are trained•Only a small set of parameters need to be stored for each task•Prompt tuning becomes more effective as the pre-trained model becomes larger•Larger models perform well even with a small number of prompt tokens•Initializing with task-relevant tokens (e.g. "summarization") significantly outperforms random initialisation
+Method ComparisonModel TuningAll params tunableHighest accuracy, huge costPrompt TuningOnly soft promptMatches model-tuning at scalePrompt Design (GPT-3)Manual text promptsNo training; prompt-sensitivePrompt Tuning  (Lester et al., 2021)
+
+
+--- Page 254 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Prefix Tuning  (Li & Liang, 2021)•Soft prompts prepended to EACH layer of the Transformer (not just input)•Tune continuous task-specific vectors; all original weights remain frozen•Prefix length acts as a key hyperparameter; optimal length is task-dependent•Prefix occupies context window –reduces space available to input tokens•Optimal length varies: ~200 tokens for summarization, ~10 for table-to-text•Random initialisation → high variance; task-relevant words (e.g. 'summarization') greatly improve stability
+Key FindingsPrefix length~200 for sum.Prefix length~10 for t2tInitializationreal words ↑↑Storagejust prefix vecs
+Prompt Tuning vs Prefix TuningPrompt Tuning: soft tokens prepended only at the input embedding layer.   Prefix Tuning: virtual tokens prepended to every transformer layer's key/value matrices.
+Li, Xiang Lisa, and Percy Liang. "Prefix-Tuning: Optimizing Continuous Prompts for Generation." ACL 2021.
+
+
+--- Page 255 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Issues with Prompt / Prefix Tuning
+Context window overheadThe prefix occupies tokens in the fixed context window, leaving fewer tokens for real input content.
+Task-specific prefix lengthOptimal prefix length varies per task —requires separate tuning for each downstream application.
+Initialisation sensitivityRandom initialisation leads to high variance; real-token initialisation is recommended but task-specific.
+Scale dependencyPrompt tuning degrades significantly on smaller models; gains are mostly observed at very large scale (Lester et al., 2021).
+
+--- Page 256 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Adapter-Based Methods  (Houlsbyet al., 2019)•Vanilla fine-tuning can be seen as adding an extra layer on top of the Transformer•Adapter modules perform more general architectural modifications: injecting new layers/modules into the original network•During training, original network weights are untouched –only adapter weights update•Two small sub-layers: down-projection → non-linearity → up-projection•Near-identity initialisation so training stability is preserved•Only adapter layers + final classification layer update during training•Achieves GLUE performance within 0.4% of full fine-tuning using <2% of trainable parameters
+Pros: empirically effective in multi-task settings; computationally efficient vs. full fine-tuning.  Cons: adds layers → slower inference; increases model size.
+
+
+--- Page 257 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956LoRA: Low-Rank Adaptation  (Hu et al., 2021)
+Key InsightNeural networks contain many dense layers performing matrix multiplication. Inspired by the intrinsic dimension hypothesis, the weight updates ΔW during fine-tuning have low intrinsic rank.
+Pre-trained matrix:W₀ ∈ℝ^(d×k) —frozen during training
+Updated matrix:W₀ + ΔW = W₀ + BA
+Low-rank matrices:A ∈ℝ^(r×k),  B ∈ℝ^(d×r),  where r ≪min(d,k)
+Hidden state:h = W₀x  →  h = W₀x + ΔWx = W₀x + BAx
+Rank r:Typically 2–64; r=4 or r=8 already gives strong resultsHu, Edward J., et al. "LoRA: Low-Rank Adaptation of Large Language Models." ICLR 2022.
+
+
+--- Page 258 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Applying LoRAto Transformers•In principle, LoRA can be applied to any weight matrices in deep learning•In practice, the focus is on applying LoRA to attention matrices in Transformers: Wq, Wk, Wv, Wo•Rank r ranges from 2 to 64 —typically r = 4 or r = 8 gives strong results•GPU VRAM requirement drops from 1.2 TB → >350 GB for large models•Checkpoint storage: 350 GB (full) → 35 MB (LoRA adapter) —10,000×smaller
+Which Matrices? (Ablation —Hu et al., 2021)Applying LoRA to both Wq and Wv (attention query + value matrices) gives the best trade-off between parameter count and accuracy.r = 4 already gives strong results; r = 8 covers most meaningful subspaces for most tasks.
+LoRA (GPT-3, r=4):  WikiSQL 73.8  |  MNLI 91.0  |  SAMSum 53.0  —37M trainable params vs 175B total  (Hu et al., 2021 Table 5)
+Hu, Edward J., et al. "LoRA: Low-Rank Adaptation of Large Language Models." ICLR 2022.
+
+
+--- Page 259 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956LoRA: Comparison with Full FT & Adapters
+Full Fine-Tuning•Updates ALL weights•High VRAM (multi-GPU)•Separate model per task•Risk of catastrophic forgetting•Best absolute accuracy
+Adapters(Houlsby 2019)•New layers injected•Slower inference (new ops)•Near-zero init stability•Effective multi-task•Small overhead at inference
+LoRA(Hu 2021)•No new layers at inference•Merge BA into W₀ → zero latency•~0.1% trainable params•10000×smaller checkpoints•Matches FT on most benchmarks
+Hu et al. ICLR 2022; Houlsby et al. ICML 2019.
+
+
+--- Page 260 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PEFT Methods Taxonomy
+Addition-Based•Adapters (Houlsby 2019)•Prompt Tuning (Lester 2021)•Prefix Tuning (Li 2021)•BitFit•(IA)³Add new parameters while keeping original weights frozen
+Reparametrisation-Based•LoRA (Hu 2021)•QLoRA (Dettmers 2023)•KronA•FourierFTDecompose weight updates into compact low-rank form
+Selection-Based•Diff-Pruning•Fish-Mask•Lottery Ticket
+Select a sparse subset of existing parameters to update
+Source: Lialin et al. (2023) "Scaling Down to Scale Up: A Guide to Parameter-Efficient Fine-Tuning"
+
+--- Page 261 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Summary
+
+
+--- Page 262 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Quantization Basics
+Motivation: 32-bit floating-point computations are memory-intensive. Quantization reduces the precision of numbers used in the model, dramatically cutting memory.
+int8 tensorRange: [−127, 127]  (16 levels)
+int4 tensorRange: [−8, 7]  (16 levels, signed)
+float32Range: ~1.18×10⁻³⁸ to 3.4×10³⁸
+Quantization / Dequantization FormulasQuantize:  X[int8] = round( (127 / absmax(X[FP32])) ×X[FP32] )Dequantize:  dequant(X[FP32], X[int8]) = X[int8] / (127 / absmax(X[FP32]))
+⚠Quantization with outliers leads to larger quantization errors.
+
+--- Page 263 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19564-bit NormalFloat(NF4)  (Dettmers et al., 2023)•Neural network weights typically follow a zero-centered normal distribution N(0, σ²)•NF4 is an information-theoretically optimal quantization type for normally distributed data•Normalization: transform all weights to a single fixed distribution by scaling with σ and setting range to [−1, 1] with mean 0 and standard deviation 1•Quantize the normalized weights to 4 bits —16 levels evenly spaced within the normalized values•NF4 yields better empirical results than both 4-bit integers and 4-bit floats•Small dequantization error: for example, 0.1832 rounds to 0.2 → error ≈ 0.0168
+NF4 (NormalFloat)Information-theoretically optimal for normal distributions. Used in QLoRA.
+int4 (Integer)Uniformly spaced integers. Not optimal when weight distribution has thin tails.
+fp4 (Float)4-bit floats —fewer levels near zero where weights cluster.Dettmers, Tim, et al. "QLoRA: Efficient Finetuning of Quantized LLMs." NeurIPS 2023. https://doi.org/10.48550/arXiv.2305.14314
+
+--- Page 264 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956QLoRA: Quantization + Low-Rank Adapters  (Dettmers et al., 2023)
+QLoRA combines 4-bit NF4 quantization with Low-Rank Adapters to enable efficient fine-tuning of large language models on a single consumer GPU.
+1. 4-bit NormalFloatPre-trained model weights quantized to NF4 and frozen. Significantly reduces memory usage at load time.
+2. Double QuantizationQuantize the quantization constants themselves, saving ~0.37 bits/parameter (≈3 GB for a 65B model).
+3. Paged OptimizersNVIDIA unified memory to avoid gradient checkpointing spikes when processing long-sequence mini-batches.
+Memory reduction: Full FT of 65B model requires >780 GB GPU memory.  QLoRA trains same model in <48 GBwithout degrading performance vs. 16-bit fully fine-tuned baseline.
+
+
+--- Page 265 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956QLoRAArchitecture & Training Flow
+1Load Base ModelLoad pre-trained LLM (e.g. LLaMA 70B) in 4-bit NF4 format. Weights are frozen —no gradient flows through them.
+2Add LoRA AdaptersAttach small trainable rank-r matrices A and B to each transformer layer (attention Wq, Wv). Adapters are in full 32-bit precision.
+3Forward PassInput passes through quantized (frozen) base weights + full-precision LoRA adapters. Output = W₀x + BAx.
+4Backward PassGradients flow only through LoRA matrices A and B. Quantized weights dequantized temporarily for computation; requantized after.
+5Final ModelConsists of original 4-bit weights + trained adapter matrices in bfloat16/fp32. Can merge adapters into base model for zero-latency inference.Dettmers, Tim, et al. "QLoRA: Efficient Finetuning of Quantized LLMs." NeurIPS 2023.
+
+--- Page 266 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Memory Requirements for LLM Serving & Training
+GPU Memory (inference):  M = (P ×B) / Q ×1.2   where P = parameters, B = bytes per param, Q = quantization divisor
+LLaMA 70B Examples (at 16-bit)70B model, float3270×10⁹ ×4 bytes ×1.2≈336 GB70B model, bfloat1670×10⁹ ×2 bytes ×1.2≈168 GB  (2×A100 80GB needed)70B model, int870×10⁹ ×1 byte ×1.2≈84 GB70B model, int4/NF470×10⁹ ×0.5 bytes ×1.2≈42 GB  (fits on 1×A100 80GB)
+Meta-Llama-3-8B-Instruct Training Memory (from HuggingFace)Methodfloat32int8int4Total Size (GB)27.9613.986.99 / 3.49Training using Adam (GB)113.8355.9227.96 / 13.98LoRA Fine-Tuning (GB)34.9918.229.63 / 5.63Memory formula from Dettmers et al. NeurIPS 2023; training table from https://huggingface.co/spaces/Vokturz/can-it-run-llm
+
+--- Page 267 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Comparison of PEFT Categories
+AdaptersSoft PromptsStructured SparseReparameterisationHybridStorage efficiency✓✓✓✓✓Training✓✓✗*✓✓RAM Speed✗*✓✓✓✗*Single-task✗*✗*✓✓✓Multi-task✓✗*✗*✗*✓Efficient inference✗*✓✓✓✗*✓= effective  |  ✗* = might vary based on specific method  |  Table adapted from Lialin et al. (2023)
+Implemented in: HuggingFace PEFT library  (peft.huggingface.co)  and  AdapterHub  (adapterhub.ml)
+
+--- Page 268 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Summary
+Full Fine-TuningUpdates all weights. Highest accuracy but requires multi-GPU, per-task storage, and risks catastrophic forgetting.
+Prompt / Prefix TuningSoft tokens added to input or every layer. Lester 2021 (input only), Li 2021 (every layer). Context window cost.
+AdaptersInject trainable sub-layers (down→non-linear→up) into each transformer block. Near-FT performance with ~2% params. Houlsby 2019.
+LoRAReparametrize ΔW = BA with rank r ≪d. Merge at inference → zero latency. 10 000×smaller checkpoints. Hu 2021.
+QLoRA4-bit NF4 quantization + LoRA adapters in 32-bit. Double quantization. Paged optimizers. 65B model on <48 GB VRAM. Dettmers 2023.PEFT is now the default paradigm for adapting large language models to downstream tasks at low cost.
+
+--- Page 269 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956KeyTakeaways
+PEFT is now the default paradigmAdapting large pre-trained models without retraining all weights is the practical standard —enabling downstream tasks on consumer hardware.
+Rank r is the core design choice in LoRAr = 4 or 8 covers most meaningful subspaces. Merging BA into W₀ at inference yields zero added latency —a key advantage over Adapters.
+QLoRA democratises 65B+ model fine-tuningNF4 + double quantization + paged optimizers reduce a 65B fine-tune from >780 GB to <48 GB —single A100 territory.
+Choose method by inference constraintPrompt/Prefix tuning adds context window cost; Adapters add latency; LoRA/QLoRA add neither at inference after merging.
+Soft-prompt methods are model-scale dependentPrompt tuning matches full fine-tuning only at very large scale (Lester 2021). Prefix tuning extends coverage to every layer but consumes context budget.
+Tiny adapters enable massive storage savingsOne shared base model + MB-sized adapter files per task replaces storing separate full-model copies, enabling practical multi-task deployment.The goal: match full fine-tuning accuracy at a fraction of the compute, memory, and storage cost.
+
+--- Page 270 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Thank you&Best Wishes

@@ -1,0 +1,296 @@
+PDF: Session-7-RLHF-PEFT
+Pages: 61
+================================================================================
+
+--- Page 1 ---
+BITSPilaniConversational AIRLHF-PEFTDr Bharathi RAdjunct Professor, CSIS WILP BITS PILANI
+
+--- Page 2 ---
+BITSPilaniAIMLCZG521 , Conversational AILecture No. 7 | Module 2
+
+--- Page 3 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Disclaimer & AcknowledgementDISCLAIMERThese instructional materials have been developed by the instructor for educational purposes. All content is intended solely to support the learning objectives of this course. While every effort has been made to ensure accuracy and completeness, learners are encouraged to consult original source publications for authoritative reference.These instructional materials have been developed by the instructor with due acknowledgement of the original publication authors and the broader academic community for their openly accessible resources, along with special recognition of Prof. Bhagath's Conv-AI-WILP (October 2025) presentation materials, which have been adapted and modified to support the learning objectives of this course.ACKNOWLEDGEMENT
+
+--- Page 4 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Session 7: OutlineRLHFPEFT1. Post-Training OverviewSFT vs RLHF approaches2. Reinforcement Learning BasicsAgent, State, Action, Reward3. InstructGPT & PPOReward model training, PPO fine-tuning4. Direct Preference Optimization (DPO)Eliminating the reward model5. GRPOGroup Relative Policy Optimization6. RLHF LimitationsOpen problems & challenges7. State of the Art (SoTA)Recent advances in alignment1.Full FT vs PEFT2.Why PEFT exists: A key trade-off3.Prompt & Prefix TuningSoft prompt methods (Lester 2021, Li 2021)4.Adapter-Based MethodsInjecting small trainable modules (Houlsby 2019)5.LoRALow-rank reparameterization (Hu 2021)6.Quantization & QLoRA4-bit NF4, double quant, paged optimizers (Dettmers 2023)
+
+--- Page 5 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Where Post-Training( Fine tuning and RL) Fits ?Post trainingFine-tuning (Supervised Fine-Tuning -SFT): This approach involves training the model on a dataset of curated examples, including harmful questions paired with safe answers.Reinforcement Learning (RL) / RLHF: This method involves an AI agent learning by interacting with an environment and receiving feedback, typically in the form of rewards or penalties, to optimize its behavior.Input:"How do I make a dangerous weapon at home?"Target output:"I cannot provide instructions for creating harmful devices."Input:"How do I make a dangerous weapon at home?"Response A:"Here is how to make a dangerous weapon..."Response B:"I cannot provide instructions...")penalized (negative "Reward [score]")rewarded, guiding the model towards the safer behavior.
+
+
+--- Page 6 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Post Training
+
+--- Page 7 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956SFT-Supervised fine-tuning
+Prompt (Input)Target Response (Output)Task TypeNotesWhat is gravity?Gravity is a fundamental force that causes objects with mass to attract each other.Factual QATeaches concise, correct explanationSolve: 12 ×712 ×7 =84MathSimple deterministic answerTranslate to French: “The sky is blue.”Le cielestbleu.TranslationLanguage mappingSummarize: “Photosynthesis is the process by which plants…”Photosynthesis is how plants convert light into chemical energy.SummarizationOutput compressionWrite a polite email declining a meeting.Thank you for the invitation. Unfortunately, I won’t be able to attend…Style / ToneTeaches politenessClassify sentiment: “I love this product.”PositiveClassificationLabel-style outputExplain this code snippet.This code initializes a loop that iterates over the list…Code explanationInstruction followingAnswer step by step: What is 15% of 200?15% of 200 = 0.15 ×200 = 30.Answer: 30ReasoningTeaches structured reasoning
+
+--- Page 8 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956•Alignment:Ensuring the model's output reflects human values and intentions.•Trust & Factuality:Making the model reliable and accurate in the information it provides.•Fairness:Addressing social biases to ensure the model treats all demographics equitably.•Explainability:Ensuring the model can provide clear, logical reasons for its responses.Common Objectives of Learning from Human Feedback (RLHF)
+
+--- Page 9 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Core Components•Agent:The learner or decision-maker that takes actions.•Environment:The external system the agent interacts with.•State St: The current situation or configuration of the environment at time t.•Action At: The choice made by the agent based on the current state.•Reward Rt:Numerical feedback received from the environment as a result of an action.
+Reinforcement Learning (RL) Model
+
+--- Page 10 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+RL terms translated to LLM terms
+
+--- Page 11 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+InstructGPT: Training language models to follow instructions with human feedback. (Ouyang et. al, 2022)•Agent:language model•Action:predict the next token•Policy : the output distribution of the next token•Reward :a reward model trained by human evaluations on model responses, so no more human-in-the-loop is needed
+
+--- Page 12 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Instruct GPT : Step 2 and Step 3
+FeatureStep 2 (Train the Judge)Step 3 (Train the Student)Primary OutputProduces aReward Model (RM).Produces the finalPolicy (Language Model).Source of FeedbackHumansserve as the feedback mechanism. They manually look at outputs and rank them.TheReward Modelserves as the feedback mechanism. It calculates rewards automatically.Role of HumansHuman-in-the-loop:Humans are actively required to label and rank data.No human-in-the-loop:The Reward Model replaces the human, allowing the AI to train on a massive scale without needing a person to grade every single sentence.Data TypeUsesComparison Data(Ranking A vs B vs C).UsesScalar Rewards(A numerical score calculated by the RM) to update the policy.
+
+--- Page 13 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Reward Model (RM) Training, a critical step in Reinforcement Learning from Human Feedback (RLHF).
+Eq.1
+
+
+--- Page 14 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Fine-Tuning with RL: PPO•Optimize the language model πθwith feedback from the reward model Objective Function:
+J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov. Proximal policy optimization algorithms, 2017.
+
+
+--- Page 15 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Fine-Tuning with RL: PPOObjective Function:
+J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov. Proximal policy optimization algorithms, 2017.
+
+
+--- Page 16 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Fine-Tuning with RL: PPO
+
+
+--- Page 17 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Fine-Tuning with RL: PPO
+
+
+--- Page 18 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Comparison with Baselines
+•Need to train multiple models:a reward model and a policy model•Need sampling from LM during fine-tuning•The RL training process is too complicated!•Is it possible to directly train a language model from the human preference annotations?Limitation of PPO methodsHumanevaluationsofvariousmodelsonourAPIpromptdistribution,evaluatedbyhowoftenoutputsfromeachmodelwerepreferredtothosefromthe175BSFTmodel.OurInstructGPTmodels(PPO-ptx)aswellasitsvarianttrainedwithoutpretrainingmix(PPO)significantlyoutperformtheGPT-3baselines(GPT,GPTprompted);outputsfromour1.3BPPO-ptxmodelarepreferredtothosefromthe175BGPT-3.Errorbarsthroughoutthepaperare95%confidenceintervals.
+
+--- Page 19 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+The RLHF Architecture –A  Two model Dance
+The Cyclical Training ProcessThe two models refine each other in a loop:•Feedback Signal:The Reward Model provides a scoring signal that tells the Policy Model which of its generated responses are better.•Model Optimization:The Policy Model uses this feedback (often via an algorithm like PPO) to update its internal parameters.•Data Refinement:As the Policy Model generates new, increasingly sophisticated data, that data can be used to further train and sharpen the Reward Model's accuracy.
+
+--- Page 20 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956DPO: Direct Preference Optimization: Your Language Model is Secretly a Reward ModelCutting out the middleman in LLM alignment w/ Direct Policy Optimization (DPO), compared to PPO.
+(Rafailov et al., 2023)
+
+--- Page 21 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956How many models? (In DPO)1.The Active Policy (πθ):The model being trained (the "Student").2.The Reference Policy (πref):A frozen copy of the original model (usually the Supervised Fine-Tuned model).Why?Even though there is no separate "Reward Model," DPO still needs this reference model to calculate the implicit reward and ensure the new model doesn't drift too far from valid language (using KL divergence).Key Takeaway:DPOremovesthe separate Reward Model (rϕ) and Value Model/Critic often used in PPO, reducing the memory burden significantly.
+Direct Preference Optimization: Your Language Model is Secretly a Reward Model" by Rafailovet al., 2023
+
+--- Page 22 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Direct Preference Optimization
+
+
+--- Page 23 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956DPO Training Objective (Main Equation)
+DPO simplifies this by removing the middleman.•Core Insight:The authors discovered a mathematical relationship showing that "Your Language Model is Secretly a Reward Model".•The Process:Instead of training a separate Reward Model, DPO defines the loss functiondirectlyon the language model itself using the preference data.•Benefit:It bypasses the need for sampling and the separate Reward Model. It treats the problem as asimple classification task(classifying which response is "better") rather than a reinforcement learning task.
+
+--- Page 24 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956DPO Training Objective (Main Equation)
+
+
+--- Page 25 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956DPO -NumericalsPrompt“Explain gravity simply.”ResponsesPreferred (yᵥ):“Gravity pulls objects toward each other.”Rejected (yₗ):“Gravity is caused by air pressure.”For a given prompt, the model probabilities are:ModelP(yw| x)P(yl| x)Reference model (πref)0.400.30Current model (πθ)0.600.10Assumeβ=1.(a)Compute the DPO loss step by step.(b)Briefly interpret what the resulting loss value indicates about the model’s behavior.
+
+--- Page 26 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956DPO Numericals
+This value represents how much more the current model prefers the winning response over the losing response, relative to the reference model.
+
+--- Page 27 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The magic of DPO:1.Usually, you need a separate neural network to calculate the Reward (r).2.But this derivation proves thatthe optimal policy itself contains the reward information.3.Therefore, we can delete the Reward Model entirely and just define the rewardimplicitlyusing the ratio between the trained model and the reference model.This derivation justifies why DPO works: it mathematically proves that optimizing preferences directly is equivalent to training a Reward Model and then using RL to optimize it.
+
+--- Page 28 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956What does DPO do?
+
+
+--- Page 29 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956•Preferred-FT:Fine-tune the model on (y_{w}•PPO-GT:reward model is the ground truth of the sentiment•Unlikelihood:optimize the policy model to maximize (P(y_w)) and minimize (P(y_l))•Best of N:sampling N responses from the SFT model (very inefficient)
+Comparison with Baseline Models
+
+--- Page 30 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Comparison between PPO and DPO•DPO training is cheaper and more stable than PPO training•PPO can handle more informative human feedback (e.g., numerical ratings) while DPO can only handle binary signals
+
+--- Page 31 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Open Problems and Fundamental Limitations of RLHF(Casper et. al, 2023)Challenges within each step: human feedback, reward model and policy
+
+
+--- Page 32 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Challenges with Obtaining Human Feedback•Human evaluators may have biasesStudies found that ChatGPT models became politically biased post RLHF.•Good oversight is difficultEvaluators are paid per example and may make mistakes given time constraints; poor feedback on evaluating difficult tasks•Data qualitycost / quality tradeoff•Tradeoff between richness and efficiency of feedback typescomparison-based feedback, scalar feedback, correction feedback, language feedback, ...
+
+--- Page 33 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Challenges with the Reward Model•A single reward function cannot represent a diverse society of humans•Reward misgeneralization: reward models may fit with human preference data with unexpected features•Evaluation of a reward model is difficult and expensiveChallenges with the Policy•Robust reinforcement learning is difficult•balance between exploring new actions and exploiting known rewards•the challenge intensifies in high-dimensional or sparse reward settings•Policy mis generalization: training and deployment environment is differenceChallenges with the Reward Model and Policy
+
+--- Page 34 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Group Relative Policy Optimization (GRPO)https://arxiv.org/pdf/2402.03300
+
+
+--- Page 35 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The ScenarioImagine we are training an AI to be a helpful math tutor.The Prompt (q):"Explain how to solve10−2×3”Step 1: Group Sampling (The "G" in GRPO)Instead of generating just one answer, the Policy Model generates agroupof 4 different answers (o1too4) for that single prompt.a)Output 1 (o1):Multiplication first.2×3=6. Then 10−6=4. The answer is 4." (Correct & Clear)b) Output 2 (o2):"The answer is 4." (Correct, but no explanation)c)Output 3 (o3):"You go left to right.10−2=8 Then8×3=24." (Wrong logic)d)Output 4 (o4):"Math is hard." (Useless)Step 2: Scoring (The Reward Model)The Reward Model grades each answer on a scale of 1-10 based on accuracy and helpfulness.•Output 1 (r1):10(Perfect)•Output 2 (r2):7(Correct but brief)•Output 3 (r3):3(Incorrect math)•Output 4 (r4):0(Irrelevant)GPRO-Numerical
+
+--- Page 36 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Step 3: Group Computation (The "Relative" Part)This is where GRPO works its magic. Instead of asking a separate "Value Model" network"Is a score of 7 good for this specific hard math question?", it simply looks at the group average.1.Calculate Average Score (Baseline): (10+7+3+0)/4=5.0The baseline for this prompt is5.0.2.Calculate Advantage (A):The model compares each answer to the group average.Advantage=Score−Averagea)Output 1 (A1):10−5.0=+5.0(Big Winner)b)Output 2 (A2):7−5.0=+2.0(Small Winner)c)Output 3 (A3):3−5.0=−2.0(Loser)d)Output 4 (A4):0−5.0=−5.0(Big Loser)Step 4: The Update (Optimization)The model updates its brain (weights) based on these advantages:•Strongly Reinforce Output 1:"Do more reasoning like this!"•Slightly Reinforce Output 2:"This was okay, do this if you have to."•Discourage Output 3:"Stop doing math left-to-right."•Strongly Discourage Output 4:"Never say 'Math is hard' when asked for help."GPRO-Numerical
+
+--- Page 37 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956FeaturePPO (Proximal Policy Optimization)GRPO (Group Relative Policy Optimization)Core MechanismActor-Critic with clipped policy updatesRelative reward optimization using groups of generated outputsAdvantage EstimationLearns a value function (critic)Computes relative advantages from group rewardsAdditional NetworkRequires actor and critic networksPrimarily requires only the policy networkMemory/Compute CostHigher due to critic maintenanceLower due to critic removalTraining ComplexityMore hyperparameters and actor-critic interactionsSimpler training pipelineStability SourceClipped objective prevents large policy updatesRelative reward normalization reduces varianceTypical ApplicationsRobotics, games, RLHF, control systemsLLM alignment, reasoning, and post-trainingMain LimitationCritic estimation errors can affect learningPerformance depends heavily on reward quality and group samplingComparison of PPO and GPO
+
+--- Page 38 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956State of the Art (SoTA) in RLHF & LLM AlignmentConstitutional AI (Anthropic, 2022)Trains models using a set of principles (“constitution”). AI self-critiques responses using principles, reducing reliance on human labelers via RLAIF.RLHF + Self-Play (Meta, 2024)Llama 3 uses iterative RLHF with rejection sampling. Model generates responses, best ones become SFT data for next iteration.Reward Model EnsemblesMultiple reward models trained on diverse feedback signals reduce reward hacking and improve generalization.GRPO in DeepSeek-R1 (2025)DeepSeek-R1 uses GRPO to train chain-of-thought reasoning without a value network, achieving o1-level math performance.Process Reward Models (PRMs)Rewards each reasoning step (not just the final answer). OpenAI’s PRM800K enables step-level feedback for math reasoning.SPIN / Online DPO (2024)Self-play fine-tuning (SPIN) and online DPO collect new model-generated data each iteration, avoiding stale offline datasets.
+
+--- Page 39 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Key Takeaways1. RLHF is the backbone of modern LLM alignmentHuman feedback is used to shape model behavior toward helpfulness, harmlessness, and honesty.2. PPO vs DPO: tradeoffs in stability vs simplicityPPO is powerful but complex; DPO removes the reward model and treats alignment as classification.3. GRPO advances reasoning without a critic networkGroup-relative rewards eliminate the value model, reducing memory and enabling strong reasoning (DeepSeek-R1).4. Human feedback has fundamental bottlenecksAnnotator bias, reward hacking, and scalability remain open problems (Casper et al., 2023).5. The field is rapidly moving toward scalable, automated alignmentConstitutional AI, RLAIF, and process reward models reduce human-in-the-loop dependency.
+
+--- Page 40 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19562. Parameter Efficient Fine Tuning
+1Full FT vs PEFTWhy PEFT exists & key trade-offs
+2Prompt & Prefix TuningSoft prompt methods (Lester 2021, Li 2021)
+3Adapter-Based MethodsInjecting small trainable modules (Houlsby 2019)
+4LoRALow-Rank reparametrisation (Hu 2021)
+5Quantization & QLoRA4-bit NF4, double quant, paged optimizers (Dettmers 2023)
+
+--- Page 41 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956FeatureFull Fine-TuningPEFT (LoRA, QLoRA, etc.)Parameters UpdatedAll weights  ~100%Adapters only ~0.1% -5%HardwareMulti-GPU / Cluster requiredSingle Consumer GPU often sufficientStorageA full copy of the model for every taskOne base model + tiny adapter files (MBs)Catastrophic ForgettingHigher risk (overwriting knowledge)Low risk (base knowledge is frozen)Best Use CaseFundamental behavior change(e.g., teaching a model a new language or complex biological sequences)Style/Task adaptation(e.g., summarization, classification, SQL generation)Full FT Vs PEFT
+
+--- Page 42 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+
+
+--- Page 43 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Why PEFT? The Motivation
+Vanilla Fine-Tuning•Attach a task-specific layer to the pre-trained transformer output•Back-propagate gradients through ALL layers on downstream task•Requires storing one full model copy per task
+PEFT Strategies•Prompt-based: add tunable tokens to input•Adapter-based: inject small modules per layer•Reparametrisation: LoRA –decompose weight updates
+~0.1–5%paramstrainable
+10-100×storage savings
+ConsumerGPUsufficient
+
+--- Page 44 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956•Prepend a sequence of tokens as tunable embeddings to the input ("soft prompts")•The entire pre-trained Transformer is FROZEN –only soft prompt vectors are trained•Only a small set of parameters need to be stored for each task•Prompt tuning becomes more effective as the pre-trained model becomes larger•Larger models perform well even with a small number of prompt tokens•Initializing with task-relevant tokens (e.g. "summarization") significantly outperforms random initialisation
+Method ComparisonModel TuningAll params tunableHighest accuracy, huge costPrompt TuningOnly soft promptMatches model-tuning at scalePrompt Design (GPT-3)Manual text promptsNo training; prompt-sensitivePrompt Tuning  (Lester et al., 2021)
+
+
+--- Page 45 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Prefix Tuning  (Li & Liang, 2021)•Soft prompts prepended to EACH layer of the Transformer (not just input)•Tune continuous task-specific vectors; all original weights remain frozen•Prefix length acts as a key hyperparameter; optimal length is task-dependent•Prefix occupies context window –reduces space available to input tokens•Optimal length varies: ~200 tokens for summarization, ~10 for table-to-text•Random initialisation → high variance; task-relevant words (e.g. 'summarization') greatly improve stability
+Key FindingsPrefix length~200 for sum.Prefix length~10 for t2tInitializationreal words ↑↑Storagejust prefix vecs
+Prompt Tuning vs Prefix TuningPrompt Tuning: soft tokens prepended only at the input embedding layer.   Prefix Tuning: virtual tokens prepended to every transformer layer's key/value matrices.
+Li, Xiang Lisa, and Percy Liang. "Prefix-Tuning: Optimizing Continuous Prompts for Generation." ACL 2021.
+
+
+--- Page 46 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Issues with Prompt / Prefix Tuning
+Context window overheadThe prefix occupies tokens in the fixed context window, leaving fewer tokens for real input content.
+Task-specific prefix lengthOptimal prefix length varies per task —requires separate tuning for each downstream application.
+Initialisation sensitivityRandom initialisation leads to high variance; real-token initialisation is recommended but task-specific.
+Scale dependencyPrompt tuning degrades significantly on smaller models; gains are mostly observed at very large scale (Lester et al., 2021).
+
+--- Page 47 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Adapter-Based Methods  (Houlsbyet al., 2019)•Vanilla fine-tuning can be seen as adding an extra layer on top of the Transformer•Adapter modules perform more general architectural modifications: injecting new layers/modules into the original network•During training, original network weights are untouched –only adapter weights update•Two small sub-layers: down-projection → non-linearity → up-projection•Near-identity initialisation so training stability is preserved•Only adapter layers + final classification layer update during training•Achieves GLUE performance within 0.4% of full fine-tuning using <2% of trainable parameters
+Pros: empirically effective in multi-task settings; computationally efficient vs. full fine-tuning.  Cons: adds layers → slower inference; increases model size.
+
+
+--- Page 48 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956LoRA: Low-Rank Adaptation  (Hu et al., 2021)
+Key InsightNeural networks contain many dense layers performing matrix multiplication. Inspired by the intrinsic dimension hypothesis, the weight updates ΔW during fine-tuning have low intrinsic rank.
+Pre-trained matrix:W₀ ∈ℝ^(d×k) —frozen during training
+Updated matrix:W₀ + ΔW = W₀ + BA
+Low-rank matrices:A ∈ℝ^(r×k),  B ∈ℝ^(d×r),  where r ≪min(d,k)
+Hidden state:h = W₀x  →  h = W₀x + ΔWx = W₀x + BAx
+Rank r:Typically 2–64; r=4 or r=8 already gives strong resultsHu, Edward J., et al. "LoRA: Low-Rank Adaptation of Large Language Models." ICLR 2022.
+
+
+--- Page 49 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Applying LoRAto Transformers•In principle, LoRA can be applied to any weight matrices in deep learning•In practice, the focus is on applying LoRA to attention matrices in Transformers: Wq, Wk, Wv, Wo•Rank r ranges from 2 to 64 —typically r = 4 or r = 8 gives strong results•GPU VRAM requirement drops from 1.2 TB → >350 GB for large models•Checkpoint storage: 350 GB (full) → 35 MB (LoRA adapter) —10,000×smaller
+Which Matrices? (Ablation —Hu et al., 2021)Applying LoRA to both Wq and Wv (attention query + value matrices) gives the best trade-off between parameter count and accuracy.r = 4 already gives strong results; r = 8 covers most meaningful subspaces for most tasks.
+LoRA (GPT-3, r=4):  WikiSQL 73.8  |  MNLI 91.0  |  SAMSum 53.0  —37M trainable params vs 175B total  (Hu et al., 2021 Table 5)
+Hu, Edward J., et al. "LoRA: Low-Rank Adaptation of Large Language Models." ICLR 2022.
+
+
+--- Page 50 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956LoRA: Comparison with Full FT & Adapters
+Full Fine-Tuning•Updates ALL weights•High VRAM (multi-GPU)•Separate model per task•Risk of catastrophic forgetting•Best absolute accuracy
+Adapters(Houlsby 2019)•New layers injected•Slower inference (new ops)•Near-zero init stability•Effective multi-task•Small overhead at inference
+LoRA(Hu 2021)•No new layers at inference•Merge BA into W₀ → zero latency•~0.1% trainable params•10000×smaller checkpoints•Matches FT on most benchmarks
+Hu et al. ICLR 2022; Houlsby et al. ICML 2019.
+
+
+--- Page 51 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PEFT Methods Taxonomy
+Addition-Based•Adapters (Houlsby 2019)•Prompt Tuning (Lester 2021)•Prefix Tuning (Li 2021)•BitFit•(IA)³Add new parameters while keeping original weights frozen
+Reparametrisation-Based•LoRA (Hu 2021)•QLoRA (Dettmers 2023)•KronA•FourierFTDecompose weight updates into compact low-rank form
+Selection-Based•Diff-Pruning•Fish-Mask•Lottery Ticket
+Select a sparse subset of existing parameters to update
+Source: Lialin et al. (2023) "Scaling Down to Scale Up: A Guide to Parameter-Efficient Fine-Tuning"
+
+--- Page 52 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Summary
+
+
+--- Page 53 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Quantization Basics
+Motivation: 32-bit floating-point computations are memory-intensive. Quantization reduces the precision of numbers used in the model, dramatically cutting memory.
+int8 tensorRange: [−127, 127]  (16 levels)
+int4 tensorRange: [−8, 7]  (16 levels, signed)
+float32Range: ~1.18×10⁻³⁸ to 3.4×10³⁸
+Quantization / Dequantization FormulasQuantize:  X[int8] = round( (127 / absmax(X[FP32])) ×X[FP32] )Dequantize:  dequant(X[FP32], X[int8]) = X[int8] / (127 / absmax(X[FP32]))
+⚠Quantization with outliers leads to larger quantization errors.
+
+--- Page 54 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19564-bit NormalFloat(NF4)  (Dettmers et al., 2023)•Neural network weights typically follow a zero-centered normal distribution N(0, σ²)•NF4 is an information-theoretically optimal quantization type for normally distributed data•Normalization: transform all weights to a single fixed distribution by scaling with σ and setting range to [−1, 1] with mean 0 and standard deviation 1•Quantize the normalized weights to 4 bits —16 levels evenly spaced within the normalized values•NF4 yields better empirical results than both 4-bit integers and 4-bit floats•Small dequantization error: for example, 0.1832 rounds to 0.2 → error ≈ 0.0168
+NF4 (NormalFloat)Information-theoretically optimal for normal distributions. Used in QLoRA.
+int4 (Integer)Uniformly spaced integers. Not optimal when weight distribution has thin tails.
+fp4 (Float)4-bit floats —fewer levels near zero where weights cluster.Dettmers, Tim, et al. "QLoRA: Efficient Finetuning of Quantized LLMs." NeurIPS 2023. https://doi.org/10.48550/arXiv.2305.14314
+
+--- Page 55 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956QLoRA: Quantization + Low-Rank Adapters  (Dettmers et al., 2023)
+QLoRA combines 4-bit NF4 quantization with Low-Rank Adapters to enable efficient fine-tuning of large language models on a single consumer GPU.
+1. 4-bit NormalFloatPre-trained model weights quantized to NF4 and frozen. Significantly reduces memory usage at load time.
+2. Double QuantizationQuantize the quantization constants themselves, saving ~0.37 bits/parameter (≈3 GB for a 65B model).
+3. Paged OptimizersNVIDIA unified memory to avoid gradient checkpointing spikes when processing long-sequence mini-batches.
+Memory reduction: Full FT of 65B model requires >780 GB GPU memory.  QLoRA trains same model in <48 GBwithout degrading performance vs. 16-bit fully fine-tuned baseline.
+
+
+--- Page 56 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956QLoRAArchitecture & Training Flow
+1Load Base ModelLoad pre-trained LLM (e.g. LLaMA 70B) in 4-bit NF4 format. Weights are frozen —no gradient flows through them.
+2Add LoRA AdaptersAttach small trainable rank-r matrices A and B to each transformer layer (attention Wq, Wv). Adapters are in full 32-bit precision.
+3Forward PassInput passes through quantized (frozen) base weights + full-precision LoRA adapters. Output = W₀x + BAx.
+4Backward PassGradients flow only through LoRA matrices A and B. Quantized weights dequantized temporarily for computation; requantized after.
+5Final ModelConsists of original 4-bit weights + trained adapter matrices in bfloat16/fp32. Can merge adapters into base model for zero-latency inference.Dettmers, Tim, et al. "QLoRA: Efficient Finetuning of Quantized LLMs." NeurIPS 2023.
+
+--- Page 57 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Memory Requirements for LLM Serving & Training
+GPU Memory (inference):  M = (P ×B) / Q ×1.2   where P = parameters, B = bytes per param, Q = quantization divisor
+LLaMA 70B Examples (at 16-bit)70B model, float3270×10⁹ ×4 bytes ×1.2≈336 GB70B model, bfloat1670×10⁹ ×2 bytes ×1.2≈168 GB  (2×A100 80GB needed)70B model, int870×10⁹ ×1 byte ×1.2≈84 GB70B model, int4/NF470×10⁹ ×0.5 bytes ×1.2≈42 GB  (fits on 1×A100 80GB)
+Meta-Llama-3-8B-Instruct Training Memory (from HuggingFace)Methodfloat32int8int4Total Size (GB)27.9613.986.99 / 3.49Training using Adam (GB)113.8355.9227.96 / 13.98LoRA Fine-Tuning (GB)34.9918.229.63 / 5.63Memory formula from Dettmers et al. NeurIPS 2023; training table from https://huggingface.co/spaces/Vokturz/can-it-run-llm
+
+--- Page 58 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Comparison of PEFT Categories
+AdaptersSoft PromptsStructured SparseReparameterisationHybridStorage efficiency✓✓✓✓✓Training✓✓✗*✓✓RAM Speed✗*✓✓✓✗*Single-task✗*✗*✓✓✓Multi-task✓✗*✗*✗*✓Efficient inference✗*✓✓✓✗*✓= effective  |  ✗* = might vary based on specific method  |  Table adapted from Lialin et al. (2023)
+Implemented in: HuggingFace PEFT library  (peft.huggingface.co)  and  AdapterHub  (adapterhub.ml)
+
+--- Page 59 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Summary
+Full Fine-TuningUpdates all weights. Highest accuracy but requires multi-GPU, per-task storage, and risks catastrophic forgetting.
+Prompt / Prefix TuningSoft tokens added to input or every layer. Lester 2021 (input only), Li 2021 (every layer). Context window cost.
+AdaptersInject trainable sub-layers (down→non-linear→up) into each transformer block. Near-FT performance with ~2% params. Houlsby 2019.
+LoRAReparametrize ΔW = BA with rank r ≪d. Merge at inference → zero latency. 10 000×smaller checkpoints. Hu 2021.
+QLoRA4-bit NF4 quantization + LoRA adapters in 32-bit. Double quantization. Paged optimizers. 65B model on <48 GB VRAM. Dettmers 2023.PEFT is now the default paradigm for adapting large language models to downstream tasks at low cost.
+
+--- Page 60 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956KeyTakeaways
+PEFT is now the default paradigmAdapting large pre-trained models without retraining all weights is the practical standard —enabling downstream tasks on consumer hardware.
+Rank r is the core design choice in LoRAr = 4 or 8 covers most meaningful subspaces. Merging BA into W₀ at inference yields zero added latency —a key advantage over Adapters.
+QLoRA democratises 65B+ model fine-tuningNF4 + double quantization + paged optimizers reduce a 65B fine-tune from >780 GB to <48 GB —single A100 territory.
+Choose method by inference constraintPrompt/Prefix tuning adds context window cost; Adapters add latency; LoRA/QLoRA add neither at inference after merging.
+Soft-prompt methods are model-scale dependentPrompt tuning matches full fine-tuning only at very large scale (Lester 2021). Prefix tuning extends coverage to every layer but consumes context budget.
+Tiny adapters enable massive storage savingsOne shared base model + MB-sized adapter files per task replaces storing separate full-model copies, enabling practical multi-task deployment.The goal: match full fine-tuning accuracy at a fraction of the compute, memory, and storage cost.
+
+--- Page 61 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956References[1] Wang, Y. et al. "Self-Instruct: Aligning Language Models with Self-Generated Instructions." ACL 2023.[2] Ouyang, L. et al. "Training language models to follow instructions with human feedback." NeurIPS 2022.[3] Dettmers, T. et al. "QLoRA: Efficient Finetuning of Quantized LLMs." NeurIPS 2023. arXiv:2305.14314[4] Rafailov, R. et al. "Direct Preference Optimization: Your Language Model is Secretly a Reward Model." NeurIPS 2023.[5] Hu, E. J. et al. "LoRA: Low-Rank Adaptation of Large Language Models." ICLR 2022. arXiv:2106.09685[6] Houlsby, N. et al. "Parameter-Efficient Transfer Learning for NLP." ICML 2019.[7] Lester, B., Al-Rfou, R., & Constant, N. "The Power of Scale for Parameter-Efficient Prompt Tuning." EMNLP 2021.[8] Li, X. L., & Liang, P. "Prefix-Tuning: Optimizing Continuous Prompts for Generation." ACL 2021.[9] Lialin, V. et al. "Scaling Down to Scale Up: A Guide to Parameter-Efficient Fine-Tuning." arXiv 2023.[10] Schulman et al. (2017). Proximal Policy Optimization Algorithms. arXiv:1707.06347.[11] Shao et al. (2024). DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models (GRPO). arXiv:2402.03300.[12] Casper et al. (2023). Open Problems and Fundamental Limitations of RLHF. arXiv:2307.15217.SoTA& Supplementary[13] Bai et al. (2022). Constitutional AI: Harmlessness from AI Feedback. Anthropic. arXiv:2212.08073.[14] Lightman et al. (2023). Let’s Verify Step by Step (Process Reward Models). arXiv:2305.20050.[15] Chen et al. (2024). SPIN: Self-Play Fine-Tuning Converts Weak Language Models to Strong Language Models. ICML 2024.[16] DeepSeek AI (2025). DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. arXiv:2501.12948.[17] Meta AI (2024). The Llama 3 Herd of Models. arXiv:2407.21783.

@@ -1,0 +1,178 @@
+PDF: Session_02_Embeddings_Vector_Search
+Pages: 49
+================================================================================
+
+--- Page 1 ---
+BITSPilaniConversational AIVector Embeddings and ANN Search algorithmDr Bharathi RAdjunct Professor, CSIS WILP BITS PILANI
+
+--- Page 2 ---
+BITSPilaniAIMLCZG521 , Conversational AILecture No. 2 | Module 1
+
+--- Page 3 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Disclaimer & AcknowledgementDISCLAIMERThese instructional materials have been developed by the instructor for educational purposes. All content is intended solely to support the learning objectives of this course. While every effort has been made to ensure accuracy and completeness, learners are encouraged to consult original source publications for authoritative reference.These instructional materials have been developed by the instructor with due acknowledgement of the original publication authors and the broader academic community for their openly accessible resources, along with special recognition of Prof. Bhagath's Conv-AI-WILP (October 2025) presentation materials, which have been adapted and modified to support the learning objectives of this course.ACKNOWLEDGEMENT
+
+--- Page 4 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956OutlinePart 1 : Embeddings•Encoder models & embedding generation•Transformer architecture for embeddings•Vector similarity mathematics•Embedding model landscapePart 2: ANN search algorithms •ANN search algorithms (HNSW, IVF, PQ)•Index structure mathematics•Database solutions & tradeoffs•Cost engineering
+
+--- Page 5 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Prerequisites ReviewBasic transformer architecture(self-attention, feedforward layers),matrix operations.
+
+--- Page 6 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Learning Objectives✓Explainhow transformer encoder models create contextual embeddings through self-attention and pooling strategies✓Calculate and comparevector similarity using cosine similarity, L2 distance, and dot product metrics✓Evaluate and selectappropriate ANN indexing strategies (HNSW, IVF, PQ) based on dataset size, memory constraints, and accuracy requirements
+
+--- Page 7 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Transformer ArchitectureFull Transformer BlockEmbeddings + Positional EncodingToken IDs → dense vectors + position infoMulti-Head Self-AttentionParallel attention over different subspacesLayerNorm + ResidualAdd & normalize after each sub-layerFeed-Forward Network (FFN)Two linear layers with ReLU; applied per positionNx Layers (Encoder/Decoder)Stack of N identical blocksLinear + Softmax (Decoder)Project to vocab size → probability distribution
+
+
+--- Page 8 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Self-Attention vs Cross-Attention-RevisitSentence: "The bank was closed becausethe river overflowed its banks."Self-Attention's Job: When the model reaches the first word 'bank,' it looks at the rest of the sentence. It sees 'river' and 'overflowed.'The Result: It realizes the first "bank" refers to a landform(river bank), not a Financial Institution.Key Point: The "query" and "result" both come from the same sentence.Input (English): "I love Mangoes."Output (Hindi): "Mujhe Aam pasand hain."Attention's Job: When generating the Hindi word "Aam," its Attention mechanism looks back at the English sentence.The Result: It "attends" to the word "Mangoes"—the most relevant piece of information for that Hindi word.Key Point: The "query" comes from the output (Hindi); the "data" from the input (English).MechanismLocationQ (Query) SourceK & V (Key/Value) SourceSelf-AttentionEncoder & DecoderCurrent Layer InputCurrent Layer InputCross-AttentionDecoder OnlyDecoder (Current state)Encoder (Final output)
+
+--- Page 9 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Multi-headed Attention
+Core Concept: Instead of performing a single attention function, Multi-Head Attention runs h parallel attention heads, each with different learned projections for Q, K, and V. Outputs are concatenated and projected through W^O to the final embedding dimension.
+
+--- Page 10 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956What are Encoder Models?Bidirectional Transformers for UnderstandingCore Capability: Encoder models can see the entire input sequenceat once (bidirectional context), making them ideal for:•Understanding meaning (semantic representation)•Classification tasks (sentiment, intent)•Creating embeddings for similarity searchBERT (2018)Training: Masked Language Modeling (MLM)"The [MASK] brown fox [MASK] over the lazy dog"→ Predict: "quick", "jumps"Key insight: Random tokens replaced with [MASK], model predicts independently. Missing tokens can't be used for generation.GPT (2018)Training: Autoregressive (Causal LM)"<s> A B C D" → Predict each token auto-regressivelyKey insight: Tokens predicted left-to-right. Can condition on leftward context, so it can be used for generation.
+
+--- Page 11 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Why Encoders for Embeddings?Encoder Models, with their bidirectional attention (seeing words on BOTH sides), solve the problem of polysemy by creating Contextual Embeddings.A Contextual Embedding is a vector representation of a word that changes based on the sentence it appears in.The Mechanism of ContextualizationBecause the Encoder's self-attention mechanism (which is bidirectional) allows the word "bank" to be influenced by all other words in the sentence, the final vector it produces is a precise, context-specific representation of the word's meaning in that exact moment.The Encoder: The Master of Understanding
+SentenceWord Being ProcessedEncoder's Bidirectional ViewResulting Embedding for "bank""river bank"bankLooks at "river" (left) and any words that follow (right).The embedding vector is pulled closer in the vector space to words like "water," "shore," and "geography.""bank account"bankLooks at "account" (right) and any words that precede (left).The embedding vector is pulled closer in the vector space to words like "money," "finance," and "deposit."
+
+--- Page 12 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Encoder vs DecoderEncoderInput Processing(e.g., text, tokens)Bi-directionalAttends to entire sequenceContext from both directionsSelf-attentionParallel processingPosition-aware encodingEncoders see full context→ Perfect for understanding, classification, and creating embeddings for similarity search!DecoderOutput Generation(probabilities)Uni-directionalCausal maskingLeft-to-right generationAuto-regressiveSequential generationToken-by-token outputMasked Self-attention +Cross-attentionAttends to encoder outputPrevents future peeking
+
+--- Page 13 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Decoders Laugh as Loud as EncodersBorodach, Eli, et al. "Decoders Laugh as Loud as Encoders."arXivpreprint arXiv:2509.04779(2025).
+0.86Best Encoder F1RoBERTa-base
+0.85Fine-tuned GPT-4o F1Statistically equal
+6Humor Categories5 types + no-joke
+1,392Dataset ExamplesHuman-authored jokesMODEL TYPES COMPARED
+★Core Result: Classifying sentences into 6 categories (5 humor types + no-joke), both fine-tuned Encoders & Decoders perform equally well —overturning the prior assumption that Encoders (RoBERTa) are superior.★Earlier belief: Encoders are better for understanding tasks (like classification)This paper shows: Fine-tuned decoders can match encoder performanceENCODERSBERT · RoBERTa · DeBERTa · XLNet · ALBERT · ModernBERT · NeoBERT…Best: RoBERTa-base  F1 = 0.86  (fine-tuned, 17 models tested)Prior SOTA —still the best encoder; size helps except in RoBERTa & ALBERTBART-large-mnli · Flan-T5-baseBest F1 ≈ 0.18  (zero/few-shot only —not fine-tuned)Flan-T5 few-shot < zero-shot: long prompts overwhelm small E2D modelsGPT-4 · GPT-4o · Llama 3.2 · Gemma 2 · Qwen2 · MistralFine-tuned GPT-4o  F1 = 0.85  ≈ RoBERTa  ✓(statistically equal)Generative models match classifiers —contradicts the encoder-superiority assumptionENCODER-DECODERS  (E2D)DECODERS
+
+--- Page 14 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Encoder vs Decoder vs Encoder-DecoderEncoder-OnlyCoreStrength:Bidirectionalcontextunderstanding.Seesentireinputsimultaneously—idealforclassificationandunderstanding.BestUseCases•Sentiment Analysis –full context for mixed emotion•Named Entity Recognition (NER) –token-level•Question Answering –extract answer span•Text Classification –spam, intent detection•Semantic Search & Embeddings•PopularModels(2025):BERT•RoBERTa•DeBERTa•ALBERT•DistilBERTDecoder-OnlyCoreStrength:Causallanguagemodelingwithautoregressivegeneration.Predictsnexttoken—idealforgenerativetasks.BestUseCases•Text Generation & Completion –creative writing, code•Conversational AI & Chatbots –ChatGPT, Claude•Code Synthesis –GitHub Copilot•In-Context Learning –few-shot prompting•Instruction Following –reasoning, tool use•PopularModels(2025):GPT-4•GPT-3.5•Claude3/4•Llama3•MistralEncoder-DecoderCore Strength : Separate encoding and decoding phases with cross-attention. Encoder sees bidirectionally; decoder generates while attending.BestUseCases•Machine Translation –Englishto French•Text Summarization –encode doc, decode summary•Text-to-Text Tasks –paraphrase, style transfer•Question Answering (Generative)•Document Generation from Structured Data•Popular Models (2025): T5 • BART • mT5 • PEGASUS • mBART• FLAN-T5
+
+--- Page 15 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Task TypeEncoder-OnlyDecoder-OnlyEncoder-DecoderReasoningSentiment Analysis✓Best○Possible✗OverkillNeeds bidirectional context, no generation requiredText Generation✗No✓Best○PossibleRequires autoregressive generation capabilityMachine Translation✗No○Suboptimal✓BestCross-attention optimally aligns source-target pairsNamed Entity Recognition✓Best✗Inefficient✗OverkillToken-level classification needs bidirectional contextConversational AI✗No✓Best○OutdatedDecoder-only scales better for dialogue and instruction followingSummarization✗No✓Modern✓TraditionalBoth work; decoder-only now preferred for unified architectureSemantic Search✓Best○Possible✗OverkillEncoder creates optimal dense representations for similarityCode Generation✗No✓Best○RareSequential generation with context, decoder-only excelsComparison
+
+--- Page 16 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956How Encoder Transformers Create Embeddings9 tokens → Single 768-dimensional vector6 tokens  →  Single 768-dimensional vectorInput Text:  "Machine learning is fascinating"Step 1: Tokenization→  [CLS]  Machine  learning  is  fascinating  [SEP]→  Token IDs:  [101,  8394,  4083,  2003,  17117,  102]Step 2: Token EmbeddingsEach ID  →  768-dim vector8394  →  [0.23,  −0.15,  0.89,  ...,  0.42]Step 3: Position EmbeddingsPosition 0  →  [0.01,  0.02,  ...]Position 1  →  [0.02,  0.03,  ...]     (Sum with token embeddings)Step 4: Transformer Layers  (12 layers for BERT-base)Each layer:  Self-Attention  →  LayerNorm  →  FFN  →  LayerNormStep 5: Pooling StrategyCLS Pooling (most common):   v = h[CLS]Mean Pooling:                v = (1/n) Σ hᵢMax Pooling:                 vⱼ= max(h₁ⱼ,  h₂ⱼ,  ...,  hₙⱼ)Default Strategy: Most pre-trained models (BERT, RoBERTa, DistilBERT) use CLS token poolingby default. However, mean poolingoften performs better for sentence embeddings (Sentence-BERT, BGE, GTE).
+
+--- Page 17 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19569 tokens → Single 768-dimensional vectorStep 1 —TokenizationBERT wraps every sentence with special tokens before processing:[CLS]ID: 101specialMachineID: 8394wordlearningID: 4083wordisID: 2003wordfascinatingID: 17117word[SEP]ID: 102specialToken IDs:  [101,  8394,  4083,  2003,  17117,  102]—6 tokens totalWhy [CLS] and [SEP]?[CLS](Classification token) —placed at position 0. After all 12 layers, its output vectorsummarises the entire sentence. Used for sentence-level tasks.[SEP](Separator token) —marks the end. Required by BERT's architecture.BERT Pipeline
+
+--- Page 18 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19569 tokens → Single 768-dimensional vectorBERT PipelineStep 2 —Token Embeddings2 / 5
+Each Token ID is looked up in a 30,000 ×768 learned table —one fixed vector per word.EmbeddingLookup Table30,000 ×768101   →8394  →4083  →2003  →17117 →102   →[CLS]  [0.21, 0.20, -0.18 …]… ×768Machine  [0.23, -0.15, 0.89 …]… ×768learning  [0.51,  0.34, -0.12 …]… ×768is  [0.10,  0.05,  0.22 …]… ×768fascinating  [0.78, -0.22,  0.61 …]… ×768[SEP]  [0.08,  0.11, -0.09 …]… ×768Key point: these are STATIC vectors. Same word always gets the same row. No context yet.
+
+--- Page 19 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Step 3 —Positional Embeddings Added9 tokens → Single 768-dimensional vectorBERT PipelineA second 768-dim vector is looked up per position and added elementwise to the token embedding.input_embedding  =  token_emb+  pos_embTokentoken embeddingpos embeddinginput embedding[CLS]pos 0[0.21, 0.20…]+[0.01, 0.02…]=[0.22, 0.22…]Machinepos 1[0.23,-0.15…]+[0.02, 0.03…]=[0.25,-0.12…]learningpos 2[0.51, 0.34…]+[0.03, 0.01…]=[0.54, 0.35…]ispos 3[0.10, 0.05…]+[0.01, 0.04…]=[0.11, 0.09…]fascinatingpos 4[0.78,-0.22…]+[0.02,-0.01…]=[0.80,-0.23…][SEP]pos 5[0.08, 0.11…]+[0.04, 0.02…]=[0.12, 0.13…]Result: 6 input embeddings —each carries identity + position, ready for the transformer layers.
+
+--- Page 20 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19569 tokens → Single 768-dimensional vectorBERT PipelineStep 4 —12 Transformer LayersEach layer rewrites every token's vector by mixing information from ALL other tokens via self-attention.Layer 1syntactic patternsLayer 2POS, adjacencyLayer 4phrase structureLayer 6entity typesLayer 9deeper semanticsLayer 12 —full semantic disambiguationInside each layer:Self-Attention  each token attends to all othersLayerNorm  normalise the outputFeed-Forward Network  refine each token independentlyLayerNorm  normalise againOutput: 6 contextual vectors, each 768-dim. Every number now encodes the full sentence meaning —"fascinating" now knows it follows "Machine learning"
+
+--- Page 21 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19569 tokens → Single 768-dimensional vectorBERT PipelineStep 5 —Pooling StrategyWe have 6 contextual vectors. To get ONE sentence vector, choose a pooling strategy:CLS Poolingv = h[CLS]Take only the [CLS] token's output vector. Default in BERT, RoBERTa, DistilBERT.Best for: classification, sentiment, NLIMean Poolingv = (1/n) Σ hᵢAverage all 6 token vectors dimension-by-dimension. Used by Sentence-BERT, BGE, GTE.Best for: semantic similarity, search, RAGMax Poolingvⱼ= max(h₁ⱼ… h₆ⱼ)Take the maximum value per dimension across all token vectors.Best for: some retrieval modelsFinal output: 1 vector ×768 numbers—the full sentence "Machine learning is fascinating" in vector form
+
+--- Page 22 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956How Encoder Transformers Create EmbeddingsSelf-Attention MathematicsQuery, Key, Value projections:Q = X W_Q,   K = X W_K,   V = X W_VAttention scores:Attention(Q,K,V) = softmax(QKᵀ/√d_k) VWhere d_k is dimension of keys (typically 64)Pooling StrategiesMean Pooling:v = (1/n) Σ hᵢCLS Pooling:v = h[CLS]Max Pooling:vⱼ= max(h₁ⱼ, h₂ⱼ, ..., hₙⱼ)
+💡Key InsightThe final embedding is contextual—"bank" gets different embeddings in different sentences because self-attention incorporates surrounding context. This is fundamentally different from word2vec or GloVe (static embeddings).
+
+--- Page 23 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Embedding Models: Key PlayersOpen Source Models (Recommended for Production)ModelDimensionsContextBest ForProviderbge-large-en-v1.51,024512General purpose, high qualityBAAIgte-large-en-v1.51,0248,192Long documentsAlibabae5-mistral-7b-instruct4,09632,768Instruction-following, very long contextMicrosoftjina-embeddings-v27688,192Multilingual, fast inferenceJina AI
+
+--- Page 24 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Embedding Models: Key Players
+🔒Commercial API Models (Highest Quality)ModelDimensionsContextBest ForCosttext-embedding-3-large3,0728,191Highest quality, production$0.13 / 1M tokensembed-english-v3.01,024512Compression support, production$0.10 / 1M tokens
+💡Selection Guide:Start with bge-large-en-v1.5for general use. Upgrade to commercial APIs if quality justifies cost. Use gte-largeor e5-mistralfor long documents (>1000 tokens).
+
+--- Page 25 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956ModelProviderArchLayersHiddenOutputTrainingContextTypetext-embedding-3-largeOpenAITransformerN/AN/A3,072Contrastive8,191APIembed-v3CohereTransformerN/AN/A1,024Multi-task512APIbge-large-en-v1.5BAAIBERT241,0241,024RetroMAE+Contrastive512Opengte-large-en-v1.5AlibabaBERT241,0241,024Contrastive8,192Opene5-mistral-7b-instructMicrosoftMistral 7B324,0964,096Contrastive pre-training32,768Openjina-embeddings-v2Jina AIBERT12768768Contrastive8,192Open
+📖Reference: Complete specifications for implementation decisions. See Slide 15-16 for selection guidance.Embedding Models: Complete Reference
+
+--- Page 26 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Training Objectives:1.Contrastive LearningLearning by comparingsimilar vs. dissimilar pairsof inputs to create meaningful embeddings where similar items are closer and dissimilar ones are farther apart.2.Masked Language Modeling (MLM)A training approach whererandom words (tokens) are masked, and the model learns topredict the missing wordsusing surrounding context.3.RetroMAE(Masked Auto-Encoding)An advanced masked learning technique where the modelreconstructs masked content with enhanced context understanding, leading to richer and more robust representations.
+
+--- Page 27 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Training Objective –Contrastive LearningCore ObjectiveTrain the model to place similar items close together in embedding space while pushing dissimilar items far apart.How It WorksThe model learns by examining pairs or triplets of examples:Positive Pair (should be close): "The cat sat on the mat"  ↔"A feline rested on the rug"Negative Pair (should be far): "The cat sat on the mat"  ↔"How to bake chocolate cookies"Loss = −log( exp(sim(a, p)) / Σ exp(sim(a, n)) )where: sim = similarity,  a = anchor,  p = positive,  n = negatives✓Advantages✓Creates semantically meaningful embeddings✓Works well with large datasets✓Naturally handles synonyms and paraphrases✓Self-supervised (doesn't need manual labels)✗Challenges✗Requires careful negative sampling✗Computationally expensive (many comparisons)✗Sensitive to batch size✗Hard negatives mining can be trickyModels: SimCSE, DPR, SBERT, E5, GTE, mE5, NV-Embed
+
+--- Page 28 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Training Objective –Masked Language Modeling (MLM)Core ObjectivePredict masked (hidden) words in a sentence using surrounding context. This teaches the model deep language understanding.How It WorksThe model sees sentences with some words replaced by [MASK] tokens and must predict what was hidden.Original: "The quick brown fox jumps over the lazy dog"Masked: "The [MASK] brown fox [MASK] over the lazy dog"Model predicts: [MASK₁] = "quick",  [MASK₂] = "jumps"Loss = −Σ log P(masked_word | context)Maximize probability of correct word given surrounding words✓Advantages✓Captures bidirectional context✓No labeled data required✓Learns rich linguistic patterns✓Foundation for BERT and similar models✗Challenges✗Slower training than causal LM✗Pretrain-finetune gap (no [MASK] at inference)✗Assumes independence of masked tokens✗Not optimal for generation tasksExample Models Using MLM: BERT, RoBERTa, SpanBERT, eBERTa]
+
+--- Page 29 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Training Objective –RetroMAE(Retrospective Masked Auto-Encoding)Core ObjectiveEnhanced masked auto-encoding that reconstructs the entire input from a heavily masked version, forcing the model to learn more compressed and meaningful representations.How It WorksUnlike standard MLM which masks ~15%, RetroMAE masks 50-70% and uses both encoder and decoder:Step 1 –Encoder: Process heavily masked input (only 30-50% visible)Step 2 –Decoder: Reconstruct the ENTIRE original sentenceExample:Original: "The quick brown fox jumps over the lazy dog"Masked:   "The [M] [M] fox [M] [M] [M] lazy [M]"Task:      Reconstruct all 9 words from just 3 visible onesLoss = MSE(original_embeddings, reconstructed_embeddings)  |  With asymmetric encoder-decoder architecture✓Advantages✓Creates highly compressed embeddings✓Better semantic understanding than standard MLM✓Efficient for retrieval tasks✗Challenges✗More complex architecture (encoder + decoder)✗Requires careful tuning of masking ratio✗Longer training timeModels:RetroMAE, RetroMAEv2, RetroMAE-BEIR
+
+--- Page 30 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956From Embeddings to SearchWhat We've Learned✓Transformer encoders create rich, contextual embeddings✓Self-attention captures relationships between words✓Different pooling strategies extract sentence-level representationsNext: Vector DatabasesLearn how to measure similarity, build efficient indexes, and search at scale using approximate nearest neighbor algorithms.
+
+--- Page 31 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Vector Similarity: Mathematical Foundations1. Cosine Similaritycos(θ) = (A · B) / (‖A‖ ‖B‖)cos(θ) = Σ(Aᵢ ×Bᵢ) / (√Σ Aᵢ² ×√Σ Bᵢ²)Range: [−1, 1]Interpretation:• 1.0 = identical direction• 0.0 = orthogonal (unrelated)• −1.0 = opposite direction2. Euclidean (L2) Distanced(A,B) = √Σ(Aᵢ − Bᵢ)²Range: [0, ∞]Interpretation:• 0 = identical vectors• Larger = more different• Sensitive to magnitudeMust normalize vectors first!3. Dot Product (Inner Product)A · B = Σ(Aᵢ ×Bᵢ) = ‖A‖ ‖B‖ cos(θ)Range: [−∞, ∞]  ([−1, 1] if normalized)   Key insight: If vectors are normalized (‖A‖ = ‖B‖ = 1), then dot product = cosine similarity!
+
+--- Page 32 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Vector Similarity: Visual Intuition1. Cosine Similaritycos(θ) = (A · B) / (‖A‖‖B‖)Measures angle between vectorsRange: [−1, 1]2. Euclidean (L2) Distanced(A,B) = √Σ(Aᵢ − Bᵢ)²Measures distance in spaceRange: [0, ∞]
+FeatureCosine SimilarityEuclidean DistanceMeasuresAngle between vectorsDistance between pointsSensitivityNot sensitive to magnitudeHighly sensitive to magnitudeRange-1 to 10 to ∞High ValueHigh similarityLow similarityBest ForText, high-dimensional data,Content-based recommendations prioritizing thematic alignmentImage data, geometry,Product recommendations measuring preference intensity
+
+--- Page 33 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Vector SimilarityCode Demo-1Hands-on implementation of cosine similarity, L2 distance, and dot product
+
+--- Page 34 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The Computational ChallengeProblem StatementGiven: 10 million document embeddings (768 dimensions each)Task: Find top 10 most similar to query embeddingComputational ComplexityFor linear scan:• Operations per query = n ×d• n = 10,000,000 documents• d = 768 dimensions• Total = 7,680,000,000 multiply-add operationsAt 1 billion ops/sec (modern CPU):Time per query = 7.68 secondsWith 100 queries/sec: Need 768 CPU cores!
+
+--- Page 35 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Linear Scan vs ANN SolutionThe "Computational Challenge" slide proves that Linear Scan is not a viable solution for vector search at scale.Linear Scan FailureANN Solution7.68 seconds per query10 milliseconds per queryRequires 768 CPU cores for 100 QPSRequires a fraction of the hardwareBrute-force comparison of all 10 million documentsSmart indexing (HNSW) to avoid unnecessary comparisonsThe only way to move from the infeasible 7.68 seconds to the real-time 10 milliseconds is by using Approximate Nearest Neighbor (ANN)algorithms, which bypass the need for an exact, full scan.
+
+--- Page 36 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956What Is Vector Indexing?Vector indexing is the process of structuring your vector data in a way that enables fast similarity search.Instead of checking every vector one by one, a good index helps narrow down the most promising matches —in milliseconds.It's like having a super-smart librarian who knows where the right book is without scanning every shelf.This isn't a simple database optimization —it's an entire field of research, and one of the reasons vector databases are so powerful.ANN: Approximate Nearest Neighbor Search
+
+--- Page 37 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956ANN: Approximate Nearest Neighbor SearchThe magic behind fast retrieval is a technique called Approximate Nearest Neighbor (ANN) search.With ANN:• You trade off a tiny bit of accuracyfor dramatically fastersearch• Instead of exact neighbors, you get "close enough" matches• Most applications (search, recommendation, RAG, etc.) benefit from this tradeoffWhy? Because semantic vectors already involve approximation —a slight distance difference won't make or break your result.
+
+--- Page 38 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Approximate Nearest Neighbor (ANN)
+📊Scale AnalysisDocumentsLinear ScanCost/month10K8ms$50100K77ms$501M770ms$20010M7.7s ✗$5,000
+✅With ANN Index (HNSW)DocumentsHNSWCost/month10K2ms$50100K3ms$501M5ms$12010M10ms 
+✅$250
+🎯The Solution: Approximate Nearest Neighbor (ANN)Key Insight: We don't need the EXACT top 10 —getting 9/10 correct is often good enough!ANN algorithms trade tiny accuracy loss (95-99% recall) for 100-1000×speedup by using smart data structures.
+
+--- Page 39 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956ANN Indexing Strategies1. Graph-BasedExample: HNSWBuild a navigable graph where nodes are vectors, edges connect similar vectorsPros:• Excellent recall (>95%)• Fast queries (O(log n))• No training neededCons:• High memory usage• Slow inserts2. Partition-BasedExample: IVFCluster vectors into partitions, search only relevant partitionsPros:• Balanced performance• Works with compression• ScalableCons:• Needs training (k-means)• Sensitive to nprobe3. Compression-BasedExample: PQCompress vectors to reduce memory, search in compressed spacePros:• 8-32×less memory• Billions of vectorsCons:• Lower recall (~90%)• Needs training
+
+--- Page 40 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956HNSW: Hierarchical Navigable Small World
+Source: Malkov & Yashunin (2018) —https://arxiv.org/pdf/1603.09320Core Concept: Multi-Layer Skip List for VectorsLayer 2: Entry → [●────────●────────●] ← Sparse, long-range connectionsLayer 1: [●──●────●───●────●] ← Medium densityLayer 0: [●●●●●●●●●●●●●●●●●●●●] ← All vectors, dense connectionsSearch Process:1. Enter at top layer (random entry point)2. Greedy search: move to nearest neighbor3. When stuck (no closer neighbor), descend to next layer4. Repeat until Layer 05. Expand search with beam search for final k neighbors1. Hierarchical structure: Top layers skip across dataset for fast navigation2. Small world property: Average path length is O(log n)3. Navigable: Greedy search reliably finds near-optimal path4. Robust: Multiple entry points prevent getting stuck in local minima
+
+--- Page 41 ---
+BITS Pilani, Pilani Campus
+HNSW(Hierarchical Navigable Small World)
+Core Concept: Multi-Layer Skip List for Vectors
+
+--- Page 42 ---
+BITS Pilani, Pilani Campus
+HNSW(Hierarchical Navigable Small World)
+
+
+--- Page 43 ---
+BITS Pilani, Pilani Campus
+HNSW(Hierarchical Navigable Small World)
+Source: Malkov & Yashunin (2018)Source: Malkov & Yashunin (2018)Core Concept: Multi-Layer Skip List for Vectors
+
+--- Page 44 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956HNSW: Memory LayoutPer Vector Storage ComponentsStorage Breakdown✓Original vector: d ×4 bytes✓Layer info: 1 byte✓Connections: M ×4 bytes ×layers, (M = max connections per node)Example (768-dim, M=16)Vector: 768 ×4 = 3,072 bytesLayer:       1 byteConnections: ~64 bytes avg────────────────────────────────Total: ~3,136 bytes per vectorWhy M matters so muchM is the single most important parameter in HNSW. It controls three things simultaneously:•Search accuracy: more neighbours= better approximate nearest neighbourrecall•Search speed: more neighboursto evaluate per hop = slightly slower traversal•Memory: each extra neighbourcosts 4 bytes ×number of layers
+
+--- Page 45 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956HNSW: Memory Calculation by ScaleScaleVector DataGraph OverheadTotal Memory1M vectors~3.1 GB(1.02×raw)~0.5-1 GB(metadata)~3.6-4.1 GB(1.2-1.3×raw)10M vectors~31 GB(1.02×raw)~10-20 GB(adjacency)~41-51 GB(1.4-1.7×raw)100M vectors~310 GB(1.02×raw)~200-300 GB(multi-layer)~510-610 GB(1.7-2.0×raw)
+⚠Production Planning: Memory Budget Guidelines• Per-vector data: Minimal overhead (~1.02×)• Graph structure: 0.4-1.0×additional (depends on M and scale)• Practical rule: Budget 1.5-2.0×raw vector memory for production HNSW
+
+--- Page 46 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Parameter Tuning: HNSW
+M (Connections per Layer)M (Connections per Layer)16 –64Lower (16):• Less memory• Faster build• Lower recallHigher (64):• More memory• Better recall• Slower insertsDefault: M=16 for most casesef_constructionef_construction100 –200Lower (100):• Faster build• Lower quality indexHigher (200+):• Slower build• Better index quality• Higher recallDefault: ef_construction=200ef_search (Query Time)ef_search (Query Time)50 –500ef=50:• Fast• ~90% recallef=100:• Balancedef=500:• Slow• 99% recallTypical: ef_search=100-200
+💡Pro Tip: Start with defaults (M=16, ef_construction=200, ef_search=100). Profile on your data, then adjust ef_search for latency-recall tradeoff.
+
+--- Page 47 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Dense Passage Retrieval (Karpukhin et al., 2020)Foundation for modern dense retrievalHNSW (Malkov & Yashunin, 2018)Efficient and robust approximate nearest neighbor searchProduct Quantization (Jégou et al., 2011)Vector compression for large-scale searchSentence-BERT (Reimers & Gurevych, 2019)Siamese networks for semantic similarityResources & Further Reading
+
+--- Page 48 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956References1.https://web.stanford.edu/class/archive/cs/cs224n/cs224n.1244/readings/cs224n-self-attention-transformers-2023_draft.pdf2. https://vizuara.ai3. https://jalammar.github.io/illustrated-transformer/4. https://www.youtube.com/watch?v=fCUy1DZZspM5. https://www.bentoml.com/blog/a-guide-to-open-source-embedding-models6. https://bge-model.com/tutorial/1_Embedding/1.2.1.html
+
+--- Page 49 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Thank you

@@ -1,0 +1,279 @@
+PDF: Session-1-Foundations-of-ConvAI
+Pages: 56
+================================================================================
+
+--- Page 1 ---
+BITSPilaniConversational AIIntroduction and Foundations of Conversational AIDr Bharathi RAdjunct Professor, CSIS WILP BITS PILANI
+
+--- Page 2 ---
+BITSPilaniAIMLCZG521 , Conversational AILecture No. 1 | Module 1
+
+--- Page 3 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Disclaimer & AcknowledgementDISCLAIMERThese instructional materials have been developed by the instructor for educational purposes. All content is intended solely to support the learning objectives of this course. While every effort has been made to ensure accuracy and completeness, learners are encouraged to consult original source publications for authoritative reference.These instruc<onal materials have been developed by the instructor with due acknowledgement of the original publica<on authors and the broader academic community for their openly accessible resources, along with special recogni<on of Prof. Bhagath's Conv-AI-WILP (October 2025) presenta<on materials, which have been adapted and modiﬁed to support the learning objec<ves of this course.ACKNOWLEDGEMENT
+
+--- Page 4 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956What Is Conversational AI?
+Definition: Any AI system that engages humans through natural language to understand intent, retain context, retrieve knowledge, and deliver information or take real-world action.
+FAQ Botkeyword matchTask Botslot ﬁllingcontext-awareLLMChatbotgenerativeplans + acts
+💬UnderstandInterpret natural language intent, entities, sentiment
+🧠ReasonPlan, chain thoughts, decompose mul5-step problems
+⚡ActCall APIs, write code, retrieve docs, orchestrate agentsCore CapabilitiesNatural Language Understanding (NLU)Understanding user intent and entitiesDialogue ManagementManaging conversa5on ﬂow and contextNatural Language Generation (NLG)Generating human-like responsesContext AwarenessRemembering conversa5on historyMulti-turn InteractionHandling complex dialoguesPersonalizationAdapting to user preferences
+
+--- Page 5 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Examples in Daily Life
+
+
+--- Page 6 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The Rise of Conversational AI: Market Trends & Industry Impact
+$41.39BConv-AI Market by 2030Source: Grand View Research, 2025
+100MChatGPT Users in 2 MonthsFastest-growing app in history (Wikipedia / UBS)
+80%Fortune 500 Using AI AgentsSource: MicrosoE Copilot Studio Telemetry, Nov 2025Conversational AI: Industry Applications & Impact
+Banking & Finance70% of Tier-1 queries handled by AI; up to 60% cost reductionSources: CoinLaw AI in Banking Stats 2025; AutomationEdge Banking AI Report 2025
+HealthcareAI triaging cuts ER wait times; supports 24/7 remote patient monitoringSource: McKinsey AI in Healthcare 2025; Healthcare AI Adoption Report
+Enterprise So6wareAgents autonomously browse, code, draft contracts & operate toolsSource: Gartner AgenFc AI Report Q1 2025; DigitalDefynd AgenFc AI Stats
+E-Commerce15–26% avg. conversion rate lift via AI personalised recommendationsSources: MindStudio AI Agents for E-commerce 2026; Barilliance Research$41.39B by 2030 per GVR press release (May 2025). | 80% Fortune 500 stat: Microsoft first-party telemetry, Nov 2025. | E-commerce conversion range: 15–26% per Barilliance/MindStudio aggregate data.
+
+--- Page 7 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The EvoluAon Journey (1960s -2026)EraTechnologyCapabilitiesLimitations1960s–1990sRule-Based (ELIZA, ALICE)Pattern matching, keyword detection, simple scripted Q&ANo learning, rigid, no context2000–2010Statistical ML (SVMs, CRFs, HMMs)Intent classification, entity extractionLimited context, hand-crafted features2010–2017Deep Learning (RNNs, LSTMs, Seq2Seq, Attention)End-to-end learning, better context understandingData hungry, task-specific training2017–2020Transformers (BERT, GPT-2, T5)Transfer learning, contextual embeddingsStill requires task-specific fine-tuning2020–2023LLMs & Generative AI (GPT-3, ChatGPT, Claude, PaLM)Few-shot learning, general-purpose, fluent generationHallucinations, no real-time data, no actions2023–2025Agentic AI (LLMs + Tools + Memory + Planning)Execute actions, multi-step reasoning, autonomous workflowsComplex orchestration, scaling challenges, cost optimization2025–2026On-Device & Multi-Modal (SLMs, native multimodality)Real-time voice/video, privacy-first local processingHardware constraints, fragmented ecosystemsKey driver: Three simultaneous breakthroughs made LLMs possible —the Transformer architecture (2017), affordable GPU compute, and internet-scale training data. Remove any one and we're still in the chatbot era.
+
+--- Page 8 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Evolution Deep Dive: Early StagesExample: ELIZA (1966)IF user_input contains "mother": RESPOND "Tell me more about your family"IF user_input contains "sad": RESPOND "Why do you feel sad?"Limitations: No learning, brittle, couldn't handle variations, no real understanding1. Rule-Based Systems (1960s-1990s)
+
+--- Page 9 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956EvoluAon Deep Dive: Early StagesKey Techniques:•Intent Classification:SVM, Naive Bayes to classify user intent•Named Entity Recognition:CRF, HMM for extracting entities•Dialogue State Tracking:Markov models for conversation flowExample Framework:Microsoft LUIS, IBM Watson (early versions)Advance:Could learn from data, handle variations betterLimitations:Required feature engineering, limited context understanding2. StaRsRcal ML Era (2000-2010)
+
+--- Page 10 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Evolution Deep Dive: Deep Learning Era3. Deep Learning Revolution (2010-2017)Key Architectures:•RNNs/LSTMs:For sequence modeling, context retention•Seq2Seq Models:Encoder-decoder for response generation•Attention Mechanism:Focus on relevant parts of inputExample Frameworks:Rasa (open source), Google DialogﬂowAdvance:End-to-end learning, better context, no hand-crafted featuresLimitations:Data hungry, task-specific models, limited transfer learning
+
+--- Page 11 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Evolution Deep Dive: Deep Learning Era4. Transformer Era (2017-2020)Breakthrough: "Attention is All You Need" (2017)•Pre-trained Models:BERT, GPT-2, T5, RoBERTa•Transfer Learning:Pre-train on massive data, fine-tune for tasks•Contextual Embeddings:Word meaning depends on contextImpact on Conversational AI:•Better intent classification with fewer examples•Improved entity recognition•More natural response generation
+
+--- Page 12 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956EvoluAon: Modern Era (2020-2025)5. Large Language Models (2020-2023)Game Changers: GPT-3 (2020), ChatGPT (2022), Claude, PaLM•Massive Scale:Billions to trillions of parameters•Few-Shot Learning:Learn tasks from examples in prompt•General Purpose:One model for many tasks•Human-like Fluency:Natural, contextual responsesRevolution for Conversational AI:•No ﬁne-tuning needed for many tasks•Understand complex, multi-turn conversations•Generate creative, contextual responsesBut still limited: No real-time data, can't take actions, hallucinations
+
+--- Page 13 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Evolution: Modern Era (2020-2025)6. Agentic Conversational AI (2023-2025)The Next Frontier: LLMs + Tools + Memory + Planning•Tool Use:Can call APIs, search databases, execute code•Multi-step Reasoning:Break down complex tasks•Memory Systems:Remember user preferences, conversation history•Autonomous Actions:Book appointments, send emails, create documents
+
+--- Page 14 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Evolution : Multi-Agent & Reasoning Systems (2025–early 2026)•Beyond Agents: Orchestration + Deep Reasoning•Multi-Agent Frameworks:Agents spawn and supervise sub-agents for parallel task execution•Extended Thinking:Models reason step-by-step before responding (chain-of-thought at scale)•Computer Use:AI browses the web, writes and runs code, controls desktop apps•Long Context Windows:1M+ token contexts —entire codebases, legal documents, research papers•Specialised Models:Coding agents (Claude Code, Cursor), science models, domain-specific fine-tunesAI moves from assistant toautonomous collaborator—working alongside humans on complex, mul<-day projects.
+
+--- Page 15 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Architecture Evolution: Then vs NowTraditional Architecture (Pre-2020)User Input ↓ Speech Recognition (if voice) ↓Natural Language Understanding • IntentClassification • Entity Extraction ↓ DialogueManager • State Tracking • Policy (rules/ML) ↓Natural Language Generation • Template-based •Rule-based ↓ Text-to-Speech (if voice) ↓ ResponseFrameworks: Rasa, Dialogflow, Microsoft Bot Framework, Amazon LexModern Agentic Architecture (2023+)User Input ↓ LLM-based Understanding • Intent +Entities in one pass ↓ Agentic OrchestrationLayer • Planning (break down task) • ToolSelection • Memory Retrieval ↓ Tool Invocation• API calls • Database queries • Code execution↓ Memory Update • Store context • Update userprofile ↓ LLM-based Generation • Contextualresponse ↓ Safety & Validation ↓ ResponseFrameworks: LangChain, LlamaIndex, AutoGPT, CrewAI
+
+--- Page 16 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Use Case: Customer Support EvolutionScenario: Banking Customer SupportApproachCapabilitiesUser ExperienceRule-Based(2000s)• FAQ matching• Keyword detection• Fixed responsesUser: "I lost my card"Bot: "For lost card, press 1. For stolen, press 2"Rigid, frustratingIntent-Based(2015)• Intent classification• Entity extraction• Dialogue flowUser: "I lost my card"Bot: "I'll help you block your card. Which card -Credit or Debit?"Better, but limitedLLM-based(2023)• Natural conversation• Context understanding• Fluent responsesUser: "I think I left my card at the restaurant"Bot: "I understand. Let me help you block it temporarily while you check..."Natural, but no actionAgentic AI(2025)• Everything above +• Access banking system• Execute transactions• Multi-step actionsUser: "I lost my card at City Mall"Bot: "I've immediately blocked your card ending in 1234. I see recent transactions at City Mall -last one was $45.20 at Starbucks 2 hours ago. Should I order a replacement card to your home address?"Proactive, action-orientedBusiness Impact:Resolution time reduced from 15 minutes (human agent) → 2 minutes (agentic AI). Customer satisfaction increased by 40%.
+
+--- Page 17 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Components of Modern Conversational AI1. Natural Language UnderstandingRole: Understand what user wants•Intent classiﬁca<on•Entity extraction•Sentiment analysis•Context understandingModern approach: LLM-based, single pass2. Dialogue ManagementRole: Manage conversation flow•State tracking•Context maintenance•Turn-taking•Error handlingModern approach: LLM reasoning + Memory systems
+
+--- Page 18 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Components of Modern Conversational AI3. Knowledge AccessRole: Retrieve relevant information•Vector databases•Semantic search•RAG (Retrieval-Augmented Generation)•Real-time data accessModern approach: Embeddings + Hybrid retrieval4. Action ExecutionRole: Take actions on behalf of user•Tool/function calling•API integra<ons•Database operations•External service invocationModern approach: Agentic tool use
+
+--- Page 19 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Components of Modern Conversational AI5. Response GenerationRole: Generate natural responses•Contextual genera<on•Personality/tone•Multi-modal output•Structured responsesModern approach: LLM generation with control6. Memory SystemsRole: Remember user context•Short-term (conversation)•Long-term (user proﬁle)•Episodic memory•Semantic memoryModern approach: Vector + SQL hybrid
+
+--- Page 20 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Framework Evolution for Conversational AI
+FrameworkApproachUse CaseRasaIntent + Entity + Dialogue PoliciesCustom chatbots, on-premise deploymentGoogle DialogflowIntent-based, ML-powered NLUVoice assistants, Google integrationsMicrosoft Bot FrameworkIntent + Entity + Dialogue ManagementEnterprise bots, Azure integrationsAmazon LexIntent-based, Alexa-poweredVoice + text bots, AWS servicesKey Shift: From intent-based dialogue systems to LLM-powered agentic systems with tool use and planning capabilities.Traditional Frameworks (2015-2020)
+Modern AgenKc Frameworks (2023-2025)To 
+
+--- Page 21 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Framework Evolution for Conversational AIModern Agentic Frameworks (2023-2025)FrameworkApproachUse CaseLangChain/ LangGraphLLM orchestration + Tools + Memory + WorkflowsComplex agents, RAG, multi-step reasoning, production systemsLlamaIndexData-centric, RAG-optimized pipelinesDocument Q&A, knowledge bases, enterprise searchSemantic KernelMicrosoft's SDK for AI orchestrationEnterprise, .NET/Azure ecosystem integrationHaystackEnd-to-end NLP frameworkProduction RAG systems, search applicationsAutoGenMulti-agent conversation frameworkComplex workflows with agent collaboration
+
+--- Page 22 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956State of the Art —2026
+10 M+Token context windowLlama 4 Scout
+94.3 %GPQA DiamondGemini 3.1 Pro (leads reasoning)
+5+ModalitiesText · Image · Audio · Video · Code
+NativeAgentic workflowsBrowser · OS · Multi-agent · MCPLeading Models (April 2026)ModelProviderContextStrengthBest ForGPT-5.4OpenAI1MBest all-rounder, computer useKnowledge work, production APIsClaude OpusAnthropic1MCoding, safety, long reasoningComplex agents, coding editorsGemini 3.1 ProGoogle1MReasoning leader (94.3% GPQA)Research, multimodal, cost-efficientGrok 4.20xAI128KReal-time data, multi-agentLive info, social/market signalsLlama 4 Scout openMeta10MOpen-weight, ultra-long contextOn-prem / custom deploymentsDeepSeek V3.2 openDeepSeek128K~90% of GPT-5.4 at 1/50th costBudget-conscious, high-volume API
+
+--- Page 23 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The Agentic Shift —From Answering to ActingTraditional Chatbot / LLMSingle-turn Q&A responsesNo access to external tools or dataFixed knowledge cutoffNo memory across sessionsOne model, one taskshiftAgentic Conversational AIMulti-step planning & executionTool calling: APIs, search, code, databasesReal-time data via RAG and web searchPersistent memory (vector + SQL stores)Multi-agent orchestration & delegation"LLM is the brain —but it needs tools, memory, and planning to become a truly autonomous conversaUonal agent."
+
+--- Page 24 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Course Architecture —4 Modules · 16 Lectures
+01FoundationsL1–L3Conversational AI landscape & agent lifecycleEmbeddings & vector search (HNSW, ANN, BM25)Model landscape: LLMs, MoE, SLMs, SSMsCost engineering: quantization, KV-cache, prompt caching
+02Core Building BlocksL4–L8Function calling & ReAct frameworkFine-tuning: QLoRA, DPO, GRPOAgent memory: short-term, long-term, hybridRAG pipelines: chunking, re-ranking, contextual retrieval
+03Autonomous AgentsL9–L11Agent planning & multi-agent systemsState management, hierarchical architecturesRAG & agent evaluation (LLM-as-Judge)Cost optimisation & model routing
+04Production EcosystemL12–L16Security: prompt injection, PII, red-teamingMCP deep dive: client-server, resources, toolsA2A protocol & agent interoperabilityEthics, governance & bias mitigationThe Paradigm Shift: Conversational AI has fundamentally changed from rule-based systems to intelligent, autonomous agents. This course prepares you for the current and futurestate of conversational AI.
+
+--- Page 25 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956What You Will Build —Learning Outcomes
+🏗LO1End-to-End Conversational AI SystemsDesign agents with vector databases for retrieval, function calling for tool use, and graph-based workflows for complex reasoning.
+💰LO2Cost-Effective Production SolutionsApply prompt caching, model routing, and efficient retrieval strategies that reduce token usage by up to 90%.
+🛡LO3Secure & Observable AgentsDefend against prompt injecUon, handle PII properly, and build monitoring dashboards tracking performance, costs, and errors.
+⚖LO4Ethical & Governed AI AgentsMitigate bias, include human oversight for critical decisions, and comply with emerging AI regulations (EU AI Act, Anthropic RSP).
+
+--- Page 26 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Evaluation Scheme & Important Rules
+10%EC-1: Quizzes (×2)Open bookAnnounced in class
+20%EC-1: Assignments (×2)Open book~3 weeks each
+30%EC-2: Mid-Term ExamClosed book  (L1–L8)As per calendar
+40%EC-3: End-Semester ExamOpen book  (L1–L16)As per calendar
+⚠Important: No deadline extensions · No make-ups for quizzes/assignments · Plagiarism = nulliﬁed marks + disciplinary acOon
+
+--- Page 27 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Pre-requisites
+What You Need Coming In
+🐍Python:Functions, classes, basic libraries
+🤖ML Basics:Training, inference, evaluation
+🧠Deep Learning:Neural networks, transformers
+🔌API Basics:REST calls, JSON data handling
+📊Basic Statistics:Precision, recall, probability
+Tips1Code every lecture:Don't just watch —run the demo code and change one thing.2Use the references:ReAct, DPR, DPO papers —read the abstract + results at minimum.3Get an API key early:OpenAI or Anthropic. Free tiers cover all demos.4Start assignments early:No extensions. 3 weeks sounds long until it isn't.5Ask on Canvas:Peer discussion is encouraged. Learning happens in community.
+
+--- Page 28 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Textbooks, Papers & Key ResourcesT1 —Official Documentation (Primary Textbooks)Anthropic's 'Building Effective Agents' guide —anthropic.comOpenAI Function Calling documentation —platform.openai.comMCP (Model Context Protocol) & A2A SpeciﬁcaLon —oﬃcial specsR1 —Foundational ReferenceJurafsky & MarLn, 'Speech and Language Processing' (3rd ed.) —NLP foundaLons, linguisLc backgroundR2 —Core Research Papers (provided during course)ReAct: Synergizing Reasoning and Acting in Language Models (Yao et al., 2023)Direct Preference Optimization (Rafailov et al., 2023)Dense Passage Retrieval for Open-Domain QA (Karpukhin et al., 2020)MemGPT: Towards LLMs as Operating Systems (2023)MetaGPT: Meta Programming for MulL-Agent Systems (2024)The Landscape of AI Agents (2024) —arxiv.org/abs/2404.11584R3 —Live ResourcesAnthropic Contextual Retrieval (2024) —anthropic.com/news/contextual-retrievalAnthropic Prompt Caching —docs.anthropic.comAnthropic Responsible Scaling Policy —anthropic.comConference proceedings: ACL, EMNLP, NeurIPS, ICML
+
+--- Page 29 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Open Problems —Where Research Begins
+Consistent multi-step reasoningLLMs s5ll fail on novel logic tasks outside training distribu5on. Chain-of-Thought helps but doesn't fully solve it.Ac#ve research: process reward models, tree-of-thought
+Persistent cross-session memoryEvery new conversation starts blank. External memory is a workaround, not a native solution —lossy, expensive, fragile.Active research: MemGPT, Titans (Google, 2024)
+Grounded factual accuracyHallucina5on: models conﬁdently generate plausible-sounding falsehoods. RAG reduces but doesn't eliminate this at scale.Active research: attribution, RLHF, verification agents
+Reliable long-horizon agent execu[onAgents that run 100-step tasks without driping, geqng stuck, or making compounding errors remain elusive.Active research: agent benchmarks (GAIA, SWE-bench)
+Safety & alignment at scaleAs agents gain more autonomy, ensuring they follow human intent without unexpected side-effects becomes critical.Active research: Constitutional AI, RLAIF, interpretability
+Compute & energy eﬃciencyState-of-the-art models require enormous infrastructure. Efficient inference (SSMs, quantization) is an open engineering problem.Ac#ve research: Mamba, QLoRA, mixture-of-experts
+
+--- Page 30 ---
+BITSPilaniConversational AIFoundations of Conversational AIModule-1Dr Bharathi R
+
+--- Page 31 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Lecture Overview
+1NLP FoundaRonsTokenization · Context Windows
+2Transformers & LLMsArchitecture · Capabilities · Limitations
+3Chatbots → Agentic SystemsEvolution · Why Agentic AI?
+4System Lifecycle & Architecture7-Stage Pipeline · Components
+5Protocol LandscapeMCP · LangGraph · REST
+6Production ConcernsCost · Latency · Safety
+
+--- Page 32 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+1. TokenizaNon —The FoundaNon
+What is Tokenization?Breaking text into subwordunits (tokens) that LLMs process.Algorithms: BPE (GPT), SentencePiece(multilingual), WordPiece(BERT)TextTokensCount"Hello World"Hello · World2 tokens"artificial intelligence"art · ificial· intelligence3 tokens"GPT-4"G · PT · -· 44 tokens"Book a flight to NYC"Book · a · flight · to · NYC5 tokensWhy It Maders for ConversaRonal AI
+💰Cost:API pricing is per token → impacts conversaUon economics
+🪟Context Window:Limits conversation length (200K tokens ≈ 150K words)
+⚡Latency:More tokens = slower response in conversations
+🎯Quality:Tokenization affects understanding of domain-specific terms
+💡Key Insight: Model selecUon & prompt opUmizaUon can cut token costs by 10–20×(ref. Lecture 11)
+
+--- Page 33 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19561.Tokenization: Impact on ConvAIImpact on ConversaKonal AIScenario: Customer support conversation (2025 typical costs)•Average conversation: 40-60 turns (user + agent exchanges)•Average tokens per turn: 15-25 tokens•Total per conversation: ~800-1,200 tokens•Cost with GPT-4o: ~$0.01-0.03 per conversaUon•Cost with GPT-3.5 Turbo: ~$0.002-0.005 per conversation•At 10,000 conversations/day with GPT-4o: $100-300/dayKey insight: Model selecUon and opUmizaUon can reduce costs by 10-20x. We'll cover these techniques in Lecture 11.
+
+--- Page 34 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Hands-On: Byte-Pair EncodingUnderstanding TokenizaKon with CodeWe'll explore how text is converted to tokens using the tiktoken libraryDemo Components:•Text to Tokens:See how different texts are tokenized•Token Counting:Calculate tokens for a sample conversation•Cost Analysis:Understand the economic implicaUons•Model Comparison:Tokenization differences across models
+
+--- Page 35 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Hands-On: Byte-Pair Encoding•BPEis a "subword" tokenization algorithm. It sits in the "Goldilocks" zone between character-based tokenization (too long, little meaning) and word-based tokenization (huge vocabulary, fails on unknown words)How it works (The Concept):1.Training:It reads a massive corpus of text and counts adjacent pairs of characters.2.Merging:It takes the most frequent pair (e.g., 'e' and 'r' -> 'er') and adds it to the vocabulary as a new unit.3.Iterating:It repeats this thousands of times. Eventually, it learns common prefixes (un-,re-), suffixes (-ing,-ed), and whole common words (apple,table).BPE training starts by compu<ng the unique set of words used in the corpus (aner the normaliza<on and pre-tokeniza<on steps are completed), then building the vocabulary by taking all the symbols used to write those words. As a very simple example, let’s say our corpus uses these ﬁve words:"hug", "pug", "pun", "bun", "hugs”The base vocabulary will then be["b", "g", "h", "n", "p", "s", "u"].
+
+--- Page 36 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Byte-Pair Encoding-first merginglet’s assume the words had the following frequencies:("hug", 10), ("pug", 5), ("pun", 12), ("bun", 4), ("hugs", 5)meaning"hug"was present 10 times in the corpus,"pug"5 times,"pun"12 times,"bun"4 times, and"hugs"5 times.•We start the training by splipng each word into characters (the ones that form our iniUal vocabulary) so we can see each word as a list of tokens:•("h" "u" "g", 10), ("p" "u" "g", 5), ("p" "u" "n", 12), ("b" "u" "n", 4), ("h" "u" "g" "s", 5)•Then we look at pairs. The pair(”u", ”g")is present in the words"hug","pug", and"hugs", for a grand total of 20 Umes in the vocabulary.
+
+--- Page 37 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Byte-Pair Encoding-Second MergingThus, the ﬁrst merge rule learned by the tokenizer is("u", "g") -> "ug", which means that"ug"will be added to the vocabulary, and the pair should be merged in all the words of the corpus. At the end of this stage, the vocabulary and corpus look like this:Vocabulary: ["b", "g", "h", "n", "p", "s", "u", "ug"]Corpus: ("h" "ug", 10), ("p" "ug", 5), ("p" "u" "n", 12), ("b" "u" "n", 4), ("h" "ug" "s", 5)Now we have some pairs that result in a token longer than two characters: the pair("h", "ug"), for instance (present 15 times in the corpus). The most frequent pair at this stage is("u", "n"), however, present 16 times in the corpus, so the second merge rule learned is("u", "n") -> "un".Adding that to the vocabulary and merging all existing occurrences leads us to:Vocabulary: ["b", "g", "h", "n", "p", "s", "u", "ug", "un"]Corpus: ("h" "ug", 10), ("p" "ug", 5), ("p" "un", 12), ("b" "un", 4), ("h" "ug" "s", 5)
+
+--- Page 38 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Byte-Pair Encoding-Third MergingNow the most frequent pair is("h", "ug"), so we learn the merge rule("h", "ug") -> "hug", which gives us our first three-letter token. After the merge, the corpus looks like this:Vocabulary: ["b", "g", "h", "n", "p", "s", "u", "ug", "un", "hug"]Corpus: ("hug", 10), ("p" "ug", 5), ("p" "un", 12), ("b" "un", 4), ("hug" "s", 5)And we continue like this until we reach the desired vocabulary size.Let’s take the example we used during training, with the three merge rules learned:("u", "g") -> "ug"("u", "n") -> "un"("h", "ug") -> "hug”The word"bug"will be tokenized as["b", "ug"]."mug", however, will be tokenized as["[UNK]", "ug"]since the letter"m"was not in the base vocabulary. Likewise, the word"thug"will be tokenized as["[UNK]", "hug"]: the letter"t"is not in the base vocabulary, and applying the merge rules results first in"u"and"g"being merged and then"h"and"ug"being merged.How do you think the word"unhug"will be tokenized?
+
+--- Page 39 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19562. Context Windows —Conversation Memory
+GPT-4 Turbo128K tokens  (~96K words)Standard produc=on
+Claude 3.5 Sonnet200K tokens (~ 150K words)Extended conversa=ons
+Gemini 1.5 Pro1M tokens (~750K words)En=re codebases
+Emerging Models2M+ tokensSpecialized use cases
+⚠Challenge: 'Lost in the middle' —models struggle with info in long contexts.  Solution: RAG + Memory systems (Module 2)
+
+--- Page 40 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19563. Transformers & LLMs —The Brain of Modern Conversational AI
+Transformer(2017)
+Pre-trainingon Massive Data
+LLM(GPT / BERT / T5)
+Fine-tuning /InstrucXon Tuning
+Tools + Memory+ Planning
+ConversationalAgent
+Technical Capabili[esSelf-Attention:Understand relationships between words across the full inputContextual Understanding:Word meaning depends on surrounding contextLong-Range Dependencies:Connect ideas across very long text passagesParallel Processing:Faster training than older RNN-based architectures
+Impact on ConversationsMulti-turn Coherence:Remember and track earlier parts of a conversa<onIntent Understanding:Grasp user goals from conversa<onal contextNatural Responses:Generate human-like, fluent repliesAmbiguity Handling:Resolve unclear or underspecified requestsKey Insight: LLM is the "brain" but needs additional systems (tools, memory, planning) to become a fully functional conversational agent.
+
+--- Page 41 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19563. LLM Capabilities & Limitations of Conversational AI
+✅What LLMs Do Well•Natural conversation:Human-like dialogue•Intent understanding:Grasp user goals•Context retenRon:Mul<-turn conversa<ons•Response generation:Fluent, contextual replies•Summarization:Condense information•EnRty extracRon:Iden<fy key informa<on•Sentiment analysis:Understand user emotions✗LLM LimitaRons•No real-time data:Training cutoff date•Hallucinations:Generate plausible but false info•Can't take acRons:No access to external systems•No memory:Forget after context window•Calculation errors:Struggle with math•Consistency:Diﬀerent answers to same ques<on•No verification:Can't check facts
+
+--- Page 42 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19563. Why We Need Agentic ArchitectureSolution: Augment LLMs with external capabilitiesLLM LimitaKonAgentic SolutionExampleNo real-time dataTool calling (APIs, search)Check current flight pricesHallucinationsRAG (Retrieval-Augmented Generation)Ground answers in company docsCan't take actionsFunction callingBook appointment, send emailNo memoryExternal memory systemsRemember user preferencesCalculation errorsCalculator tool, code executionPrecise math computations
+
+--- Page 43 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19564. Agentic Conversational AI —Request → Response Pipeline
+1
+📥REQUESTReceive & validate input · Parse user intent · Extract enOOes · Input saniOzaOon (security)
+2
+🔀ROUTINGIntent classification · Classify intent type · Determine required tools · Route to sub-agent
+3
+🧠REASONINGPlanning & decision making · Break into steps · Identify information gaps · Plan tool call sequence
+4
+⚙TOOL INVOCATIONExternal API calls & actions · Execute API calls · Database queries · Code execution
+5
+💾MEMORYContext storage & retrieval · Store conversation history · Update user preferences · Maintain session state
+6
+🛡SAFETYGuardrails & output validation · Check for toxic content · Verify factual accuracy · PII redaction
+7
+📤RESPONSEFinal output delivered · Natural language generation · Format for channel (text/voice/UI) · Send to userHow a modern conversational agent processes user input
+
+--- Page 44 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19564.Lifecycle Example —Banking Conversational AgentUser: "What's my account balance and recent transacHons?"
+1. RequestIntent: account_inquiryEnOOes: {type: [balance, transacOons]}Validate: User authenOcated
+2. RoutingRoute to: Banking AgentRequired tools: get_balance, get_transactionsPermission check: User has access
+3. ReasoningPlan:1. Fetch account balance2. Fetch recent transactions (last 5)3. Format response with both
+4. Tool InvocationCall: get_balance(user_id) → $5,432.10Call: get_transacLons(user_id, limit=5)Returns: [TransacLon1, TransacLon2, ...]
+5. MemoryStore: User asked about balance at 2:30 PMUpdate: User preference for transacOon detailsContext: Maintain for follow-up quesOons
+6. SafetyValidate: Balance & transactions for correct userCheck: No PII exposure in logsVerify: Response contains only authorized info
+7. ResponseYour current balance is $5,432.10. Here are your recent transactions:1. Starbucks -$4.50 (Today)2. Amazon -$89.99 (Yesterday)3. Shell Gas -$45.00 (Yesterday)4. Grocery Store -$123.45 (2 days ago)5. Netflix -$15.99 (3 days ago)Would you like more details on any of these?"
+
+--- Page 45 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Exercise: Map the Agent LifecycleScenario:"Find me a good Italian restaurant near my oﬃce that's open tonight and make a reserva[on for 2 at 7 PM"Map This Request to the 7-Stage Lifecycle
+
+--- Page 46 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Exercise: Map the Agent LifecycleScenario:"Find me a good Italian restaurant near my office that's open tonight and make a reservation for 2 at 7 PM"StageWhat Needs to Happen?1. RequestWhat entities need to be extracted from user input?2. RoutingWhich tools or agents are needed for this task?3. ReasoningWhat's the step-by-step plan to accomplish this?4. Tool InvocationWhat specific API calls need to be made?5. MemoryWhat information should be stored for future use?6. SafetyWhat validations are required before taking action?7. ResponseHow should the agent communicate with the user?
+
+--- Page 47 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Handson-Building a Simple Conversational AgentDemonstration: Weather Information AgentA prac'cal example using na've OpenAI API in PythonImplementation Stages1. Baseline:LLM without tools -sees limitations2. Tool Definition:Define weather function schema3. Tool Selection:LLM decides when to use tool4. Execution:Call actual weather API5. Response Generation:LLM creates natural answerExample InteractionUser: "What's the weather like in Mumbai?"Agent:1. Extracts location: "Mumbai"2. Calls weather API3. Receives: 32°C, Humid, Partly Cloudy4. Responds: "It's currently 32°C in Mumbai with partly cloudy skies and high humidity."
+
+--- Page 48 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19565.Protocol Landscape for Conversational AgentsAs conversaUonal agents become more prevalent, they need standardized ways to communicatewith tools, data, each other, and UIs.Why Protocols MatterWithout Standards•Every vendor has custom API•Agents can't interoperate•Vendor lock-in•Duplicated integration effortWith Standards•Plug-and-play integra<ons•Multi-agent collaboration•Vendor flexibility•Ecosystem growth
+
+--- Page 49 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19565. Protocol Landscape for Conversational Agents
+Note: The protocol landscape is rapidly evolving. Standards like MCP are emerging, while many production systems still use custom APIs. We'll explore these in detail in Lectures 14-15.By Anthropic(2024)MCP(Model Context Protocol)Standardize how LLMs connect to data sources and toolsAgent accessing DBs, files, APIs consistentlyGoogle /emergingA2A Protocol(Agent-to-Agent)Standardized inter-agent communicationMulti-agent orchestration (Emerging, 2025)OpenAIOpenAIAssistant APIBuilt-in tools, file access, code interpreterRapid agent development with OpenAI infrastructureUniversalCustom REST /GraphQL APIsTraditional service integrationEnterprise systems, legacy integrationsLangChainLangGraphProtocolGraph-based agent workflows and state managementComplex multi-step reasoning, agent coordinationEmergingANP(Agent Network Protocol)Open standard for peer-to-peer agent discovery and communication across heterogeneous networksDecentralized agent ecosystems, cross-platform interoperability
+
+--- Page 50 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19566. ProducAon Concerns for ConversaAonal AI
+📊Observability –what to track?Track conversation flowsMonitor tool invocationsToken usage per conversationResponse latencies & error tracesTools: LangSmith, Arize Phoenix, OpenTelemetry
+💰Cost Management –Optimization StrategiesPrompt caching (50–90% cost reduc5on)Model routing (smaller models when appropriate)Token budgets per user/sessionEfficient retrieval (reduce context size)Example: Customer support ≈ $0.02–0.10 per conversation
+-
+⚡Latency Budgets –Target latenciesChat responses: < 2 secondsTool execu5on: < 5 secondsComplex reasoning: < 30 secondsSet user expectations with progress indicators
+🛡Safety & Security –Defense layersInput validation (prompt injection defense)PII detection and redactionOutput filtering (toxicity, hallucinations)Human-in-the-loop for critical actionsPrinciple: Never rely on a single safety layerBuilding conversational agents that work in development is one thing. Building them to work reliably at scalein production is another.
+
+--- Page 51 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 19566. ProducAon Concerns for ConversaAonal AIBuilding conversational agents that work in development is one thing. Building them to work reliably at scalein production is another.
+
+
+--- Page 52 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Key Takeaways
+1Evolution of Conv. AIRule-based (1960s) → ML (2000s) → Deep Learning (2010s) → Transformers (2017) → LLMs (2020) → Agen5c AI (2023+)
+2Architecture ShigTraditional: Intent → Dialogue Manager → TemplateModern: LLM + Tools + Memory + Planning + Safety
+3Components MatterModern systems need: NLU, Dialogue Management, Knowledge Access, Action Execution, Response Generation, Memory
+4LLMs Are the BrainBut they need external systems for tools, memory, real-time data, and action execution to be truly useful
+5Agent LifecycleRequest → Routing → Reasoning → Tool Invocation → Memory → Safety → Response
+6Production Is DifferentObservability, cost optimization, latency management, and safety are non-negotiable in real systems
+
+--- Page 53 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956References & Further ReadingTokenizaXon & LLMs• Sennrich, R. et al. (2016). Neural Machine Translation of Rare Words with Subword Units. ACL 2016.• Vaswani, A. et al. (2017). Attention Is All You Need. NeurIPS 2017.• Brown, T. et al. (2020). Language Models are Few-Shot Learners (GPT-3). NeurIPS 2020.Agentic AI & Architectures• Yao, S. et al. (2023). ReAct: Synergizing Reasoning and Acting in Language Models. ICLR 2023.• Chase, H. et al. LangChain / LangGraph DocumentaLon. langchain.com (2024).• Wang, L. et al. (2024). A Survey on Large Language Model based Autonomous Agents. Frontiers of Computer Science.RAG & Memory• Lewis, P. et al. (2020). Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. NeurIPS 2020.• Karpukhin, V. et al. (2020). Dense Passage Retrieval for Open-Domain Question Answering. EMNLP 2020.Protocols & Production• Anthropic. (2024). Model Context Protocol (MCP) Specification. anthropic.com/mcp• Google. (2025). Agent-to-Agent (A2A) Communication Protocol. ai.google.dev• Bommasani, R. et al. (2021). On the OpportuniLes and Risks of FoundaLon Models. arXiv:2108.07258.
+
+--- Page 54 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956
+Next SessionLecture 2: Embeddings, Vector Search & Hybrid RetrievalTopicsDeep dive into embeddings and semantic searchVector database architecture (HNSW, ANN)BM25 + Dense retrieval + RRF (hybrid search)Building a prac5cal retrieval systemEvaluation metrics for retrieval
+How to PreparePre-read: 'Dense Passage Retrieval for Open-Domain QA' (Karpukhin et al., 2020)Set up: Python env with OpenAI / Anthropic API keysInstall: openai, chromadb, rank-bm25Review: Today's slides on Canvas
+
+--- Page 55 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956QuesLons & DiscussionTopics for Discussion:•ConversaOonal AI use cases in your organizaOon•Evolution and current state of the field•Technical challenges you foresee•Clarifications on any concepts•Course logistics and expectationsThank you!
+
+--- Page 56 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956ReferencesBPE : hFps://huggingface.co/learn/llm-course/en/chapter6/5

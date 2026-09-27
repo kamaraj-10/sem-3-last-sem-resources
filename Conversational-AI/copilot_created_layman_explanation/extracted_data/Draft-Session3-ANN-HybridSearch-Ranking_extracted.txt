@@ -1,0 +1,202 @@
+PDF: Draft-Session3-ANN-HybridSearch-Ranking
+Pages: 60
+================================================================================
+
+--- Page 1 ---
+BITSPilaniConversational AIANN Search algorithm and Hybrid RetrievalDr Bharathi RAdjunct Professor, CSIS WILP BITS PILANI
+
+--- Page 2 ---
+BITSPilaniAIMLCZG521 , Conversational AILecture No. 3 | Module 1
+
+--- Page 3 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Disclaimer & AcknowledgementDISCLAIMERThese instructional materials have been developed by the instructor for educational purposes. All content is intended solely to support the learning objectives of this course. While every effort has been made to ensure accuracy and completeness, learners are encouraged to consult original source publications for authoritative reference.These instructional materials have been developed by the instructor with due acknowledgement of the original publication authors and the broader academic community for their openly accessible resources, along with special recognition of Prof. Bhagath's Conv-AI-WILP (October 2025) presentation materials, which have been adapted and modified to support the learning objectives of this course.ACKNOWLEDGEMENT
+
+--- Page 4 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Outline1: Vector Databases• ANN search algorithms (HNSW, IVF, PQ)• Index structure mathematics• Database solutions & tradeoffs• Cost engineering2: Sparse Retrieval• TF-IDF fundamentals• BM25 algorithm & mathematics• Hybrid search rationale3: Hybrid Systems• Reciprocal Rank Fusion (RRF)
+
+--- Page 5 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956ANN Indexing Strategies-Revisit1. Graph-Based (Session-2)Example: HNSWBuild a navigable graph where nodes are vectors, edges connect similar vectors.Pros:• Excellent recall (>95%)• Fast queries –O(log n)• No training neededCons:• High memory usage• Slow inserts2. Partition-Based/Cluster basedExample: IVFCluster vectors into partitions, search only relevant partitions.Pros:• Balanced performance• Works with compression• ScalableCons:• Needs training (k-means)• Sensitive to nprobe3. Compression-Based/Quantization BasedExample: PQCompress vectors to reduce memory, search in compressed space.Pros:• 8–32×less memory• Handles billions of vectorsCons:• Lower recall (~90%)• Needs training
+
+--- Page 6 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956IVF: Inverted File IndexA fast, partition-based approach to finding similar vectors at scale.•Partition Strategy:•The dataset is partitioned usingk-means clusteringintonlistcoarse centroids. Each data point is assigned to its nearest centroid, forming an inverted list for that cluster.•Search:•At query time, the query vector is compared to all centroids, and the topnprobeclosest centroids are selected.•Only the vectors in the selected clusters are searched, significantly narrowing down the search space.•Index Construction:•A training phase precedes indexing, where representative centroids are learned from a sample of the dataset.•Vectors are then indexed into inverted lists corresponding to their nearest centroid.
+
+--- Page 7 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956STEP 1 —PARTITION THE DATASET
+Raw dataset: unorganized high-dimensional vectors
+After k-means: each color = one cluster, colored dots = centroidsHow it works01  Run k-means on the datasetSelect K cluster centers (centroids) from a representative training sample. These define Voronoi cells in vector space.02  Assign every vector to a centroidEach data point is assigned to its nearest centroid —the one with minimum Euclidean distance.03  Build the inverted listsFor each centroid, store the IDs of all vectors belonging to its cluster. Indexing is complete.
+
+
+--- Page 8 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956THE INVERTED LISTS —DATA STRUCTURE
+What is stored?Each centroid maintains an inverted list —a record of all data point IDs that belong to its cluster.Green:vec1, vec5, vec7, … vec45Orange:vec4, vec9, vec2, … vec41Pink:vec3, vec6, vec8, … vec47Beige:vec10, vec23, vec37, … vec49Key insight: the inverted list is built once offline. At query time it enables O(1) lookup of candidate vectors —we jump directly to the relevant cluster without scanning the entire dataset.
+
+--- Page 9 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Step 2-SEARCH PROCESSQuery VectorIncoming query embeddingCompare to CentroidsDistance to all nlist centroidsSelect nprobe Clusterse.Gnprobe=3, search top 3 clustersSearch Inverted ListsScan only selected cluster vectorsReturn Top-K ResultsRanked by similarity scoreKey Parameters6nprobeClusters scanned at query time. Higher = better recall, slower speed.↔nlistNumber of k-means clusters / inverted lists. More clusters = finer partitions.
+
+
+--- Page 10 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956NUMERICAL EXAMPLEnlist = 3 clusters  |  nprobe = 1  |  2D vectorsSTEP 1 —DATASET & CENTROIDSIDx₁x₂Clusterv11.01.2C1v21.50.8C1v35.05.1C2v44.85.4C2v59.01.0C3v68.71.3C3Learned CentroidsC1(1.25, 1.00)C2(4.90, 5.25)C3(8.85, 1.15)STEP 2 —QUERY VECTORq  =  (5.0,  5.0)STEP 3 —EUCLIDEAN DISTANCES TO CENTROIDSCentroidFormuladist²distC1 (1.25,1.00)(5-1.25)²+(5-1)²30.065.48C2 (4.90,5.25)(5-4.9)²+(5-5.25)²0.070.26✓C3 (8.85,1.15)(5-8.85)²+(5-1.15)²29.625.44STEP 4 —SEARCH ONLY C2  (nprobe = 1)VectorDist to qv3  (5.0, 5.1)0.10v4  (4.8, 5.4)0.45✓Result: v3  |  Only 2 of 6 vectors scanned
+
+--- Page 11 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956TIME COMPLEXITY —IVF vs kNNVariablesNTotal data pointsDVector dimensionsKNumber of clusters (nlist)N/KVectors per clusterBrute-Force kNNO(N·D)Every query compares against all N vectors. No partitioning.IVF  —Step 1O(K·D)Compare query to K centroids only. K ≪N.IVF  —Step 2O(ND/K)Scan 1/K of the dataset (one cluster).IVF  TotalO(KD + ND/K)With K=100: ~100×faster than brute-force kNN.Total IVF complexity:
+Example: N=10M, K=100kNN  → 10,000,000IVF  → 100 + 100,000 = 100,100≈ 100×faster
+
+--- Page 12 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956THE ACCURACY TRADEOFF —WHY APPROXIMATE?
+Query (blue) lies near a cluster boundary —its true nearest neighbor (pink) is in the adjacent cluster but won't be found with nprobe=1.nprobe  =  clusters scanned at query time1Speed: ██████████Recall: █████░░░░░Fastest —may miss boundary neighborsnprobeSpeed: ████░░░░░░Recall: ████████░░Balanced —good recall/speed tradeoffKSpeed: ██░░░░░░░░Recall: ██████████Exact kNN —scans entire datasetThe ProblemA vector near the query may sit in an adjacent cluster. With nprobe=1, that cluster is never scanned —the true nearest neighbor is missed.The Fix: raise nprobeScanning more clusters reduces miss probability. nprobe=10 typically gives >95% recall at still a fraction of brute-force cost.Why we accept itThe recall/speed tradeoff is the fundamental contract of ANN search. Near-perfect recall at 10–100×faster than exact kNN is the goal.
+
+
+--- Page 13 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PROS & CONS✓ADVANTAGESScalableHandles billions of vectors with consistent performanceFast QueriesAggressive pruning eliminates irrelevant clusters instantlyQuantization-ReadySeamlessly integrates with IVF-PQ, SQ, and other compressionRe-ranking SupportEasily pairs with re-ranking modules for improved precision✗LIMITATIONSHyperparameter Sensitivitynlist and nprobe require careful tuning for your datasetTraining Requiredk-means training phase needed before any vectors can be indexedCluster Quality MattersPoor clustering degrades recall —outliers may fall into wrong clustersApproximate ResultsNot exact NN —recall depends on nprobe; exact search requires nprobe=nlist
+
+--- Page 14 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956USE CASES & IMPLEMENTATIONS
+🖼Visual SearchFacebook InfrastructurePowers Facebook's visual similarity search at billion-scale, matching images by embedding proximity in real time.
+💬Semantic SearchNLP EmbeddingsRetrieves semantically similar documents or passages from large corpora using sentence-transformer embeddings.
+🎯RecommendationsEmbedding-BasedFinds similar user/item embeddings for collaborative filtering and content-based recommendation engines.
+⚙FAISS IVF-PQHybrid PipelinesDeployed in hybrid indexing pipelines combining IVF partitioning with Product Quantization for memory efficiency.IVF is widely deployed in FAISS IVF-PQ and hybrid vector indexing pipelines across industry.
+
+--- Page 15 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956IVF: Inverted File Index + PQ (Product Quantization)
+
+
+--- Page 16 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Parameter Tuning: IVFnlist (Number of Clusters)√n to n/1000Too Few: Large partitions, slow search.Too Many: Tiny partitions, many to search.Sweet Spot: 4√n often works well.1M vectors → nlist ≈ 1,000–4,000nprobe (Clusters to Search)1 –100Lower (1–5): Very fast, lower recall (~70–85%).Higher (50–100): Slower search, higher recall (~95%+).Tune at query time.Typical: nprobe = 10–20PQ Subquantizers (m)d/8 to d/4More subquantizers: Better accuracy, more memory.Fewer subquantizers: More compression, lower accuracy.Must divide dimension.768-dim → m=96 (8 per subvector)Training Time: IVF requires training k-means on sample data (typically 10K–100K vectors). Budget: nlist ×50 iterations ×10 minutes for 1M vectors.
+
+--- Page 17 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Product Quantization•Quantization-based methods are built on the idea of compressing high-dimensional vectors into compact, lossy representations, typically by mapping them to a discrete set of centroids or codes. •These compact codes allow extremely fast approximate distance computation (ADC)using precomputed lookup tables, making them ideal for billion-scale vector search tasks.•Widely used in industry for:•Large-scale image/video/text retrieval where space and speed are at a premium.•Real-time inference pipelines that need rapid ranking of semantically similar results.•Hybrid ANN pipelines, often paired with clustering (IVF) or re-ranking modules.•Scenarios that require deployment on limited-memory devices or optimized GPU environments.
+
+--- Page 18 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Numerical Example on PQ2.88 TBTo store 1 billion high-precision vectors (768 dimensions, float32), you need 2.88 terabytes of RAM.1,000,000,000 vectors×768 dimensions×4 bytes/dimension (float32)= 2.88 TBHow can we search billions of vectors without needing a warehouse of servers? → Product Quantization (PQ)!
+
+--- Page 19 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Product Quantization (PQ)Core Concept: Divide & ConquerSplit high-dimensional vectors into smaller chunks and quantize each independently.Original Vector[128 dimensions]→Sub 1[32-dim]Sub 2[32-dim]Sub 3[32-dim]Sub 4[32-dim]Each subvector is encoded independently using a trained codebook.Why PQ? It enables massive compression (8–128×) while maintaining good search accuracy. Instead of storing 512(128* 4B) bytes per vector, you store just 4 bytes —making billion-scale search feasible in RAM.
+
+--- Page 20 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Product Quantization (PQ) –Step 1: Train CodebooksStep 1: Train Codebooks (k-means per Subspace)For each subvector position, train a codebook with k centroids (typically k=256):Codebook 1 (Sub 1)ID: 0 → [0.2, 0.5, 0.1, ...]ID: 1 → [0.8, 0.3, 0.6, ...]ID: 2 → [0.1, 0.9, 0.4, ...]...ID: 255 → [0.4, 0.2, 0.7, ...]Codebook 2 (Sub 2)ID: 0 → [0.3, 0.7, 0.2, ...]ID: 1 → [0.6, 0.1, 0.8, ...]ID: 2 → [0.9, 0.4, 0.3, ...]...ID: 255 → [0.2, 0.6, 0.5, ...]Codebook 3 & 4...Each subspace getsits own codebooktrained independentlyusing k-means clustering
+
+--- Page 21 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Product Quantization (PQ) –Step 2: Encode Vectors → Compact IDsStep 2: Encode Vectors → Compact IDsReplace each subvector with the ID of its nearest centroid in the codebook:Original Vector (128-dim, 512 bytes):[0.23, 0.51, 0.82, ..., 0.91, 0.34, 0.67]↓  Encode with PQ  ↓Compressed (4 IDs, 4 bytes):[142, 73, 201, 18]Each ID is 1 byte (0–255) → 128×compression!Before PQ512 B per vector→After PQ4 B per vector
+
+--- Page 22 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Product Quantization: Step 3 –Fast Distance Computation (ADC)Asymmetric Distance Computation (ADC)Step 1: Query PreparationQuery vector q arrives (full precision)Split into subvectors: [q1, q2, q3, q4][0.23, 0.51, ...] → splits → 4 chunksStep 2: Distance TablesPre-compute distances from each q_i to all 256 centroids in codebook i:table1[256], table2[256], table3[256], table4[256]Step 3: Database Vector LookupEach DB vector stored as 4 IDs: [ID1, ID2, ID3, ID4]distance = table1[ID1] + table2[ID2] + table3[ID3] + table4[ID4]   ← Just 4 lookups + 3 additions (vs 128 multiplications)!
+
+--- Page 23 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 1: The DatasetThe Dataset: We will work with 5 vectors, each with 8 dimensions.Dim 1Dim 2Dim 3Dim 4Dim 5Dim 6Dim 7Dim 8Vector 10.20.30.80.90.10.40.70.6Vector 20.10.20.70.80.20.30.60.5Vector 30.90.80.10.20.90.80.20.1Vector 40.80.90.20.10.80.90.10.2Vector 50.50.40.50.60.40.50.40.3
+
+--- Page 24 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 2: Split into SubvectorsWe split each 8-dimensional vector into M=2 subvectors, each with d=4 dimensions. This creates two independent "subspaces".Vector 1:[0.2,  0.3,  0.8,  0.9,  0.1,  0.4,  0.7,  0.6]Subvector 1: [0.2,  0.3,  0.8,  0.9]Subvector 2: [0.1,  0.4,  0.7,  0.6]This same split is applied to all 5 vectors, creating 2 sets of 5 four-dimensional subvectors each.
+
+--- Page 25 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 2: Collect Codebook Training DataCodebook 1 (for subvector position 1) –all first subvectors:• [0.2, 0.3, 0.8, 0.9]• [0.1, 0.2, 0.7, 0.8]• [0.9, 0.8, 0.1, 0.2]• [0.8, 0.9, 0.2, 0.1]• [0.5, 0.4, 0.5, 0.6]Codebook 2 (for subvector position 2) –all second subvectors:• [0.1, 0.4, 0.7, 0.6]• [0.2, 0.3, 0.6, 0.5]• [0.9, 0.8, 0.2, 0.1]• [0.8, 0.9, 0.1, 0.2]• [0.4, 0.5, 0.4, 0.3]Next step: Run K-Means (k=2) on each codebook's subvectors to find cluster centroids that represent typical subvector patterns.
+
+--- Page 26 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 3: Create Codebooks with K-Means
+
+
+--- Page 27 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 4: Encode Vectors Using the CodebooksFor each vector, replace its subvectors with the index (ID) of the nearest centroid from the corresponding codebook.Encoding Vector 3: [0.9, 0.8, 0.1, 0.2, 0.9, 0.8, 0.2, 0.1]
+
+
+--- Page 28 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 5: Memory SavingsThe Result: From 160 Bytes down to 10 BytesOriginal Storage5 vectors ×8 dimensions×4 bytes/dim (float32)Total: 160 bytes→PQ Storage5 vectors ×2 codes ×1 byte/code= 10 bytes (data)2 codebooks ×2 centroids ×4 dims ×4 bytes= 64 bytes (codebooks)Total: 74 bytesKey Insight: The codebook storage is a one-time, fixed cost. For millions or billions of vectors, this overhead becomes negligible, and the compression ratio approaches 32×(from 32 bytes per vector to 1 byte per code). Reference: Jégou et al. (2011), "Product Quantization for Nearest Neighbor Search."
+
+--- Page 29 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 6: Similarity SearchThe ChallengeA new query vector arrives. We need to find the most similar vectors in our compressed database.Query Vector:[0.2, 0.25, 0.75, 0.85, 0.15, 0.35, 0.65, 0.55]The Naive Approach (What we DON'T do)1. Decompress every vector back to its 8D approximation.2. Compute the distance between the query and each decompressed vector.3. This is slow and defeats the purpose of compression.The Elegant Solution: Asymmetric Distance Computation (ADC)We calculate distances using only the compressed codes and the codebooks, never reconstructing the full database vectors. This gives us the speed of compression with near-exact distance estimates.
+
+--- Page 30 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 6a: Compute Distance TablesQuery vector: [0.2, 0.25, 0.75, 0.85, 0.15, 0.35, 0.65, 0.55]Codebook 1Centroid 0[0.15, 0.25, 0.75, 0.85]Centroid 1[0.85, 0.85, 0.15, 0.15]Codebook 2Centroid 0[0.15, 0.35, 0.65, 0.55]Centroid 1[0.85, 0.85, 0.15, 0.15]For each codebook, compute the distance from the query subvector to all centroids:Distance Table 1:dist(query_sub1, centroid_0) = 0.05dist(query_sub1, centroid_1) = 1.17Distance Table 2:dist(query_sub2, centroid_0) = 0.00dist(query_sub2, centroid_1) = 1.17
+
+--- Page 31 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Numerical Example –Step 6b: Compute Approximate DistancesFor each encoded vector, look up distances using their codes (just table lookups, no decompression!):Vector 1 [0, 0]• dist ≈ 0.05 + 0.00 = 0.05Vector 2 [0, 0]• dist ≈ 0.05 + 0.00 = 0.05Vector 3 [1, 1]• dist ≈ 1.17 + 1.17 = 2.34Vector 4 [1, 1]• dist ≈ 1.17 + 1.17 = 2.34Vector 5 [0, 0]• dist ≈ 0.05 + 0.00 = 0.05Result: Vectors 1, 2, and 5 are closest to the query (distance ≈ 0.05). The key insight: we never reconstructed the full vectors! We just did table lookups.
+
+--- Page 32 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956PQ Key ParametersM (number of subvectors):• Typical values: 8, 16, 32, 64• More subvectors = better accuracy but more memory for codesk (centroids per codebook):• Typical value: 256 (fits in 1 byte)• More centroids = better approximation but larger codebooksTrade-off: M=8, k=256: Each vector uses 8 bytes (32×compression from float32). M=64, k=256: Each vector uses 64 bytes (4×compression, better accuracy).
+
+--- Page 33 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Product Quantization (PQ) –Why It Is PowerfulMassive CompressionReduce memory by 32–128×while maintaining good accuracyFast SearchDistance = simple table lookups instead of expensive dot productsScalabilityStore billions of vectors in RAM that would otherwise require terabytesCombinableOften combined with IVF for even better performance (IVFPQ)When to Use PQ:• Billion-scale datasets: When RAM is the bottleneck   • With IVF: IVF+PQ is the standard for massive scale   • Budget constraints: Reduce infrastructure costs 10×• Acceptable recall loss: 90–95% recall is sufficientBITS Pilani, Pilani Campus
+
+--- Page 34 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Complexity Comparison –ANN Algorithmsn = vectors in database  |  d = vector dimension  |  k = clusters (IVF)  |  m = compressed dimension (PQ)  |  i = k-means iterationsAlgorithmSearch TimeMemoryBuild TimeRecallLinear ScanO(n·d)O(n·d)O(1)100%HNSWO(log n)O(n·d)O(n log n)95–99%IVFO((n/k)·d)O(n·d)O(n·d·i)90–95%PQO(n·m)O(n·m)O(n·d·i)70–85%IVF+PQO((n/k)·m)O(n·m)O(n·d·i)85–92%HNSW+PQO(log n)O(n·m)O(n log n)90–96%Key Insight: HNSW trades memory for speed. IVF+PQ trades accuracy for compression. HNSW+PQ is the sweet spot for production.Production Ready ANN Libraries: FAISS,ScaNN, andANNOY 
+
+--- Page 35 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956II. Sparse RetrievalFrom Dense to Sparse: Complementary Approaches✓What We've Learned So Far• Transformer encoders create rich, contextual embeddings• Self-attention captures relationships between words• Different pooling strategies extract sentence-level representations• We can search billions of vectors efficiently using ANN algorithms (HNSW, IVF, PQ)✗But Vector Search Has Limitations...• Struggles with exact keyword matching (e.g., "ERROR code 500")• Misses rare/unique terms not in training data (IDs, codes)• Can't handle out-of-vocabulary words perfectlyNext: Sparse Retrieval Methods (BM25) that complement dense search for hybrid systemsBITS Pilani, Pilani Campus
+
+--- Page 36 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Dense Vector Search Has LimitationsDense embeddings are semantic —they capture meaning and context beautifully. However, they often fail at keyword-exact tasks.Limitation 1: Exact Keyword MatchingDense models focus on meaning, not exact tokens. Numbers, error codes, and product codes may not match correctly.Limitation 2: Rare / Unique TermsDense models don't index words directly. Terms unseen during training get poor embeddings (e.g., Part ID XR55-QW7).Limitation 3: Out-of-Vocabulary (OOV) WordsUnknown words are broken into sub-tokens, leading to bad embeddings and poor ranking. BM25 handles exact string matching perfectly.Solution: BM25 (sparse retrieval) handles all three cases perfectly!
+
+--- Page 37 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Summary: Why We Need Sparse + Dense TogetherDense Models (BERT Embeddings):✓Great for semantic meaning✓Understand language context✓Good for long queries✓Powerful for Q&A, RAGSparse Models (BM25):✓Great for exact matching✓IDs, numbers, rare words✓Log messages, code✓Unseen terms, spelling variationsHybrid Search = Best of Both WorldsDense search + BM25 improves accuracy significantly.Dense finds semantically similar content, Sparse ensures exact matches aren't missed.
+
+--- Page 38 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956TF-IDF: Foundation of Sparse RetrievalTerm Frequency –Inverse Document Frequency: A statistical measure of word importance in documentsTerm Frequency (TF)Raw count:TF(t, d) = count of term t in document dNormalized (common):TF(t, d) = f_t,d / |d|f_t,d = raw count, |d| = total termsIntuition: More occurrences = more importantBut normalize by document length.Inverse Document Frequency (IDF)Formula:IDF(t) = log(N / df_t)N = total documentsdf_t = documents containing tIntuition: Rare terms are more informative."Qdrant" → high IDF"the" → low IDFCombined TF-IDF Score:TF-IDF(t, d) = TF(t, d) ×IDF(t) = (ft,d/ |d|) ×log(N / dft)
+
+--- Page 39 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956TF-IDF: Foundation of Sparse Retrieval –Worked ExampleCorpus: 1000 documents  |  Document d: "machine learning is a subset of machine learning"  |  Query q: "machine learning"Step 1: Calculate IDF for Each Query TermTerm "machine"f_machine,d = 2Frequency (f): 2TF = 2/8 = 0.25df (from slide) = 300IDF = ln(1000/300) = 1.204TF-IDF = 0.25 ×1.204 = 0.301Term "learning"Frequency (f): 2TF = 2/8 = 0.25df (from slide) = 400IDF = ln(1000/400) = 0.916TF-IDF = 0.25 ×0.916 = 0.229Document score for query "machine learning":Score(q, d) = 0.301 + 0.229 = 0.530
+
+--- Page 40 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956TF-IDF: Foundation of Sparse Retrieval –Limitations✗Linear TF10 occurrences should not score 10×higher than 1. Diminishing returns are natural but not captured.✗No Length NormalizationLong documents score higher unfairly —they contain more words and thus more term occurrences.✗Bag of WordsIgnores term proximity and order. "dog bites man" and "man bites dog" get the same score.✗No Term SaturationRepetition keeps adding score indefinitely. Each additional occurrence adds the same weight.Solution: BM25 (Best Matching 25) fixes all these issues with term frequency saturation, length normalization, and a probabilistic foundation.
+
+--- Page 41 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956BM25: Best Matching 25 (Improved TF-IDF)What BM25 Improves –BM25 is a probabilistic ranking function that addresses TF-IDF's limitations:1. Term frequency saturation: Diminishing returns for repeated terms    2. Document length normalization: Fair scoring regardless of length    3. Probabilistic foundation: Based on probability ranking principleBM25 Formula (Full Version):score(Q,D) = Σᵢ₌₁ⁿ IDF(qᵢ) · [f(qᵢ,D)·(k₁+1)] / [f(qᵢ,D) + k₁·(1-b+b·|D|/avgdl)]ParameterDefaultRangeEffectk₁1.5[1.2, 2.0]Controls TF saturation. Higher = more emphasis on term frequency.b0.75[0, 1]Length normalization. 0 = no norm, 1 = full norm.
+Reference: Robertson & Zaragoza (2009), "The Probabilistic Relevance Framework: BM25 and Beyond."•f(t,d): frequency of term t in document d•∣d∣: length of the document•avgdl: average document length in the collection•k1 andb: parameters that can be tuned for different datasets
+
+--- Page 42 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956BM25: IDF and TF ComponentsIDF Component (Modified)IDF(qᵢ) = log[(N -dfᵢ + 0.5) / (dfᵢ + 0.5) + 1]Components:• N = total documents• dfᵢ = docs containing term i• +0.5 = smoothing (avoid zero)• +1 = ensure positive scoreCombined effect: Short docs with focused terms rank high, long docs need more evidence.TF Component (Saturating)TF = f · (k₁ + 1) / (f + k₁ · norm)norm = 1 -b + b · (|D| / avgdl)Key Innovation: Saturation functionAs f → ∞, TF → (k₁ + 1) / (k₁ · norm)Bounded, not linear!k₁ controls saturation: With k₁=1.5, going from 1→2 occurrences helps more than 10→11.b controls length penalty: b=0.75 means longer docs get penalized, but not fully.
+
+--- Page 43 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956BM25: Including Saturation –IntuitionSaturation is the idea that words should get lesser weightage or value as they occur more and more in a document.Example: Consider the document:"Cats and dogs are pet animals though I prefer dogs. Dogs obey our commands, can be trained easily, and play with us all the time."What if the document keeps repeating the term "dogs" over and over again? As the term frequency increases, BM25 gives lesser and lesser additional weightage to each new occurrence —the curve flattens (saturates).Saturation Curve:TF contribution1.0 ─────────────────────Saturation point0          term frequency (tf)This is the key advantage of BM25 over TF-IDF: repetition keeps adding score in TF-IDF, but BM25 applies diminishing returns. Source: Robertson et al. (foundations_bm25_review.pdf)
+
+
+--- Page 44 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956BM25: Step-by-Step ExampleScenario:Corpus: 1000 documents, average length: 50 termsQuery: "machine learning"Document D: "Machine learning is a subset of machine learning and deep learning" (12 terms)Step 1: Calculate IDF for Each Query TermTerm "machine": appears in 300 documentsIDF = log[(1000 -300 + 0.5) / (300 + 0.5) + 1]IDF = log[700.5 / 300.5 + 1]IDF = log[2.331 + 1] = log[3.331] = 1.203IDF(machine) = 1.203Term "learning": appears in 400 documentsIDF = log[(1000 -400 + 0.5) / (400 + 0.5) + 1]IDF = log[600.5 / 400.5 + 1]IDF = log[2.499] = 0.916IDF(learning) = 0.916
+
+--- Page 45 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956BM25: Step-by-Step Example (Steps 2 & 3)Step 2: TF Component for "machine" (f=2, k₁=1.5, b=0.75)norm = 1 -0.75 + 0.75 ×(12/50)norm = 0.25 + 0.18 = 0.43TF = [2 ×(1.5 + 1)] / [2 + 1.5 ×0.43]TF = 5.0 / 2.645 = 1.890TF(machine) = 1.890For "learning" (f=3, same norm=0.43)TF = [3 ×2.5] / [3 + 0.645]TF = 7.5 / 3.645 = 2.058TF(learning) = 2.058Step 3: Combine ScoresBM25(Q, D) = IDF(machine) ×TF(machine) + IDF(learning) ×TF(learning)= 1.203 ×1.890 + 0.916 ×2.058 = 2.274 + 1.885BM25 Score = 4.159
+
+--- Page 46 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956BM25 vs TF-IDF –Understanding the DifferenceTF-IDF score (normalized by document length):"machine":  (2/9) ×log(1000/300) = 0.222 ×1.20 = 0.267"learning": (3/9) ×log(1000/400) = 0.333 ×0.916 = 0.305Total = 0.572BM25 score (with saturation & length normalization):score(q, d) = 4.159Why BM25 Scores Higher: (1) Document length normalization —doc is shorter than average (12 vs 50 tokens) → less penalty. (2) TF saturation —3 occurrences aren't 3×better than 1. (3) Probabilistic foundation —better ranking properties.
+
+--- Page 47 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956BM25 vs TF-IDF –Understanding the Difference (Detail)• Document Length Normalization:BM25 considers document is shorter than average (12 vs 50 tokens) → less length penalty. Short, focused documents rank higher.• Term Frequency Saturation:3 occurrences aren't 3×better than 1 —diminishing returns are applied. The curve flattens instead of growing linearly.• Probabilistic Foundation:Based on the probability ranking principle → better ranking properties. Documents with focused, relevant terms rank higher than verbose documents.TF-IDF total = 0.572   vs   BM25 total = 4.159
+
+--- Page 48 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Why Hybrid Search? Dense + Sparse✗Dense-Only Failures –Example 1: Exact KeywordsQuery: "ERROR code 500"Doc A: "Server error 500 occurred"Dense score: 0.72Doc B: "Something went wrong"Dense score: 0.85 ← WRONG RANKING!Why? Embedding trained on general text doesn't know "500" is crucial.✓Sparse (BM25) Catches These –Example 1:Query: "ERROR code 500"Doc A: "Server error 500 occurred"BM25 score: 8.3 (high IDF for "500")Doc B: "Something went wrong"BM25 score: 0.0 (no matching terms)Correct ranking!
+
+--- Page 49 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Why Hybrid Search? Dense + Sparse –Example 2: Unique IDs✗Dense-Only Failures –Example 2: Unique IDsQuery: "AIMLCZG521 schedule"Doc A: "Course schedule for AI/ML"Dense: 0.88 ← WRONG!Doc B: "AIMLCZG521 timing"Dense: 0.75Unique terms not in training data✓Sparse (BM25) Catches These –Example 2:Query: "AIMLCZG521 schedule"Doc A: "Course schedule for AI/ML"BM25: 3.2 ("schedule" matches)Doc B: "AIMLCZG521 timing"BM25: 12.5 (exact ID match!)Correct ranking!
+
+--- Page 50 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Dense + Sparse –Complementary StrengthsAspectDense (Embeddings)Sparse (BM25)Semantic understanding✓Excellent✗NoneSynonyms/paraphrases✓Handles well✗Misses completelyExact keyword match✗Can miss✓PerfectRare/unique terms✗Out-of-vocabulary✓High IDF capturesNumbers, codes, IDs✗Not in training✓Works perfectlyOut-of-domain
+⚠Depends on training✓Always worksThe Hybrid Solution: Use BOTH retrieval methods and combine their results! Dense finds semantically similar content, Sparse ensures exact matches aren't missed.BITS Pilani, Pilani Campus
+
+--- Page 51 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956The Challenge: Combining Different Score RangesProblem: Can't just add them! Need score-agnostic fusion.Dense retrieval gives cosine similarities [0, 1]    |    BM25 gives unbounded scores [0, ∞]Min-Max Normalization:score' = (score -min) / (max -min)✗Sensitive to outliersZ-score Normalization:score' = (score -µ) / σ✗Assumes normal distributionReciprocal Rank Fusion (RRF):RRF(d) = Σ 1 / (k + rank_r(d))✓No assumptions about score distributions!
+
+--- Page 52 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Reciprocal Rank Fusion (RRF): The MathRRF FormulaRRF(d) = Σ_{r ∈rankings}  1 / (k + rank_r(d))Where: d = document being scored   |   rankings = set of ranking lists (e.g., dense + sparse)rank_r(d) = position of document d in ranking r (1, 2, 3, ...)   |   k = constant (typically 60)Why k=60? (Empirical finding from TREC competitions)• k=60 balances contribution from high and low ranks• Without k: 1/1 = 1.0, 1/2 = 0.5 (too steep drop)• With k=60: 1/61 = 0.0164, 1/62 = 0.0161 (gentler)• Prevents first rank from dominating too muchAlternative k values:• k=0: Maximum emphasis on top ranks (aggressive)• k=60: Balanced (standard)• k=100: More weight to lower ranks (conservative)Reference: Cormack et al. (2009), "Reciprocal Rank Fusion outperforms Condorcet and individual rank learning methods."
+
+--- Page 53 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Properties of RRF1. Score-agnostic: Only uses rank order, not raw scores. Works regardless of whether scores are [0,1] or [0,∞].2. Bounded: Score ∈[0, number of rankings / k]. Output is predictable and comparable across queries.3. Symmetric: All rankings are weighted equally. No need to specify which system is more important.4. Robust: Works even if one ranking is poor. The other rankings compensate, making it resilient.5. No Training: No hyperparameters to tune (except k). No labeled data needed. Plug-and-play.5. No Training:No hyperparameters to tune (except k). No labeled data needed. Plug-and-play.Why RRF Works So Well: Documents that rank high in MULTIPLE systems are likely truly relevant. RRF naturally gives bonus to "consensus" documents without explicit weighting.
+
+--- Page 54 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956RRF: Example –Scenario: Query "machine learning tutorial"Dense Retrieval ResultsRankDocCosine1Doc A0.922Doc C0.893Doc B0.854Doc E0.825Doc D0.79Sparse (BM25) ResultsRankDocBM251Doc B87.32Doc A82.13Doc D79.54Doc F71.25Doc C68.9Next: Apply RRF to combine these two ranked lists →
+
+--- Page 55 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956RRF: Example –Score Calculation (k=60)Doc A: Dense rank: 1, Sparse rank: 2RRF = 1/(60+1) + 1/(60+2) = 1/61 + 1/62 = 0.01639 + 0.01613 = 0.03252Doc B: Dense rank: 3, Sparse rank: 1RRF = 1/(60+3) + 1/(60+1) = 1/63 + 1/61 = 0.01587 + 0.01639 = 0.03226Doc C: Dense rank: 2, Sparse rank: 5RRF = 1/(60+2) + 1/(60+5) = 1/62 + 1/65 = 0.01613 + 0.01538 = 0.03151Doc D: Dense rank: 5, Sparse rank: 3RRF = 1/(60+5) + 1/(60+3) = 1/65 + 1/63 = 0.01538 + 0.01587 = 0.03125Doc E: Dense rank: 4, Sparse rank: –RRF = 1/(60+4) + 0 = 1/64 = 0.01562Doc F: Dense rank: –, Sparse rank: 4RRF = 0 + 1/(60+4) = 1/64 = 0.01562Final RankingRankDocRRF Score1Doc A0.032522Doc B0.032263Doc C0.031514Doc D0.031255Doc E, F0.01562Key Insight: Doc A wins because it ranks high in BOTH systems (consensus), even though it wasn't #1 in sparse.BITS Pilani, Pilani Campus
+
+--- Page 56 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Performance Characteristics (Typical)Pipeline StageLatencyRecallPrecisionBM25 only20ms70%60%Vector only50ms75%65%Hybrid (BM25+Vector+RRF)70ms90%75%Key Observations:• Hybrid (BM25+Vector+RRF) achieves significantly higher recall (90%) and precision (75%) at modest latency cost (+20ms).• BM25 alone is fast but misses semantic matches. Vector alone misses exact keyword matches.• Combining both is the best strategy for production RAG systems.
+
+--- Page 57 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Hybrid Search Implementation-Demo
+# Pseudocode: Hybrid Search with RRFdef hybrid_search(query, k=60, top_n=10):# Step 1: Dense Vector Searchquery_embedding = embed(query)dense_results = vector_db.search(query_embedding, top_n)# dense_results = [(doc_id, score), ...]# Step 2: Sparse BM25 Searchsparse_results = bm25_index.search(query, top_n)# sparse_results = [(doc_id, score), ...]# Step 3: Reciprocal Rank Fusionrrf_scores = {}for rank, (doc_id, _) in enumerate(dense_results, 1):rrf_scores[doc_id] = rrf_scores.get(doc_id, 0) + 1/(k + rank)for rank, (doc_id, _) in enumerate(sparse_results, 1):rrf_scores[doc_id] = rrf_scores.get(doc_id, 0) + 1/(k + rank)# Step 4: Sort by RRF scorefinal_results = sorted(rrf_scores, key=lambda d: rrf_scores[d], reverse=True)return final_results[:top_n]
+
+--- Page 58 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Key Takeaways1. Encoder Models: Bidirectional transformers create contextual embeddings through self-attention and pooling.2. Vector Similarity: Cosine similarity (or normalized dot product) measures semantic closeness in embedding space.3. ANN Algorithms: HNSW (graph), IVF (partitions), PQ (compression) enable fast search at scale.4. Sparse Retrieval: BM25 improves TF-IDF with saturation and length normalization for exact keyword matching.5. Hybrid Systems: Dense + Sparse + RRF combines semantic and lexical strengths for the best retrieval accuracy.Formulae: Self-attention: Attention(Q,K,V) = softmax(QKᵀ/√d_k)V   |   Cosine: cos(A,B) = A·B/(‖A‖‖B‖)   |   BM25: f(k₁+1)/(f+k₁(1-b+b|D|/avgdl))   |   RRF: Σ 1/(k+rank)
+
+--- Page 59 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956Resources & Further ReadingDense Passage Retrieval (Karpukhin et al. (2020))Foundation for modern dense retrieval systems in open-domain QA.[ACL 2020]HNSW (Malkov & Yashunin (2018))Efficient and robust approximate nearest neighbor search using Hierarchical Navigable Small World graphs.[IEEE TPAMI]Product Quantization (Jégou et al. (2011))Product Quantization for Nearest Neighbor Search —vector compression for large-scale search.[IEEE TPAMI]Sentence-BERT (Reimers & Gurevych (2019))Sentence embeddings using Siamese BERT-Networks for semantic similarity.[EMNLP 2019]BM25 Review (Robertson & Zaragoza (2009))The Probabilistic Relevance Framework: BM25 and Beyond.[Foundations & Trends in IR]Reciprocal Rank Fusion (Cormack et al. (2009))RRF outperforms Condorcet and individual rank learning methods.[SIGIR 2009]
+
+--- Page 60 ---
+BITS Pilani, Deemed to be University under Section 3 of UGC Act, 1956References1.Dense Passage Retrieval for Open-Domain Question Answering—Karpukhin, V., et al. (2020).Dense Passage Retrieval for Open-Domain Question Answering. ACL 2020.2.Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs—Malkov, Y.A., & Yashunin, D.A. (2018).Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs. IEEE TPAMI.3.Product Quantization for Nearest Neighbor Search—Jégou, H., Douze, M., & Schmid, C. (2011).Product Quantization for Nearest Neighbor Search. IEEE TPAMI.4.Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks—Reimers, N., & Gurevych, I. (2019).Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks. EMNLP.5.The Probabilistic Relevance Framework: BM25 and Beyond—Robertson, S., & Zaragoza, H. (2009).The Probabilistic Relevance Framework: BM25 and Beyond. Foundations and Trends in Information Retrieval.6.Reciprocal Rank Fusion Outperforms Condorcet and Individual Rank Learning Methods—Cormack, G.V., Clarke, C.L.A., & Buettcher, S. (2009).Reciprocal Rank Fusion Outperforms Condorcet and Individual Rank Learning Methods. SIGIR.7.Understanding Product Quantization: A Step-by-Step Guide —LinkedIn ArticleLinkedIn Article on Product Quantization8.https://blog.dailydoseofds.com/p/faster-neighbor-search-using-inverted
