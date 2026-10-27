@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 08 – Lifecycle Exercise &amp; Hands-on Weather Agent (Qwen) | Conversational AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">🌦️</div>
+  <div>
+    <h1>Part 08 · Lifecycle Exercise &amp; Hands-on 1: Weather Agent with Qwen</h1>
+    <div class="sub">Conversational AI (S1-26_AIMLCZG521) · Session 1 · Prof. Bharathi R</div>
+    <span class="time">[1:53:58 – 2:04:28]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: links in the "Extra reading" cards were fetched and checked on 2026-10-26. Inferred statements carry the <span class="badge verify"></span> badge.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · Exercise: map the lifecycle</a></li>
+  <li><a href="#t2">2 · Hands-on setup (Ollama, Colab, Qwen)</a></li>
+  <li><a href="#t3">3 · Weather agent: 5 stages</a></li>
+  <li><a href="#t4">4 · LLM decides when to use a tool</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>Exercise: map the agent lifecycle</h2><span class="time">[1:53:58 – 1:55:00]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>"Find me a good Italian restaurant near my office that's open tonight and make a reservation for 2 at 7 PM"</h3>
+    <p>The first half ("find me…") is an ordinary <b>LLM / ChatGPT task</b>. The second half ("<b>make a reservation</b>") needs an <b>AI agent</b>, because only an agent with autonomy and tools can <i>do a task</i>. Board: "AI agent → do a task".</p>
+    <div class="goal">For each of the 7 stages, answer the question on the slide.</div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Asking a friend "which Italian place is good near my office?" gets you advice. Asking your <b>personal assistant</b> to "book it for 2 at 7" gets you a <b>confirmed table</b>.</p>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Candidate restaurants returned by a places API <span class="badge beyond">illustrative data + suggested answer (not solved in class)</span></h3>
+    <table class="given">
+      <tr><th>Restaurant</th><th class="num">Rating</th><th class="num">Distance from office</th><th>Open tonight</th><th>Table for 2 at 7 PM</th></tr>
+      <tr><td>Trattoria Roma</td><td class="num">4.6</td><td class="num">1.2 km</td><td>Yes</td><td>Yes</td></tr>
+      <tr><td>Pasta Street</td><td class="num">4.2</td><td class="num">0.5 km</td><td>Yes</td><td>Yes</td></tr>
+      <tr><td>Little Italy</td><td class="num">4.8</td><td class="num">3.5 km</td><td>Yes</td><td>No</td></tr>
+      <tr><td>Bella Napoli</td><td class="num">4.5</td><td class="num">0.8 km</td><td>No</td><td>n/a</td></tr>
+    </table>
+    <p>Assumed thresholds: "good" = rating ≥ 4.5, "near" = ≤ 2 km. In practice the agent would ask the user or use stored preferences.</p>
+  </div>
+
+  <div class="card steps">
+    <span class="label">Step-by-step: filling in the slide's table</span>
+    <div class="step"><span class="n">1</span><div><b>Request:</b> entities are cuisine = Italian, quality = good, location = near <i>office</i> (resolve from the user profile), time = tonight, party = 2, slot = 7 PM. Validate that the user is authenticated.</div></div>
+    <div class="step"><span class="n">2</span><div><b>Routing:</b> tools = places/maps search, reviews/ratings, reservation API (or a booking sub-agent).</div></div>
+    <div class="step"><span class="n">3</span><div><b>Reasoning:</b> resolve the office location → search Italian restaurants → filter (good, near, open tonight) → check the 7 PM slot → reserve → confirm.</div></div>
+    <div class="step"><span class="n">4</span><div><b>Tool invocation and filtering:</b><br><span class="calc">Pasta Street: 4.2 &lt; 4.5 ✘ · Little Italy: 3.5 km &gt; 2 ✘ · Bella Napoli: closed ✘ · Trattoria Roma: 4.6 ✔ 1.2 km ✔ open ✔ slot ✔</span><br>Then call <code>reserve(restaurant="Trattoria Roma", party=2, time="19:00")</code>.</div></div>
+    <div class="step"><span class="n">5</span><div><b>Memory:</b> store office location, cuisine preference (Italian), usual party size, booking id.</div></div>
+    <div class="step"><span class="n">6</span><div><b>Safety:</b> confirm before committing (date, time, party size), share no PII with the restaurant beyond name and phone, and no payment without approval.</div></div>
+    <div class="step"><span class="n">7</span><div><b>Response:</b> "Booked Trattoria Roma (4.6★, 1.2 km) for 2 at 7 PM tonight. Booking ID …"</div></div>
+    <span class="pill">Trattoria Roma · 2 people · 7 PM</span><span class="pill blue">1 of 4 candidates passes all filters</span>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Only one candidate meets every constraint. The highest rated (Little Italy) fails on distance and availability, which shows why the agent must check <i>all</i> constraints rather than just ranking by rating.</li></ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"This is where the question makes clear the need for an AI agent. Only an agent can do a task."</li>
+      <li>"This is all a hypothetical study … Testing, observability, building a reliable system is again a big study."</li>
+    </ul>
+  </div>
+  <div class="takeaway">"find" is LLM work, "reserve" is agent work. Mapping a request onto the 7 stages exposes the entities, tools, plan, memory and safety checks it needs.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>Hands-on setup: Ollama model catalogue, Colab T4, Qwen</h2><span class="time">[1:55:00 – 1:58:12]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <ul>
+      <li>Notebook: <b>Handson1-Weather_Agent_Qwen.ipynb</b> (shared by the professor). It uses native Python and an <b>open-source Qwen</b> model.</li>
+      <li><b>Ollama</b> (ollama.com → Models) lists open-source models with their size and capabilities (vision, tools, thinking). You can download and run them locally.</li>
+      <li>Local download "takes too much of my resource", so the demo runs on <b>Google Colab</b> (Runtime → T4 GPU). <b>No API key is needed anywhere.</b></li>
+      <li>For heavy models, use the course lab (<b>Prayogshala</b>).</li>
+      <li>Model used: <b>Qwen2.5-1.5B-Instruct</b>. "You can use any model here: change the model ID."</li>
+    </ul>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Ollama is an <b>app store for open models</b>. Colab's T4 is a <b>free rented workbench</b> with a decent GPU. The lab is the <b>professional workshop</b> for big jobs.</p>
+  </div>
+
+  <div class="card formula">
+    <span class="label">Formula (rule of thumb)</span>
+    <h3>Will the model fit on the GPU?</h3>
+    <div class="formula-box"><i>M</i><sub>weights</sub> ≈ <i>N</i><sub>params</sub> × <i>b</i></div>
+    <ul class="where">
+      <li><b>M<sub>weights</sub></b> memory for the weights alone (bytes). The KV cache and activations need extra memory on top.</li>
+      <li><b>N<sub>params</sub></b> number of parameters (Qwen2.5-1.5B-Instruct: 1.54 B, from the model card)</li>
+      <li><b>b</b> bytes per parameter: 2 for BF16/FP16, 1 for 8-bit, 0.5 for 4-bit</li>
+    </ul>
+  </div>
+
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>BF16. <span class="calc">1.54 × 10⁹ × 2 B = 3.08 × 10⁹ B ≈ 3.08 GB</span></div></div>
+    <div class="step"><span class="n">2</span><div>4-bit quantised. <span class="calc">1.54 × 10⁹ × 0.5 B = 0.77 GB</span></div></div>
+    <div class="step"><span class="n">3</span><div>Compare with the T4's 16 GB of VRAM <span class="badge verify"></span>. <span class="calc">3.08 / 16 ≈ 19 % used by weights</span></div></div>
+    <span class="pill">≈ 3.1 GB, fits easily on a free T4</span><span class="hint">a 70 B model at BF16 would need ≈ 140 GB, which is lab territory</span>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>The weather example is <b>"not a complete agent, literally speaking. This is actually a workflow"</b>: extract location → call weather API → respond. There is no reasoning loop.</li>
+      <li>Security will be considered when designing conversational systems (answer to a student's question).</li>
+    </ul>
+    <span class="fix">"quen / Quinn" → <b>Qwen</b>. "VIMALA server / Olama.com / Ulama.com" → <b>Ollama</b> (ollama.com). "Collab" → <b>Colab</b>. "Prayog Shala" → <b>Prayogshala</b> (course lab) <span class="badge verify"></span>. "QIN 2.5 515B instruct" → <b>Qwen2.5-1.5B-Instruct</b> (from the context and the T4 setup) <span class="badge verify"></span>. "Deepak is 1 million parameters" is unclear, likely a model-size remark on the Ollama page <span class="badge verify"></span>. "CPT / Pgcp" → <b>PPT</b> (screen-share issue).</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul>
+      <li><a href="https://ollama.com/library">Ollama model library</a>: tags such as tools, thinking and vision, plus sizes.</li>
+      <li><a href="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct">Qwen2.5-1.5B-Instruct model card</a>: 1.54 B params, 28 layers, 32,768-token context, structured JSON output.</li>
+    </ul>
+  </div>
+  <div class="takeaway">a 1.5 B instruct model on a free Colab T4 is enough to demo tool calling. Bigger models go to the lab.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Weather agent: the five stages in the notebook</h2><span class="time">[1:58:12 – 2:01:54]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <table>
+      <tr><th>Stage</th><th>What happens</th></tr>
+      <tr><td>1 Baseline</td><td>LLM <b>without tools</b>: observe its limits</td></tr>
+      <tr><td>2 Tool definition</td><td>Define the weather function <b>schema</b> (JSON)</td></tr>
+      <tr><td>3 Tool selection</td><td>The <b>LLM decides when</b> to use the tool. It replies with a <code>&lt;tool_call&gt;</code> instead of plain text. Nothing is executed yet.</td></tr>
+      <tr><td>4 Execution</td><td>Call the actual weather API (<b>Open-Meteo</b>: free, no key)</td></tr>
+      <tr><td>5 Response generation</td><td>The LLM turns the tool result into a natural-language answer</td></tr>
+    </table>
+    <div class="diagram">
+      <svg viewBox="0 0 880 100" role="img" aria-label="Weather agent flow">
+        <defs><marker id="e1" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f4f94"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="11.5" text-anchor="middle">
+          <rect x="5" y="20" width="150" height="50" rx="8" fill="#fff" stroke="#3a7bd5" stroke-width="2"/><text x="80" y="41">"What's the weather</text><text x="80" y="57">like in Mumbai?"</text>
+          <rect x="185" y="20" width="150" height="50" rx="8" fill="#fff4ea" stroke="#e8833a" stroke-width="2"/><text x="260" y="41">Qwen → &lt;tool_call&gt;</text><text x="260" y="57">get_weather{city:Mumbai}</text>
+          <rect x="365" y="20" width="150" height="50" rx="8" fill="#ecf8f0" stroke="#2f9e5b" stroke-width="2"/><text x="440" y="41">Python parses JSON,</text><text x="440" y="57">calls Open-Meteo</text>
+          <rect x="545" y="20" width="150" height="50" rx="8" fill="#fff" stroke="#3a7bd5" stroke-width="2"/><text x="620" y="41">{temp: 36.4 °C, Clear sky,</text><text x="620" y="57">humidity: 32 %, Low}</text>
+          <rect x="725" y="20" width="150" height="50" rx="8" fill="#fff4ea" stroke="#e8833a" stroke-width="2"/><text x="800" y="41">Qwen writes the</text><text x="800" y="57">final answer</text>
+          <line x1="155" y1="45" x2="181" y2="45" stroke="#1f4f94" stroke-width="2" marker-end="url(#e1)"/>
+          <line x1="335" y1="45" x2="361" y2="45" stroke="#1f4f94" stroke-width="2" marker-end="url(#e1)"/>
+          <line x1="515" y1="45" x2="541" y2="45" stroke="#1f4f94" stroke-width="2" marker-end="url(#e1)"/>
+          <line x1="695" y1="45" x2="721" y2="45" stroke="#1f4f94" stroke-width="2" marker-end="url(#e1)"/>
+          <text x="440" y="92" fill="#5b6475" font-size="11">The LLM never touches the internet. Your code executes the tool and feeds the result back.</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>The model is a <b>manager who can only write memos</b>. It writes "please call get_weather for Mumbai" on a slip (<code>&lt;tool_call&gt;</code>). Your Python code is the <b>secretary</b> who reads the slip, makes the call and hands back the result. The manager then writes the reply.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Like an RPC stub: the model emits a serialised request (JSON), your dispatcher parses it with <code>json.loads</code>, validates it, invokes the handler and returns the result. A bad frame (invalid JSON) is dropped, which is the <code>except JSONDecodeError: pass</code> in the notebook.</p></div>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario (observed in class)</span>
+    <table class="given">
+      <tr><th>Run</th><th>Observed output</th></tr>
+      <tr><td>Stage 1, no tools</td><td>Qwen declined ("I'm sorry, I cannot answer…") and drifted into unrelated content about India and culture. That is hallucination or deflection, not grounded in real-time data.</td></tr>
+      <tr><td>Stages 2–5, with tool</td><td>Tool result: country India, temperature_c 36.4, condition "Clear sky", humidity_percent 32, humidity_level "Low (dry)". Reply: "Current weather in Mumbai is Clear sky with a temperature of 36.4 °C. The humidity level is Low (dry)…"</td></tr>
+    </table>
+  </div>
+
+  <div class="card code">
+    <span class="label">Code (condensed reconstruction of the notebook's key cells)</span>
+    <pre><span class="k">import</span> json, re, requests
+
+SYSTEM = <span class="s">"You are a weather information agent. Use the get_weather tool for any weather question."</span>
+tools = [{<span class="s">"type"</span>: <span class="s">"function"</span>, <span class="s">"function"</span>: {
+    <span class="s">"name"</span>: <span class="s">"get_weather"</span>,
+    <span class="s">"description"</span>: <span class="s">"Current weather for a city"</span>,
+    <span class="s">"parameters"</span>: {<span class="s">"type"</span>: <span class="s">"object"</span>,
+                   <span class="s">"properties"</span>: {<span class="s">"city"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>}},
+                   <span class="s">"required"</span>: [<span class="s">"city"</span>]}}}]
+
+<span class="k">def</span> parse_tool_calls(text):
+    calls = []
+    <span class="k">for</span> block <span class="k">in</span> re.findall(<span class="s">r"&lt;tool_call&gt;(.*?)&lt;/tool_call&gt;"</span>, text, flags=re.DOTALL):
+        <span class="k">try</span>: calls.append(json.loads(block.strip()))
+        <span class="k">except</span> json.JSONDecodeError: <span class="k">pass</span>
+    <span class="k">return</span> calls
+
+<span class="k">def</span> get_weather(city):                                   <span class="c"># Open-Meteo: free, no API key</span>
+    g = requests.get(<span class="s">"https://geocoding-api.open-meteo.com/v1/search"</span>,
+                     params={<span class="s">"name"</span>: city, <span class="s">"count"</span>: 1}, timeout=10).json()[<span class="s">"results"</span>][0]
+    w = requests.get(<span class="s">"https://api.open-meteo.com/v1/forecast"</span>, timeout=10, params={
+        <span class="s">"latitude"</span>: g[<span class="s">"latitude"</span>], <span class="s">"longitude"</span>: g[<span class="s">"longitude"</span>],
+        <span class="s">"current"</span>: <span class="s">"temperature_2m,relative_humidity_2m,weather_code"</span>}).json()[<span class="s">"current"</span>]
+    <span class="k">return</span> {<span class="s">"city"</span>: city, <span class="s">"temperature_c"</span>: w[<span class="s">"temperature_2m"</span>],
+            <span class="s">"humidity_percent"</span>: w[<span class="s">"relative_humidity_2m"</span>], <span class="s">"weather_code"</span>: w[<span class="s">"weather_code"</span>]}
+
+messages = [{<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: SYSTEM},
+            {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">"What's the weather like in Mumbai?"</span>}]
+raw = generate(messages, tools=tools)                    <span class="c"># Qwen via transformers chat template</span>
+<span class="k">for</span> call <span class="k">in</span> parse_tool_calls(raw):                       <span class="c"># empty list means answer directly</span>
+    result = get_weather(**call[<span class="s">"arguments"</span>])
+    messages.append({<span class="s">"role"</span>: <span class="s">"tool"</span>, <span class="s">"name"</span>: call[<span class="s">"name"</span>], <span class="s">"content"</span>: json.dumps(result)})
+answer = generate(messages, tools=tools)                 <span class="c"># Stage 5</span></pre>
+    <p class="hint">The <code>generate()</code> helper and the exact cell layout are in the shared notebook. The <code>SYSTEM</code> prompt, <code>parse_tool_calls</code> regex and message roles are as shown on screen. <code>weather_code</code> 0 = "Clear sky" in the WMO code table.</p>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>The baseline run proves the point: without tools the LLM cannot know today's weather (stateless, training cut-off).</li>
+      <li>The <b>system prompt</b> is "the control we have": it tells the model when to use the tool.</li>
+      <li>Open-Meteo needs no key, so there are no secrets in the notebook and anyone can run it.</li>
+    </ul>
+    <ul class="cons"><li>It is still a <b>workflow</b>: one tool, one call, no plan ⇄ act loop and no autonomy ("the level of liberty is not given").</li></ul>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Thinking the LLM "calls the API". It only <b>emits</b> a structured request. Your code executes it.</li>
+      <li>Calling this a full agent. The professor said it is not: there is no reasoning or replanning loop.</li>
+      <li>Not guarding <code>json.loads</code>. Small models sometimes emit malformed JSON.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"LLM decides <b>when</b> to use the tool. This line is important."</li>
+      <li>"Without a tool, the LLM will hallucinate." The tool connection is described "using a JSON script". The JSON structures will be learned later.</li>
+      <li>"Change the models and observe."</li>
+    </ul>
+    <span class="fix">"open Meteo" → <b>Open-Meteo</b>. "weather reagent" → weather <b>agent</b>. "temporary" → temperature or weather.</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://open-meteo.com/en/docs">Open-Meteo Weather Forecast API docs</a>: <code>/v1/forecast</code>, the <code>current=</code> variables and the WMO weather-code table (0 = Clear sky).</li></ul>
+  </div>
+  <div class="takeaway">baseline (fails) → schema → LLM emits a tool_call → code executes → LLM answers. Tool calling grounds the answer, but one fixed call is still a workflow.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>The LLM decides <i>whether</i> to call a tool</h2><span class="time">[2:01:54 – 2:04:28]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <p>Even with the weather tool attached, "<b>What is the capital of France?</b>" produces <code>tool_calls = []</code> (empty). The model knows this is general knowledge and answers directly. "What's the weather in Mumbai?" produces a <code>get_weather</code> call.</p>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A clerk with a phone does not call head office to ask "what is 2 + 2". They call only when they need information they don't have.</p>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Four questions sent to the weather agent <span class="badge beyond">expected behaviour</span></h3>
+    <table class="given">
+      <tr><th>#</th><th>Question</th><th>Tool call expected?</th></tr>
+      <tr><td>1</td><td>What's the weather like in Mumbai?</td><td>Yes: get_weather(Mumbai)</td></tr>
+      <tr><td>2</td><td>What is the capital of France?</td><td>No (shown in class)</td></tr>
+      <tr><td>3</td><td>Is it humid in Chennai right now?</td><td>Yes: get_weather(Chennai)</td></tr>
+      <tr><td>4</td><td>Explain what humidity means.</td><td>No: general knowledge</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step</span>
+    <div class="step"><span class="n">1</span><div>Questions needing <b>real-time</b> data: #1 and #3. <span class="calc">2 tool calls</span></div></div>
+    <div class="step"><span class="n">2</span><div>Questions answerable from training knowledge: #2 and #4. <span class="calc">tool_calls = [] for both</span></div></div>
+    <div class="step"><span class="n">3</span><div>Share of queries that hit the API. <span class="calc">2 / 4 = 50 %</span></div></div>
+    <span class="pill">2 API calls instead of 4</span><span class="hint">fewer unnecessary calls means lower latency and cost</span>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Letting the LLM decide <i>whether</i> to call a tool avoids pointless API calls. This is "LLM decides" behaviour, the seed of agentic autonomy.</li></ul>
+    <ul class="cons"><li>A small model may mis-route, e.g. call the tool for #4 or skip it for #3. That is why observability is needed (Part 07).</li></ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Though you are building a weather agent, you might ask a general question … no tool call happens. The <b>LLM decides</b>."</li>
+      <li>"This is a simple agent. The level of liberty is not given to the agent. It only finds the temperature."</li>
+      <li>The file and slides are shared on Taxila. The discussion continues next class.</li>
+    </ul>
+    <span class="fix">"Ml is a good reasoning model / Ml decides" → <b>LLM</b>. "Thank you, Max" → "Thank you, ma'am".</span>
+  </div>
+  <div class="takeaway">tool use is conditional. The LLM chooses whether and which tool to call, and your code does the calling.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. In the restaurant exercise, which part is an LLM task and which is an agent task?</summary>
+    <div class="ans">"Find a good Italian restaurant near my office open tonight" can be done by an LLM (with search). "Make a reservation for 2 at 7 PM" needs an agent, because it has to do a task.</div></details>
+  <details><summary>2. Name the five stages of the weather notebook.</summary>
+    <div class="ans">Baseline (no tools) → tool definition (schema) → tool selection (LLM emits &lt;tool_call&gt;) → execution (Open-Meteo) → response generation.</div></details>
+  <details><summary>3. How much weight memory does a 7 B model need at BF16 and at 4-bit?</summary>
+    <div class="ans">7 × 10⁹ × 2 B = <b>14 GB</b> at BF16. 7 × 10⁹ × 0.5 B = <b>3.5 GB</b> at 4-bit (plus KV cache and activations).</div></details>
+  <details><summary>4. Why did "What is the capital of France?" produce no tool call?</summary>
+    <div class="ans">The LLM judged that the question needs no external or real-time data, so it answered from its own knowledge and <code>tool_calls</code> was empty.</div></details>
+  <details><summary>5. Why is the weather "agent" really a workflow?</summary>
+    <div class="ans">It does one fixed thing: extract the city, call one API, respond. There is no plan ⇄ act loop, no retries or replanning, and no autonomy over a broader goal.</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>Confirm the exact model ID used (Qwen2.5-1.5B-Instruct?) and whether Lab 1 expects Ollama or transformers.</li>
+    <li>How do we get access to the Prayogshala lab, and which models are pre-installed?</li>
+    <li>For the restaurant exercise, should "good" and "near" be clarified with the user, or inferred from memory?</li>
+    <li>How do we turn the weather workflow into a true agent: add a loop, multiple tools, and a fallback API?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[1:53:58 – 1:55:00]</span> Exercise: map the lifecycle for the restaurant reservation request</li>
+    <li><span class="t">[1:55:00 – 1:58:12]</span> Hands-on setup: Ollama catalogue, Colab T4, Prayogshala lab, Qwen model; security Q&amp;A</li>
+    <li><span class="t">[1:58:12 – 2:01:54]</span> Weather agent's 5 stages, system prompt, JSON tool schema, Open-Meteo, observed output</li>
+    <li><span class="t">[2:01:54 – 2:04:28]</span> LLM decides whether to call a tool (capital of France → no call); wrap-up</li>
+  </ul>
+</section>
+
+<footer>Part 08 · segments 054–063 · <a href="part_07.html">← part 07</a> · <a href="index.html">index</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>

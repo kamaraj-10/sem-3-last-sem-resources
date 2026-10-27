@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 06 – Agent Lifecycle in Depth &amp; Flight-Booking Case Study | Conversational AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">✈️</div>
+  <div>
+    <h1>Part 06 · Agent Lifecycle in Depth &amp; the Flight-Booking Case Study</h1>
+    <div class="sub">Conversational AI (S1-26_AIMLCZG521) · Session 1 · Prof. Bharathi R</div>
+    <span class="time">[1:22:24 – 1:37:58]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: links in the "Extra reading" cards were fetched and checked on 2026-10-26. Inferred statements carry the <span class="badge verify"></span> badge.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · Lifecycle stages in depth</a></li>
+  <li><a href="#t2">2 · Case study: "Book me a flight"</a></li>
+  <li><a href="#t3">3 · Lifecycle flow: cross-cutting stages</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>Agent lifecycle: each stage in depth</h2><span class="time">[1:22:24 – 1:28:00]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>The agent's objective is to <u>complete the task</u> it was given. It loops, re-plans and retries until done.</h3>
+    <table>
+      <tr><th>#</th><th>Stage</th><th>What happens (as explained in class)</th></tr>
+      <tr><td>1</td><td>Request</td><td>Receive input, <b>validate and sanitize</b> (is the request allowed and ethical?), extract entities and intent.</td></tr>
+      <tr><td>2</td><td>Routing</td><td>Classify intent, select the tool from the given set, or route to a sub-agent (multi-agent). A single agent does its own routing.</td></tr>
+      <tr><td>3</td><td>Reasoning</td><td>Break the goal into steps, notice missing information, plan which tool calls to make. <b>Only planning happens here.</b></td></tr>
+      <tr><td>4</td><td>Tool invocation</td><td>Actually call the planned APIs, query databases, execute code. Then go back to reasoning to check whether the answer is sufficient.</td></tr>
+      <tr><td>5</td><td>Memory</td><td>Store conversation history and important entities, maintain session state, update preferences. <b>Not a sequential step.</b></td></tr>
+      <tr><td>6</td><td>Safety</td><td>Block toxic content, check facts, redact <b>PII</b>. Sanitisation check on the input <i>and</i> the output. <b>Not a sequential step.</b></td></tr>
+      <tr><td>7</td><td>Response</td><td>Generate the reply, format it for the channel, deliver.</td></tr>
+    </table>
+    <div class="goal">Know what each stage owns, and which stages are sequential (1–4, 7) vs cross-cutting (5, 6).</div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A <b>bank teller</b>. They check your ID and refuse "tell me my colleague's balance" (request validation). They decide whether you need loans or deposits (routing), work out the steps (reasoning), use the core-banking system (tool invocation), and update your file the whole time (memory). Throughout, they follow privacy rules and never read out someone's PAN number (safety).</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Request validation ≈ checking packet CRC and length before parsing. Safety ≈ an MPU/MMU guarding every access, not a single step. Memory ≈ a global state struct read and written by every task.</p></div>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Validating at the <b>request</b> stage stops misuse early, e.g. an HR bot must not reveal a colleague's leave balance.</li>
+      <li>Splitting <b>reasoning</b> (plan) from <b>tool invocation</b> (do) lets the agent re-plan when a tool fails, without redoing everything.</li>
+      <li>Making memory and safety <b>cross-cutting</b> means preferences are captured and PII is guarded wherever it shows up.</li>
+    </ul>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Putting safety only at the end. The professor stressed a sanitisation check at the <b>input and at the output</b>.</li>
+      <li>Thinking routing always means multi-agent. A single agent still routes, by selecting tools.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"If the plan is not good, it will come back and do the <b>re-planning</b>."</li>
+      <li>"You cannot bluff the bot": you can't ask the HR bot how many leaves a colleague has. Validation "happens in many directions".</li>
+      <li>"We always have to build a <b>responsible AI</b>." PII = personally identifiable information.</li>
+      <li>"If the user sets 5 iterations it will try up to five times. If it gets a good result the first time, it stops there."</li>
+    </ul>
+    <span class="fix">"what my colleague Pierre is having" → what my <b>colleague / peer</b> has. "it will tie for" → it will <b>try</b>. "Guard rights information" → likely "guard the information" <span class="badge verify"></span>.</span>
+  </div>
+
+  <div class="takeaway">stages 1–4 and 7 carry the task forward. Memory (5) and safety (6) wrap every stage. Re-planning and retries happen inside the 3 ⇄ 4 loop.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>Case study: "Book me a flight from Bangalore to Chennai next Friday under ₹8,000"</h2><span class="time">[1:28:00 – 1:36:56]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>An agent must <u>do</u> the task (book), not just describe how to do it</h3>
+    <p>Board: "<b>do a task</b>". If you ask ChatGPT or Claude chat "book me a flight", it lists flights and suggests portals but does not book. An agent with the right tools goes on to booking and payment.</p>
+    <div class="goal">Trace a real request through all lifecycle stages and identify the entities, tools, reasoning steps and stopping condition.</div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A <b>travel agent</b> vs a <b>travel brochure</b>. The brochure (chatbot) lists options. The travel agent (AI agent) checks fares, remembers that you prefer IndiGo, picks the flight, books it and gives you the ticket. You only hand the agent your card if you trust them, which is the autonomy question.</p>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Request, entities and tools</h3>
+    <div class="grid-2">
+      <table class="given">
+        <tr><th>Entity</th><th>Value</th></tr>
+        <tr><td>Source</td><td>Bangalore</td></tr>
+        <tr><td>Destination</td><td>Chennai</td></tr>
+        <tr><td>Date</td><td>next Friday (30 Oct, as said in class)</td></tr>
+        <tr><td>Time</td><td><b>missing</b>, so ask the user (information gap)</td></tr>
+        <tr><td>Budget</td><td>&lt; ₹8,000</td></tr>
+      </table>
+      <table class="given">
+        <tr><th>Tool (board)</th><th>Purpose</th></tr>
+        <tr><td>Flight API / web search (e.g. <b>Tavily</b>)</td><td>List flights</td></tr>
+        <tr><td>Booking website API</td><td>Reserve the seat</td></tr>
+        <tr><td>Payment</td><td>Pay (autonomy-sensitive!)</td></tr>
+        <tr><td>Memory</td><td>Preferred airline, past trips</td></tr>
+      </table>
+    </div>
+    <p>Search results returned by the flight tool <span class="badge beyond">illustrative data</span>:</p>
+    <table class="given">
+      <tr><th>Flight</th><th>Dep</th><th class="num">Fare (₹)</th></tr>
+      <tr><td>6E-101 (IndiGo)</td><td>06:10</td><td class="num">7,450</td></tr>
+      <tr><td>AI-503 (Air India)</td><td>09:30</td><td class="num">8,900</td></tr>
+      <tr><td>QP-1342 (Akasa)</td><td>13:15</td><td class="num">6,980</td></tr>
+      <tr><td>UK-829 (Vistara)</td><td>18:40</td><td class="num">8,050</td></tr>
+      <tr><td>6E-555 (IndiGo)</td><td>21:00</td><td class="num">7,999</td></tr>
+    </table>
+    <p>Memory: the user's preferred airline is <b>IndiGo</b>.</p>
+  </div>
+
+  <div class="card steps">
+    <span class="label">Step-by-step through the lifecycle</span>
+    <div class="step"><span class="n">1</span><div><b>Request:</b> validate it (legitimate booking, user authenticated). Extract intent = book_flight and the entities above.</div></div>
+    <div class="step"><span class="n">2</span><div><b>Routing:</b> from the given tool set, pick the travel-booking tools.</div></div>
+    <div class="step"><span class="n">3</span><div><b>Reasoning:</b> the plan is (a) list all flights on Fri 30 Oct, (b) filter fare &lt; 8,000, (c) apply the stored preference, (d) choose, (e) book, (f) pay. Gap: time not given, so ask the user or assume any time.</div></div>
+    <div class="step"><span class="n">4</span><div><b>Tool call:</b> search returns 5 flights.</div></div>
+    <div class="step"><span class="n">5</span><div><b>Reasoning (observe):</b> apply the "under ₹8,000" filter.<br><span class="calc">7,450 &lt; 8,000 ✔ · 8,900 ✘ · 6,980 ✔ · 8,050 ✘ · 7,999 ✔ → 3 flights</span></div></div>
+    <div class="step"><span class="n">6</span><div><b>Memory:</b> preferred airline IndiGo, so keep 6E-101 (7,450) and 6E-555 (7,999). Choose the cheaper one.<br><span class="calc">min(7,450, 7,999) = 7,450 → 6E-101</span></div></div>
+    <div class="step"><span class="n">7</span><div>Headroom against the budget. <span class="calc">8,000 − 7,450 = ₹550 under budget</span></div></div>
+    <div class="step"><span class="n">8</span><div><b>Tool call:</b> booking API, then <b>safety and autonomy gate</b>: payment needs user confirmation (no full financial autonomy).</div></div>
+    <div class="step"><span class="n">9</span><div><b>Stop condition:</b> the goal "flight booked" is met (or the iteration limit is reached). <b>Response:</b> confirmation in text, voice or UI.</div></div>
+    <span class="pill">Book 6E-101 · 06:10 · ₹7,450</span><span class="pill blue">₹550 under budget</span>
+    <div class="remember">Without memory the cheapest valid option would be QP-1342 at ₹6,980. Memory changes the decision. "Under ₹8,000" is strict, so ₹8,050 fails while ₹7,999 passes.</div>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <h3>When does the agent stop reasoning? (student question)</h3>
+    <ul class="pros">
+      <li>It loops <b>until the goal is met</b> (the booking is confirmed) or the <b>iteration limit</b> is hit. This is the ReAct loop.</li>
+      <li>The LLM plans "the same way we would": list, filter, choose, book. That is why reasoning ability matters.</li>
+    </ul>
+    <ul class="cons">
+      <li>If you hard-code "call search, then filter, then book", it becomes a <b>workflow</b>, not an agent.</li>
+      <li>Payment: "no one has given full autonomy to do financial transactions". The tools and APIs you grant define what the agent can do.</li>
+    </ul>
+    <div class="balance">full autonomy (convenient but risky with money) vs a human approval gate (safe but slower). Today, payments sit behind a gate.</div>
+  </div>
+
+  <div class="card code">
+    <span class="label">Code (tool definitions given to the agent, JSON-style)</span>
+    <pre>tools = [
+  {<span class="s">"name"</span>: <span class="s">"search_flights"</span>,
+   <span class="s">"description"</span>: <span class="s">"List flights between two cities on a date"</span>,
+   <span class="s">"parameters"</span>: {<span class="s">"src"</span>: <span class="s">"string"</span>, <span class="s">"dst"</span>: <span class="s">"string"</span>, <span class="s">"date"</span>: <span class="s">"YYYY-MM-DD"</span>}},
+  {<span class="s">"name"</span>: <span class="s">"book_flight"</span>,
+   <span class="s">"description"</span>: <span class="s">"Reserve a seat; returns booking_id"</span>,
+   <span class="s">"parameters"</span>: {<span class="s">"flight_no"</span>: <span class="s">"string"</span>}},
+  {<span class="s">"name"</span>: <span class="s">"request_payment_approval"</span>,     <span class="c"># human gate instead of autonomous payment</span>
+   <span class="s">"parameters"</span>: {<span class="s">"booking_id"</span>: <span class="s">"string"</span>, <span class="s">"amount"</span>: <span class="s">"number"</span>}},
+]
+flights = [(<span class="s">"6E-101"</span>, 7450), (<span class="s">"AI-503"</span>, 8900), (<span class="s">"QP-1342"</span>, 6980), (<span class="s">"UK-829"</span>, 8050), (<span class="s">"6E-555"</span>, 7999)]
+ok = [f <span class="k">for</span> f <span class="k">in</span> flights <span class="k">if</span> f[1] &lt; 8000 <span class="k">and</span> f[0].startswith(<span class="s">"6E"</span>)]
+print(min(ok, key=<span class="k">lambda</span> f: f[1]))           <span class="c"># ('6E-101', 7450)</span></pre>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Missing the <b>time</b> and <b>budget</b> entities. Students named date and time. The professor added budget.</li>
+      <li>Treating "list flights" as completing "book me a flight". The intent is to <b>book</b>.</li>
+      <li>Hard-coding the tool order, which turns the agent into a workflow.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Chatbots will tell you <b>how</b> to do. Here, <b>do</b> a task. That's the difference."</li>
+      <li><b>Tavily</b> is a very good, free web-search API, and it will be used in the course (Lab 1).</li>
+      <li>Frameworks to be studied: <b>LangGraph, Google ADK, CrewAI</b>.</li>
+      <li>Level of autonomy: "We are going to take a call on that. Given the list of tools and APIs, that is in our hands."</li>
+    </ul>
+    <span class="fix">"Genai" → <b>Chennai</b>. "Taveli" → <b>Tavily</b>. "Tabs search" → <b>web search</b>. "Land Graph, ADK, Crew AI" → <b>LangGraph, ADK, CrewAI</b>. "Planet" → "plan it". "RAG agent stop" → "agent stop".</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul>
+      <li><a href="https://www.anthropic.com/research/building-effective-agents">Anthropic – Building effective agents</a>: "Agents can then pause for human feedback at checkpoints … it's also common to include stopping conditions (such as a maximum number of iterations)". This matches the payment gate and iteration cap above.</li>
+      <li><a href="https://genai.owasp.org/llm-top-10/">OWASP LLM06:2025 Excessive Agency</a>: the risk of granting agents too much autonomy or permission.</li>
+    </ul>
+  </div>
+
+  <div class="takeaway">an agent turns "book me a flight" into entities, then tools, then a plan ⇄ act loop, then a booking, using memory (preferences) and stopping when the goal is met. Money-moving steps stay behind a human gate.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Lifecycle flow: only stages 3 and 4 loop. Memory and safety are cross-cutting.</h2><span class="time">[1:36:56 – 1:37:58]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <div class="diagram">
+      <svg viewBox="0 0 880 230" role="img" aria-label="Lifecycle flow with ReAct loop and cross-cutting memory and safety bars">
+        <defs><marker id="d1" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e0b100"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="11.5" text-anchor="middle">
+          <rect x="335" y="5" width="330" height="115" rx="10" fill="none" stroke="#d64545" stroke-dasharray="6 4"/>
+          <text x="500" y="22" fill="#d64545" font-weight="700" font-style="italic">ReAct loop: repeat until goal is met</text>
+          <rect x="10" y="35" width="130" height="75" rx="6" fill="#3a7bd5"/><text x="75" y="58" fill="#fff" font-weight="700">1 REQUEST</text><text x="75" y="76" fill="#fff">validate, sanitize,</text><text x="75" y="92" fill="#fff">extract entities</text>
+          <rect x="175" y="35" width="130" height="75" rx="6" fill="#149c9c"/><text x="240" y="58" fill="#fff" font-weight="700">2 ROUTING</text><text x="240" y="76" fill="#fff">classify intent,</text><text x="240" y="92" fill="#fff">select tools</text>
+          <rect x="345" y="35" width="135" height="75" rx="6" fill="#e8833a"/><text x="412" y="58" fill="#fff" font-weight="700">3 REASONING</text><text x="412" y="76" fill="#fff">steps, gaps,</text><text x="412" y="92" fill="#fff">plan tool calls</text>
+          <rect x="520" y="35" width="135" height="75" rx="6" fill="#d64545"/><text x="587" y="58" fill="#fff" font-weight="700">4 TOOL CALL</text><text x="587" y="76" fill="#fff">APIs, DB,</text><text x="587" y="92" fill="#fff">execute code</text>
+          <rect x="705" y="35" width="165" height="75" rx="6" fill="#e8833a"/><text x="787" y="58" fill="#fff" font-weight="700">7 RESPONSE</text><text x="787" y="76" fill="#fff">generate, format,</text><text x="787" y="92" fill="#fff">deliver</text>
+          <line x1="140" y1="72" x2="171" y2="72" stroke="#e0b100" stroke-width="4" marker-end="url(#d1)"/>
+          <line x1="305" y1="72" x2="341" y2="72" stroke="#e0b100" stroke-width="4" marker-end="url(#d1)"/>
+          <line x1="482" y1="66" x2="516" y2="66" stroke="#e0b100" stroke-width="4" marker-end="url(#d1)"/>
+          <line x1="518" y1="80" x2="484" y2="80" stroke="#e0b100" stroke-width="4" marker-end="url(#d1)"/>
+          <line x1="655" y1="72" x2="701" y2="72" stroke="#e0b100" stroke-width="4" marker-end="url(#d1)"/>
+          <path d="M240,110 Q470,165 760,112" fill="none" stroke="#d64545" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#d1)"/>
+          <text x="470" y="150" fill="#d64545" font-size="11">simple question: skip tools, go straight to response</text>
+          <rect x="10" y="165" width="860" height="26" rx="4" fill="#1f5fa8"/><text x="440" y="183" fill="#fff"><tspan font-weight="700">5 MEMORY</tspan> · cross-cutting: read and written at every stage, not only after the response</text>
+          <rect x="10" y="197" width="860" height="26" rx="4" fill="#c0392b"/><text x="440" y="215" fill="#fff"><tspan font-weight="700">6 SAFETY</tspan> · cross-cutting: guards the input on the way in and the output before delivery</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>"What is 2 + 2?" goes straight to the counter for an answer, with no need to call anyone. "Book my flight" goes into the back office loop. CCTV (safety) and the customer file (memory) are active everywhere in the building.</p>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul><li>Drawing memory and safety as boxes 5 and 6 <i>after</i> tool invocation. They are horizontal bars under all stages.</li></ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul><li>"Memory and safety will come at every point." "Only stages 3 and 4 form a loop. A simple question can skip the tools." "It's a numbering, not a definite cycle."</li></ul>
+  </div>
+  <div class="takeaway">Request → routing → [reasoning ⇄ tools]* → response. Memory and safety run underneath every stage.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. Which stage does the planning and which does the actual API call?</summary>
+    <div class="ans">Reasoning (3) plans. Tool invocation (4) executes. Then control returns to reasoning to check the result.</div></details>
+  <details><summary>2. List the entities in "Book me a flight from Bangalore to Chennai next Friday under ₹8,000".</summary>
+    <div class="ans">Source = Bangalore, destination = Chennai, date = next Friday, time (missing, so ask), budget = &lt; ₹8,000.</div></details>
+  <details><summary>3. Fares 7,200 / 8,000 / 7,950 / 8,400 with "under ₹8,000". How many qualify and which is cheapest?</summary>
+    <div class="ans">7,200 and 7,950 qualify (8,000 is <b>not</b> under 8,000), so <b>2 flights</b>. The cheapest is ₹7,200.</div></details>
+  <details><summary>4. When does the agent's reasoning loop stop?</summary>
+    <div class="ans">When the goal is met (e.g. booking confirmed), or when the iteration limit is reached.</div></details>
+  <details><summary>5. Why don't agents pay for the flight autonomously today?</summary>
+    <div class="ans">Level of autonomy: no one has given agents full autonomy over financial transactions. Payments go behind human approval, and the tools and APIs granted define what the agent can do.</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>Should the agent <i>ask</i> for the missing time, or pick any time by default? Who decides that policy?</li>
+    <li>Which framework (LangGraph, ADK or CrewAI) will be used for the assignments?</li>
+    <li>How is "goal met" detected in practice: by the LLM's own judgement, or by a programmatic check?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[1:22:24 – 1:28:00]</span> Lifecycle stages in depth: validation, routing, plan vs invoke, memory, safety (PII), re-planning</li>
+    <li><span class="t">[1:28:00 – 1:36:56]</span> Flight-booking case study: entities, tools (Tavily, booking, payment), reasoning, termination, autonomy, frameworks</li>
+    <li><span class="t">[1:36:56 – 1:37:58]</span> Lifecycle flow: only 3 ⇄ 4 loop; memory and safety cross-cutting; simple questions skip tools</li>
+  </ul>
+</section>
+
+<footer>Part 06 · segments 046–047 · <a href="part_05.html">← part 05</a> · <a href="part_07.html">part 07 →</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>

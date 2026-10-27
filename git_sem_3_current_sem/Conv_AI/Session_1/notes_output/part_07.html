@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 07 – Banking Agent, Feedback &amp; Observability, Production Concerns, Reliability | Conversational AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">🏦</div>
+  <div>
+    <h1>Part 07 · Banking-Agent Lifecycle, Feedback &amp; Observability, Production Concerns, Reliability</h1>
+    <div class="sub">Conversational AI (S1-26_AIMLCZG521) · Session 1 · Prof. Bharathi R</div>
+    <span class="time">[1:37:58 – 1:53:58]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: links in the "Extra reading" cards were fetched and checked on 2026-10-26. Inferred statements carry the <span class="badge verify"></span> badge.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · Banking-agent lifecycle</a></li>
+  <li><a href="#t2">2 · Q&amp;A: feedback loop, HITL, observability</a></li>
+  <li><a href="#t3">3 · Production concerns</a></li>
+  <li><a href="#t4">4 · From demo to reliable production</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>Lifecycle example: banking agent</h2><span class="time">[1:37:58 – 1:41:42]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>User: "What's my account balance and recent transactions?"</h3>
+    <div class="grid-2">
+      <table>
+        <tr><th colspan="2">Stages 1–4</th></tr>
+        <tr><td>1 Request</td><td><code>intent: account_inquiry</code><br><code>entities: {type: [balance, transactions]}</code><br>Validate: user authenticated</td></tr>
+        <tr><td>2 Routing</td><td>Route to: <b>Banking Agent</b><br>Tools: <code>get_balance</code>, <code>get_transactions</code><br>Permission check: user has access</td></tr>
+        <tr><td>3 Reasoning (plan)</td><td>1. Fetch balance · 2. Fetch last 5 transactions · 3. Format response with both</td></tr>
+        <tr><td>4 Tool invocation</td><td><code>get_balance(user_id) → $5,432.10</code><br><code>get_transactions(user_id, limit=5)</code></td></tr>
+      </table>
+      <table>
+        <tr><th colspan="2">Stages 5–7</th></tr>
+        <tr><td>5 Memory</td><td>Store: asked about balance at 2:30 PM<br>Update: user prefers transaction details<br>Context: keep for follow-up questions</td></tr>
+        <tr><td>6 Safety (gate before delivery)</td><td>Data belongs to the correct user · no PII in logs · response has only authorised info</td></tr>
+        <tr><td>7 Response</td><td>"Your current balance is $5,432.10. Recent transactions: Starbucks $4.50 (today), Amazon $89.99 (yesterday), Shell Gas $45.00 (yesterday), Grocery Store $123.45 (2 days ago), Netflix $15.99 (3 days ago). Would you like details on any of these?"</td></tr>
+      </table>
+    </div>
+    <div class="remember">Slide note: an <b>illustrative, single-pass</b> example, so the ReAct loop is not needed.</div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy (professor's)</span>
+    <p>"This is like our <b>C programming function calling</b>." The agent sees <code>get_balance(user_id)</code> and <code>get_transactions(user_id, limit)</code> as function prototypes in a header. The LLM decides which to call and in what order. You only provide the prototypes and their implementations.</p>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Follow-up turn: "How much did I spend in those 5 transactions?" <span class="badge beyond">extension of the slide example</span></h3>
+    <table class="given">
+      <tr><th>Merchant</th><th class="num">Amount ($)</th></tr>
+      <tr><td>Starbucks</td><td class="num">4.50</td></tr>
+      <tr><td>Amazon</td><td class="num">89.99</td></tr>
+      <tr><td>Shell Gas</td><td class="num">45.00</td></tr>
+      <tr><td>Grocery Store</td><td class="num">123.45</td></tr>
+      <tr><td>Netflix</td><td class="num">15.99</td></tr>
+    </table>
+  </div>
+
+  <div class="card steps">
+    <span class="label">Step-by-step computation (what the calculator tool would do)</span>
+    <div class="step"><span class="n">1</span><div><span class="calc">4.50 + 89.99 = 94.49</span></div></div>
+    <div class="step"><span class="n">2</span><div><span class="calc">94.49 + 45.00 = 139.49</span></div></div>
+    <div class="step"><span class="n">3</span><div><span class="calc">139.49 + 123.45 = 262.94</span></div></div>
+    <div class="step"><span class="n">4</span><div><span class="calc">262.94 + 15.99 = 278.93</span></div></div>
+    <div class="step"><span class="n">5</span><div>Average per transaction. <span class="calc">278.93 / 5 = 55.786 ≈ 55.79</span></div></div>
+    <span class="pill">Total spent = $278.93</span><span class="pill blue">Average ≈ $55.79</span>
+    <div class="remember">Memory makes this follow-up possible ("context: keep for follow-up questions"). The <b>calculator tool</b> avoids the LLM's arithmetic weakness.</div>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Permission check (routing) + data-ownership check (safety) are two independent gates, so a bug in one does not leak another user's data.</li>
+      <li>No PII in logs: observability must not become a data leak.</li>
+    </ul>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Assuming every request runs the ReAct loop. Simple, deterministic requests are single-pass.</li>
+      <li>Logging full account numbers or names while debugging. That breaks the safety stage.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"The plan is done by the LLM. We are not doing it."</li>
+      <li>Memory and safety "happen at every stage, not in sequential order".</li>
+      <li>"We give the list of tools; the agent decides when to call: get_balance first, then get_transactions, and so on."</li>
+      <li>Banking was chosen because "everyone knows the banking process; it's a very local example."</li>
+    </ul>
+  </div>
+  <div class="takeaway">even a simple banking query passes through all 7 stages. Tools are function prototypes, and memory and safety run underneath the whole flow.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>Q&amp;A: where is the feedback loop? Human-in-the-loop and observability</h2><span class="time">[1:41:42 – 1:46:22]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Three different "feedback" ideas, which got mixed up in class and were then clarified</h3>
+    <table>
+      <tr><th>Kind of feedback</th><th>Where</th><th>Who</th></tr>
+      <tr><td><b>Observation</b> inside the agent</td><td>Tool invocation → back to reasoning (3 ⇄ 4)</td><td>The agent itself checks tool results and redoes the step if wrong</td></tr>
+      <tr><td><b>End-user</b> sees the result</td><td>Stage 7, response</td><td>The person who made the request</td></tr>
+      <tr><td><b>Evaluation</b> (observability, HITL, LLM-in-the-loop)</td><td>Every intermediate output, at every timestamp</td><td>Human reviewers or a judge LLM. This is an <i>evaluation design strategy</i>.</td></tr>
+    </table>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A <b>chef</b> tastes the soup while cooking (observation). The <b>diner</b> eats it (end-user response). A <b>food inspector</b> with cameras in the kitchen checks every step, temperatures and times (observability, HITL or LLM-as-judge evaluation).</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Observation ≈ checking a return code and retrying. Observability ≈ tracing with a logic analyser or ETM trace on every bus transaction. HITL ≈ a manual test bench sign-off.</p></div>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Traditional software uses deterministic pass/fail tests. Agents need <b>observability metrics</b> on intermediate outputs, because the path can change on every run.</li>
+      <li>Learning a user's preference (Air India vs IndiGo) from wrong bookings is a memory-plus-evaluation design problem. It is covered later.</li>
+    </ul>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul><li>Confusing <b>human-in-the-loop</b> (an evaluation or approval strategy) with the <b>end user</b> simply seeing the response.</li></ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Observation will happen here [after tool invocation]. This will be detailed in further classes."</li>
+      <li>"HITL is used as an <b>evaluation strategy</b>." "We can use human in the loop or <b>LLMs in the loop</b>, and measure all intermediate outputs at every timestamp."</li>
+      <li>"There are so many frameworks available to do this."</li>
+    </ul>
+    <span class="fix">"Observability matrix" → observability <b>metrics</b>. "HIL" → <b>HITL</b> (human-in-the-loop).</span>
+  </div>
+  <div class="takeaway">the agent self-corrects through observation, the user sees the response, and the engineers evaluate everything through observability with human or LLM judges.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Production concerns for conversational AI</h2><span class="time">[1:46:22 – 1:47:40]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>"Working in development is not enough: agents must work reliably at scale."</h3>
+    <div class="grid-2">
+      <div class="mini"><h4>📊 Observability: what to track</h4><ul><li>Conversation flows</li><li>Tool invocations</li><li>Token usage per conversation</li><li>Response latencies and error traces</li></ul><p class="hint">Tools: LangSmith, Arize Phoenix, OpenTelemetry</p></div>
+      <div class="mini"><h4>💰 Cost management</h4><ul><li>Prompt caching (up to 90% lower input cost)</li><li>Model routing (smaller models when appropriate)</li><li>Token budgets per user/session</li><li>Efficient retrieval (smaller context)</li></ul><p class="hint">Example: customer support ≈ $0.02–0.10 per conversation</p></div>
+      <div class="mini"><h4>⚡ Latency budgets</h4><ul><li>Chat responses &lt; 2 s</li><li>Tool execution &lt; 5 s</li><li>Complex reasoning &lt; 30 s</li><li>Set expectations with progress indicators</li></ul></div>
+      <div class="mini"><h4>🛡 Safety &amp; security: defence layers</h4><ul><li>Input validation (prompt-injection defence)</li><li>PII detection and redaction</li><li>Output filtering (toxicity, hallucinations)</li><li>Human-in-the-loop for critical actions</li></ul><p class="hint"><b>Principle: never rely on a single safety layer.</b></p></div>
+    </div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Running a <b>restaurant chain</b>, not a home kitchen. You need CCTV and order logs (observability), a food-cost budget and bulk buying (cost and caching), a service time limit per table (latency), and food-safety checks at delivery, kitchen and storage (layered safety).</p>
+  </div>
+
+  <div class="card formula">
+    <span class="label">Formula</span>
+    <h3>Per-conversation input cost with prompt caching</h3>
+    <div class="formula-box"><i>C</i> = <span class="frac"><span class="num"><i>T</i><sub>cached</sub> · <i>p</i> · (1 − <i>d</i>) + <i>T</i><sub>new</sub> · <i>p</i></span><span class="den">10<sup>6</sup></span></span></div>
+    <ul class="where">
+      <li><b>C</b> input cost per conversation ($)</li>
+      <li><b>T<sub>cached</sub></b> tokens served from the cache (e.g. a long, fixed system prompt)</li>
+      <li><b>T<sub>new</sub></b> uncached input tokens</li>
+      <li><b>p</b> price per million input tokens ($ / 1M)</li>
+      <li><b>d</b> cache discount (0–1). The slide quotes "up to 90%", so d ≤ 0.9.</li>
+    </ul>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Support bot with a long fixed system prompt <span class="badge beyond">illustrative prices</span></h3>
+    <table class="given">
+      <tr><th>Given</th><th class="num">Value</th></tr>
+      <tr><td>Total input tokens per conversation</td><td class="num">4,000</td></tr>
+      <tr><td>of which cacheable (system prompt + tools)</td><td class="num">3,000</td></tr>
+      <tr><td>p</td><td class="num">$3 / 1M</td></tr>
+      <tr><td>d</td><td class="num">0.9</td></tr>
+      <tr><td>Conversations per day</td><td class="num">10,000</td></tr>
+    </table>
+  </div>
+
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>No caching. <span class="calc">4,000 × 3 / 10⁶ = $0.0120</span></div></div>
+    <div class="step"><span class="n">2</span><div>Cached part. <span class="calc">3,000 × 3 × (1 − 0.9) / 10⁶ = 3,000 × 0.3 / 10⁶ = $0.0009</span></div></div>
+    <div class="step"><span class="n">3</span><div>New part. <span class="calc">1,000 × 3 / 10⁶ = $0.0030</span></div></div>
+    <div class="step"><span class="n">4</span><div>With caching. <span class="calc">0.0009 + 0.0030 = $0.0039</span></div></div>
+    <div class="step"><span class="n">5</span><div>Saving. <span class="calc">(0.0120 − 0.0039) / 0.0120 = 0.0081 / 0.0120 = 67.5 %</span></div></div>
+    <div class="step"><span class="n">6</span><div>Per day. <span class="calc">10,000 × 0.0120 = $120 → 10,000 × 0.0039 = $39</span></div></div>
+    <span class="pill">67.5 % lower input cost</span><span class="pill blue">$120 → $39 per day</span><span class="hint">lower is better. Not 90% overall, because only 75% of tokens are cached.</span>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Caching helps most when a large, <b>fixed</b> prefix repeats on every call (system prompt, tool schemas).</li>
+      <li>Model routing sends easy queries to small, cheap models and keeps the big model for hard ones.</li>
+      <li>Layered safety: if prompt-injection defence misses something, output filtering or HITL can still catch it.</li>
+    </ul>
+    <div class="balance">cost vs latency vs quality vs safety. Every extra safety layer or reasoning step adds latency and tokens.</div>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Reading "up to 90% lower input cost" as a 90% total saving. It applies only to the cached tokens, and output tokens are unaffected.</li>
+      <li>Relying on a single guardrail. The slide principle is "never rely on a single safety layer".</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul><li>Answering the flight-booking feedback question: track conversation flows, tool invocations, tokens per conversation and latency. "This is a separate area … there is a long way to go to come to this level."</li></ul>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul>
+      <li><a href="https://opentelemetry.io/docs/what-is-opentelemetry/">OpenTelemetry – What is OpenTelemetry?</a>: vendor-neutral traces, metrics and logs.</li>
+      <li><a href="https://arize.com/phoenix">Arize Phoenix</a>: open-source LLM tracing and evaluation.</li>
+      <li><a href="https://platform.claude.com/docs/en/docs/build-with-claude/prompt-caching">Anthropic – Prompt caching docs</a></li>
+      <li><a href="https://genai.owasp.org/llm-top-10/">OWASP Top 10 for LLMs (2025)</a>: LLM01 prompt injection, LLM02 sensitive info, LLM10 unbounded consumption (cost).</li>
+    </ul>
+  </div>
+
+  <div class="takeaway">production = observability + cost control + latency budgets + layered safety. Each needs deliberate design.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>From demo to reliable production</h2><span class="time">[1:47:40 – 1:53:58]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <div class="grid-2">
+      <div class="mini"><h4>Old mindset: "My chatbot works!"</h4><ul><li>Simple response, chat replies</li><li>Low complexity</li><li>Binary success: it replies</li></ul></div>
+      <div class="mini"><h4>New mindset: "My agent works correctly, repeatedly, under all conditions"</h4><ul><li><b>Correctness</b>: accurate data</li><li><b>Consistency</b>: reliable performance</li><li><b>Repeatability</b>: consistent output</li><li><b>Robustness</b>: handles edge cases</li></ul></div>
+    </div>
+    <div class="remember"><b>"AI is no longer judged by intelligence, but by reliability."</b></div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A <b>car that starts once in the showroom</b> is a demo. A car that starts every morning for 10 years, in rain and at 45 °C, is a product. Automotive-grade software is judged the same way: not "does it boot" but "does it behave correctly under every corner case".</p>
+  </div>
+
+  <div class="card formula">
+    <span class="label">Formula (beyond lecture)</span>
+    <h3>Why every step needs a checkpoint: reliability compounds</h3>
+    <div class="formula-box"><i>R</i><sub>task</sub> = <span class="bigop"><span class="lim"><i>n</i></span><span class="op">∏</span><span class="lim"><i>i</i>=1</span></span> <i>r</i><sub><i>i</i></sub> &nbsp;&nbsp;(= <i>r</i><sup><i>n</i></sup> if all steps are equal)</div>
+    <ul class="where">
+      <li><b>R<sub>task</sub></b> probability the whole multi-step task succeeds (0–1)</li>
+      <li><b>r<sub>i</sub></b> success probability of step <i>i</i> (tool call, reasoning step), assuming independent steps</li>
+      <li><b>n</b> number of steps in the agent's plan</li>
+    </ul>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>A 5-step agent where each step is 98% reliable <span class="badge beyond">illustrative</span></h3>
+    <table class="given"><tr><th>r</th><td class="num">0.98</td></tr><tr><th>n</th><td class="num">5</td></tr></table>
+  </div>
+
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div><span class="calc">0.98² = 0.9604</span></div></div>
+    <div class="step"><span class="n">2</span><div><span class="calc">0.98³ = 0.9604 × 0.98 = 0.941192</span></div></div>
+    <div class="step"><span class="n">3</span><div><span class="calc">0.98⁴ = 0.941192 × 0.98 = 0.922368</span></div></div>
+    <div class="step"><span class="n">4</span><div><span class="calc">0.98⁵ = 0.922368 × 0.98 = 0.903921</span></div></div>
+    <span class="pill">R_task ≈ 90.4 %</span><span class="hint">so about 1 in 10 tasks fails even though each step is "98% good"</span>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Compounding explains the professor's "everywhere we have to put a <b>gate and check</b>": checkpoints catch errors before they spread.</li>
+      <li>Judicious use: "Using an AI agent for every task is foolishness". Every call costs money, and fewer steps also means higher reliability.</li>
+    </ul>
+    <ul class="cons"><li>"No system is perfect. We cannot expect 100%." Design for failure handling.</li></ul>
+    <div class="balance">agent power (more steps and tools) vs reliability and cost (fewer steps). Use the simplest design that meets the goal.</div>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Treating "it replied" as success. That is the old mindset.</li>
+      <li>Reaching for an agent (or even an LLM) for every task. Use them only where they add value.</li>
+      <li>Thinking the LLM is "magic": "if you give some input, the LLM will give whatever we want. No, definitely not."</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Board: "<b>What strategy</b>?" How reliably an agent calls the right tools "is in our hands". The course covers this "to some extent".</li>
+      <li>What memory should store vs not store: covered in Session 3 or 4. Proprietary models each have their own algorithms.</li>
+      <li>Watch how ChatGPT (2022–2026) and the Claude model families keep evolving. Each new requirement brings new failures to overcome. "It is not a switch-on button."</li>
+      <li>The banking agent is a <b>hypothetical study</b>. No real banking agent like this exists yet.</li>
+    </ul>
+    <span class="fix">"pits and falls" → <b>pitfalls</b>. "Sonnet or Haiku or a Fable" → Claude model families Sonnet, Haiku, <b>Opus</b> <span class="badge verify"></span>. "Danger" / "Damn!" are mis-heard interjections (likely "Exactly").</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://www.anthropic.com/research/building-effective-agents">Anthropic – Building effective agents</a>: "Success … isn't about building the most sophisticated system. It's about building the right system", and "the autonomous nature of agents means higher costs, and the potential for compounding errors."</li></ul>
+  </div>
+
+  <div class="takeaway">a production agent is judged by correctness, consistency, repeatability and robustness. Small per-step errors compound, so add checkpoints and use agents only where they add value.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. In the banking example, which tools are called and what does the safety stage check?</summary>
+    <div class="ans"><code>get_balance(user_id)</code> and <code>get_transactions(user_id, limit=5)</code>. Safety checks that the data belongs to the correct user, that no PII appears in logs, and that the response contains only authorised info.</div></details>
+  <details><summary>2. What are the four latency budgets and four defence layers on the slide?</summary>
+    <div class="ans">Latency: chat &lt; 2 s, tool &lt; 5 s, complex reasoning &lt; 30 s, plus progress indicators. Defence: input validation, PII redaction, output filtering, HITL for critical actions.</div></details>
+  <details><summary>3. 2,000 input tokens, 1,500 cached, p = $2/M, d = 0.9. What is the input cost per conversation?</summary>
+    <div class="ans">Cached: 1,500 × 2 × 0.1 / 10⁶ = $0.0003. New: 500 × 2 / 10⁶ = $0.0010. Total = <b>$0.0013</b> (vs $0.0040 without caching, a 67.5% saving).</div></details>
+  <details><summary>4. What is the success rate of a 3-step plan with 95% per-step reliability?</summary>
+    <div class="ans">0.95³ = 0.9025 × 0.95 = <b>0.857375 ≈ 85.7%</b>.</div></details>
+  <details><summary>5. Name the four properties of the "new mindset".</summary>
+    <div class="ans">Correctness, consistency, repeatability, robustness. "AI is judged by reliability, not intelligence."</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>Which observability tool (LangSmith, Phoenix or OpenTelemetry) will the labs use?</li>
+    <li>How should an agent learn from a wrong booking (Air India vs IndiGo): memory update, evaluation feedback, or fine-tuning?</li>
+    <li>How do we measure tool-call efficiency (an unnecessary or redundant call)? Which metric?</li>
+    <li>Are the latency budgets (2 s / 5 s / 30 s) industry norms, or course guidelines for assignments?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[1:37:58 – 1:41:42]</span> Banking-agent lifecycle (all 7 stages, single pass, C function-call analogy)</li>
+    <li><span class="t">[1:41:42 – 1:46:22]</span> Feedback loop Q&amp;A: observation vs end user vs HITL/LLM-in-loop evaluation</li>
+    <li><span class="t">[1:46:22 – 1:47:40]</span> Production concerns: observability, cost, latency, layered safety</li>
+    <li><span class="t">[1:47:40 – 1:53:58]</span> Demo → reliable production; reliability over intelligence; judicious use of agents</li>
+  </ul>
+</section>
+
+<footer>Part 07 · segments 048–053 · <a href="part_06.html">← part 06</a> · <a href="part_08.html">part 08 →</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>

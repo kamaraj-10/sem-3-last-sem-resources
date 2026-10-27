@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 04 – Levels 1-3 in Detail &amp; Conversational AI Components | Conversational AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">🧩</div>
+  <div>
+    <h1>Part 04 · Levels 1–3 in Detail, Customer-Support Use Case &amp; the 6 Components</h1>
+    <div class="sub">Conversational AI (S1-26_AIMLCZG521) · Session 1 · Prof. Bharathi R</div>
+    <span class="time">[46:40 – 1:04:34]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: links in the "Extra reading" cards were fetched and checked on 2026-10-26. Inferred statements carry the <span class="badge verify"></span> badge.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · Level 1</a></li>
+  <li><a href="#t2">2 · Level 2</a></li>
+  <li><a href="#t3">3 · Level 3</a></li>
+  <li><a href="#t4">4 · Workflow vs agent, autonomy</a></li>
+  <li><a href="#t5">5 · Level 2 vs Level 3 loop</a></li>
+  <li><a href="#t6">6 · Customer-support use case</a></li>
+  <li><a href="#t7">7 · Six components</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>Level 1: Rule-based chatbots</h2><span class="time">[46:40 – 47:16]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>If the query matches a keyword, return the canned answer. Otherwise reply "I do not understand".</h3>
+    <p>Examples: ELIZA (1966), HDFC Eva. Typical use: FAQs, support widgets, static knowledge-base queries. There is no context.</p>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>An <b>IVRS phone menu</b>: "for gas booking press 1, for complaints press 2". Anything outside the menu is impossible.</p>
+  </div>
+  <div class="card code">
+    <span class="label">Code (minimal rule-based bot)</span>
+    <pre>RULES = {<span class="s">"lost card"</span>: <span class="s">"For lost card, press 1. For stolen, press 2."</span>,
+         <span class="s">"balance"</span>:   <span class="s">"Your balance is available in the app under Accounts."</span>}
+
+<span class="k">def</span> bot(query):
+    q = query.lower()
+    <span class="k">for</span> key, reply <span class="k">in</span> RULES.items():
+        <span class="k">if</span> key <span class="k">in</span> q:                 <span class="c"># keyword match, no learning</span>
+            <span class="k">return</span> reply
+    <span class="k">return</span> <span class="s">"Sorry, I do not understand."</span></pre>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul><li>Eva works this way. Keyword match gives the predefined answer, otherwise "I do not understand".</li></ul>
+    <span class="fix">"how it works at Islam" is unclear in the audio (probably "how it works as well") <span class="badge verify"></span>.</span>
+  </div>
+  <div class="takeaway">Level 1 is a lookup table, not intelligence.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>Level 2: LLM-powered assistants (context-aware &amp; augmentative, 2022 onwards)</h2><span class="time">[47:16 – 48:22]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <table>
+      <tr><th>Feature</th><th>What it means</th><th>Examples on slide</th></tr>
+      <tr><td>Intent recognition</td><td>NLU and semantic parsing identify user goals</td><td>ChatGPT, Google Assistant</td></tr>
+      <tr><td>Multimodal input</td><td>Text, voice and images</td><td>Gemini, ChatGPT</td></tr>
+      <tr><td>Data-aware answers</td><td><b>RAG</b> over enterprise data, or fine-tuned models</td><td>Amazon Q Business, IBM watsonx Assistant, NotebookLM</td></tr>
+      <tr><td>Task assistance</td><td>Tools and APIs to schedule, search and draft</td><td>Gemini, Amazon Q Business</td></tr>
+    </table>
+    <div class="remember"><b>Key shift:</b> from reactive (passive) responders to context-aware, proactive assistants. (Sources: Wang et al. 2024; Lewis et al. 2020.)</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A <b>skilled receptionist with a binder and a phone</b>. They understand you, check the company binder (RAG), and can book a meeting room for you (tools), but only the way the office procedures say.</p>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul><li>NotebookLM uses RAG, "because it cites correctly".</li></ul>
+    <span class="fix">"intent recognization" → <b>recognition</b>. "notebook LLM" → <b>NotebookLM</b>. "RAD" → <b>RAG</b>. "Amazon Cube business" → <b>Amazon Q Business</b>. "IBM Watson Assistant" → IBM <b>watsonx</b> Assistant (as on slide).</span>
+  </div>
+  <div class="takeaway">Level 2 understands, retrieves and uses tools, but in an order set by the developer.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Level 3: Autonomous AI agents (autonomous &amp; agentic, 2023 onwards)</h2><span class="time">[48:22 – 51:32]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <div class="split">
+      <div>
+        <ul>
+          <li><b>Planning &amp; tool use:</b> breaks goals into subtasks, calls tools, checks results and revises the plan.</li>
+          <li><b>Orchestration:</b> coordinates tasks across systems, e.g. a procurement agent using ERP, vendor APIs and legal databases.</li>
+          <li><b>Learning &amp; adaptation:</b> improves through runtime feedback and memory. (RLHF happens at model-training time.)</li>
+          <li><b>Enterprise integration:</b> acts inside workflows <b>within granted permissions</b>, e.g. rerouting orders during supply-chain disruptions.</li>
+          <li><b>Paradigm shift:</b> from assistants that help with tasks to agents that <b>pursue goals</b>.</li>
+          <li><b>Examples:</b> AutoGPT, BabyAGI, Claude Code, Amazon Bedrock Agents, Agentforce.</li>
+        </ul>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 300 260" role="img" aria-label="Intelligent agent hub with four capabilities">
+          <g font-family="Segoe UI, Arial" font-size="11" text-anchor="middle">
+            <circle cx="150" cy="130" r="48" fill="#ecf3fd" stroke="#3a7bd5" stroke-width="2"/>
+            <text x="150" y="126" font-weight="700">INTELLIGENT</text><text x="150" y="141" font-weight="700">AGENT</text>
+            <rect x="5" y="10" width="120" height="50" rx="10" fill="#fff4ea" stroke="#e8833a"/><text x="65" y="31" font-weight="700">Orchestration</text><text x="65" y="47">sequence tasks</text>
+            <rect x="175" y="10" width="120" height="50" rx="10" fill="#ecf8f0" stroke="#2f9e5b"/><text x="235" y="31" font-weight="700">Learning</text><text x="235" y="47">feedback, memory</text>
+            <rect x="5" y="200" width="120" height="50" rx="10" fill="#fdeeee" stroke="#d64545"/><text x="65" y="221" font-weight="700">Tool use</text><text x="65" y="237">APIs, services</text>
+            <rect x="175" y="200" width="120" height="50" rx="10" fill="#f5effd" stroke="#8a4fd1" stroke-width="3"/><text x="235" y="221" font-weight="700">Planning &amp;</text><text x="235" y="237" font-weight="700">reasoning ★</text>
+            <line x1="100" y1="60" x2="120" y2="92" stroke="#5b6475"/><line x1="200" y1="60" x2="180" y2="92" stroke="#5b6475"/>
+            <line x1="100" y1="200" x2="120" y2="168" stroke="#5b6475"/><line x1="200" y1="200" x2="180" y2="168" stroke="#5b6475"/>
+          </g>
+        </svg>
+        <div class="cap">★ circled on the board: planning &amp; reasoning is what makes it an agent</div>
+      </div>
+    </div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy (professor's example)</span>
+    <div class="grid-2">
+      <div class="mini"><h4>Claude <i>chat</i> = not an agent</h4><p>You give a prompt and get a response. It is not given the power to change or alter anything.</p></div>
+      <div class="mini"><h4>Claude <i>Code</i> = agentic</h4><p>It looks into the code, decides, and rearranges or edits files on its own to complete the task.</p></div>
+    </div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Calling every chat UI an "agent". The same model can be non-agentic (chat) or agentic (Code), depending on the autonomy it is given.</li>
+      <li>Thinking agents "learn" by retraining at runtime. Runtime adaptation comes from feedback and memory. RLHF is a training-time step.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"We have to give the list of tools". The agent then checks results and redoes the task if it did not get the result.</li>
+      <li>Autonomy is bounded: the agent acts inside workflows <b>within the granted permissions</b>.</li>
+    </ul>
+    <span class="fix">"cloud chat / cloud code" → <b>Claude</b> chat / <b>Claude Code</b>. "Agent Force" → <b>Agentforce</b> (Salesforce). The slide misspells it "AgnetForce", as the professor noted.</span>
+  </div>
+  <div class="takeaway">Level 3 agents plan, act, check and revise toward a goal, within the permissions they are granted.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>LLM workflow vs AI agent, and levels of autonomy</h2><span class="time">[51:32 – 53:14]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <p>Board: <b>LLM workflow (= LLM-powered assistant) ↔ AI agent</b>. "Workflow" is Anthropic's key term. Some websites call LLM workflows "agents". The professor follows Anthropic and academic usage: it is an agent <b>only when it is autonomous</b>.</p>
+    <div class="goal">Agent = autonomy over planning and reasoning. How much autonomy is a separate design decision.</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A new employee gets a <b>spending limit</b>: up to ₹5,000 without approval, above that ask the manager. Agents get the same kind of graded autonomy. They are never given unlimited liberty.</p>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Graded autonomy limits damage from wrong actions while keeping the agent's flexibility.</li></ul>
+    <div class="balance">more autonomy means more capability and more risk. "We can't give full autonomy to agents."</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Student: "Only once the system becomes autonomous do we call it an agent, otherwise it stays an assistant?" Professor: <b>"Yes."</b></li>
+      <li><b>Levels of autonomy</b> (how much liberty to give) will be discussed separately later.</li>
+    </ul>
+  </div>
+  <div class="takeaway">autonomous means agent, otherwise it is an assistant. The degree of autonomy is a deliberate, limited choice.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t5">
+  <div class="topic-title"><span class="num">5</span><h2>Level 2 vs Level 3: the iterative loop</h2><span class="time">[53:14 – 54:54]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Tools and memory exist at both levels. Level 3 adds an iterative <i>plan → act → evaluate</i> loop.</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Level 2 linear flow vs Level 3 loop">
+        <defs>
+          <marker id="b1" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1b6b3b"/></marker>
+          <marker id="b2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#9a4a0f"/></marker>
+        </defs>
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="10" y="5" width="330" height="290" rx="18" fill="#ecf8f0" stroke="#2f9e5b" stroke-width="2"/>
+          <text x="175" y="30" font-weight="700" fill="#1b6b3b">LEVEL 2 | LLM + TOOLS + MEMORY</text>
+          <text x="175" y="46" font-size="11" fill="#1b6b3b">(augmented LLM)</text>
+          <rect x="60" y="60" width="230" height="34" rx="8" fill="#fff" stroke="#2f9e5b"/><text x="175" y="82">User request</text>
+          <rect x="60" y="115" width="230" height="34" rx="8" fill="#fff" stroke="#2f9e5b"/><text x="175" y="137">LLM interprets context</text>
+          <rect x="60" y="170" width="230" height="34" rx="8" fill="#fff" stroke="#2f9e5b"/><text x="175" y="192">Retrieve info / call a tool</text>
+          <rect x="60" y="225" width="230" height="34" rx="8" fill="#fff" stroke="#2f9e5b"/><text x="175" y="247">Return result for user review</text>
+          <line x1="175" y1="94" x2="175" y2="111" stroke="#1b6b3b" stroke-width="2" marker-end="url(#b1)"/>
+          <line x1="175" y1="149" x2="175" y2="166" stroke="#1b6b3b" stroke-width="2" marker-end="url(#b1)"/>
+          <line x1="175" y1="204" x2="175" y2="221" stroke="#1b6b3b" stroke-width="2" marker-end="url(#b1)"/>
+          <text x="175" y="282" font-size="11" font-style="italic">request-driven; user guides the task</text>
+
+          <rect x="420" y="5" width="330" height="290" rx="18" fill="#fff4ea" stroke="#e8833a" stroke-width="2"/>
+          <text x="585" y="30" font-weight="700" fill="#9a4a0f">LEVEL 3 | AI AGENT</text>
+          <rect x="470" y="60" width="230" height="34" rx="8" fill="#fff" stroke="#e8833a"/><text x="585" y="82">User specifies a goal</text>
+          <rect x="470" y="115" width="230" height="34" rx="8" fill="#fff" stroke="#e8833a"/><text x="585" y="137" font-weight="700">Plan and select an action</text>
+          <rect x="470" y="170" width="230" height="34" rx="8" fill="#fff" stroke="#e8833a"/><text x="585" y="192">Act using tools</text>
+          <rect x="470" y="225" width="230" height="34" rx="8" fill="#fff" stroke="#e8833a"/><text x="585" y="247">Observe and evaluate result</text>
+          <line x1="585" y1="94" x2="585" y2="111" stroke="#9a4a0f" stroke-width="2" marker-end="url(#b2)"/>
+          <line x1="585" y1="149" x2="585" y2="166" stroke="#9a4a0f" stroke-width="2" marker-end="url(#b2)"/>
+          <line x1="585" y1="204" x2="585" y2="221" stroke="#9a4a0f" stroke-width="2" marker-end="url(#b2)"/>
+          <path d="M470,242 Q430,190 466,134" fill="none" stroke="#d64545" stroke-width="2.5" marker-end="url(#b2)"/>
+          <text x="440" y="190" fill="#d64545" font-weight="700" transform="rotate(-80 440 190)">LOOP</text>
+          <text x="585" y="282" font-size="11" font-style="italic">repeat / revise until done or approval needed</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Level 2 is a <b>vending machine that also reads your mind</b>: one request in, one result out. Level 3 is a <b>cook tasting the soup</b>: cook, taste, adjust, taste again, until it is right or the time limit runs out.</p>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul><li>"Many websites claim Level 2 is also an AI agent. That is <b>not true</b>." The test is whether there is a loop with LLM-driven planning.</li></ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"I would like all of you to understand this." Level 2 = augmented LLM (Anthropic's term), with no loop. Level 3 = AI agent, with a loop.</li>
+      <li>Iteration loops can be set to, e.g., <b>5 or 3</b> attempts (board: "5 iter, 3 iter").</li>
+    </ul>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://arxiv.org/abs/2210.03629">ReAct (Yao et al. 2023)</a>, the slide's source for the plan → act → observe loop.</li></ul>
+  </div>
+  <div class="takeaway">same tools and memory at both levels. The plan → act → observe → revise loop under LLM control is the whole difference.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t6">
+  <div class="topic-title"><span class="num">6</span><h2>Use case: customer-support evolution (banking)</h2><span class="time">[54:54 – 57:32]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <table>
+      <tr><th>Approach</th><th>Capabilities</th><th>User experience</th></tr>
+      <tr><td>Rule-based (2000s)</td><td>FAQ matching, keyword detection, fixed responses</td><td>"I lost my card" → "For lost card press 1, for stolen press 2." <b>Rigid, frustrating.</b></td></tr>
+      <tr><td>Intent-based (2015)</td><td>Intent classification, entity extraction, dialogue flow</td><td>"I'll help you block your card. Which card, credit or debit?" <b>Better, but limited.</b></td></tr>
+      <tr><td>LLM-based (2023)</td><td>Natural conversation, context understanding, fluent responses</td><td>"I think I left my card at the restaurant" → "I understand, let me help you block it temporarily…" <b>Natural, but no action.</b></td></tr>
+      <tr><td>Agentic AI (2025)</td><td>All of the above + banking-system access, executing transactions, multi-step actions</td><td>"I lost my card at City Mall" → "I've immediately blocked your card ending in 1234. I see a recent transaction at City Mall: $45.20 at Starbucks 2 hours ago. Should I order a replacement to your home address?" <b>Proactive, action-oriented.</b></td></tr>
+    </table>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>It is like moving from <b>an LPG-booking IVRS menu</b>, to a call-centre agent with a script, to a friendly agent who can only explain the steps, to a bank officer who actually <b>blocks the card and orders a new one</b> while you are still talking.</p>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Illustrative impact on the slide: resolution time drops from ~15 min (human agent) to ~2 min (agentic AI)</h3>
+    <table class="given">
+      <tr><th>Given</th><th class="num">Value</th></tr>
+      <tr><td>Human-agent resolution time</td><td class="num">15 min</td></tr>
+      <tr><td>Agentic-AI resolution time</td><td class="num">2 min</td></tr>
+      <tr><td>Lost-card tickets per day <span class="badge beyond">assumed</span></td><td class="num">1,000</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Time saved per ticket. <span class="calc">15 − 2 = 13 min</span></div></div>
+    <div class="step"><span class="n">2</span><div>Percentage reduction. <span class="calc">13 / 15 = 0.8667 → 86.7 %</span></div></div>
+    <div class="step"><span class="n">3</span><div>Speed-up factor. <span class="calc">15 / 2 = 7.5×</span></div></div>
+    <div class="step"><span class="n">4</span><div>Daily handling time, human. <span class="calc">1,000 × 15 = 15,000 min = 250 h</span></div></div>
+    <div class="step"><span class="n">5</span><div>Daily handling time, agent. <span class="calc">1,000 × 2 = 2,000 min ≈ 33.3 h</span></div></div>
+    <span class="pill">86.7 % less time</span><span class="pill blue">7.5× faster</span><span class="hint">lower resolution time is better</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Agentic AI is the only row that both understands context <b>and</b> takes action, so it is the only one that actually resolves the issue in the chat.</li></ul>
+    <ul class="cons"><li>Should a bot be allowed to block a card on its own? That is the <b>level-of-autonomy</b> question. Per the professor, banks have not yet let agents do this.</li></ul>
+    <div class="balance">speed and convenience vs the risk of an autonomous financial action. Permissions and human approval points decide where you land.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Blocking the card by an agent has not come yet. That's why I purposely added this example." It is there to make you think about the <b>level of autonomy</b> (board: "? level of autonomy").</li>
+      <li>An LLM-based bot "will tell the steps how to block it. It will not go and do it."</li>
+    </ul>
+    <span class="fix">"I left my car at the restaurant" → <b>card</b>. "IVRS" = Interactive Voice Response System. "Vector but limited" → "<b>better</b>, but limited" (slide).</span>
+  </div>
+  <div class="takeaway">rule-based → intent-based → LLM → agentic. Only agentic AI acts, which is exactly why its autonomy must be bounded.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t7">
+  <div class="topic-title"><span class="num">7</span><h2>The six components of a conversational AI system</h2><span class="time">[57:32 – 1:04:34]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <table>
+      <tr><th>#</th><th>Component · role</th><th>Sub-tasks</th><th>Modern approach</th></tr>
+      <tr><td>1</td><td><b>NLU</b>: understand what the user wants</td><td>Intent classification, entity extraction, sentiment analysis, context understanding</td><td>LLM-based, <b>single pass</b></td></tr>
+      <tr><td>2</td><td><b>Dialogue management</b>: manage conversation flow</td><td>State tracking, context maintenance, turn-taking, error handling (fallback)</td><td>LLM reasoning + memory systems</td></tr>
+      <tr><td>3</td><td><b>Knowledge access</b>: fetch relevant knowledge</td><td>RAG, vector DBs, semantic search, real-time access, embeddings, <b>hybrid search (dense + sparse)</b></td><td>RAG + vector DB <span class="badge verify"></span></td></tr>
+      <tr><td>4</td><td><b>Action execution</b>: do things</td><td>Tool and function calling, API integrations, DB operations, external services</td><td>Agentic tool use via <b>MCP</b>, where the model decides which tool to use when</td></tr>
+      <tr><td>5</td><td><b>Response generation</b>: produce natural responses</td><td>Contextual generation, personality/tone, multimodal output, structured responses</td><td>LLM generation <b>with control</b></td></tr>
+      <tr><td>6</td><td><b>Memory systems</b>: remember user context</td><td>Short-term (conversation), long-term (user profile), episodic, semantic, <b>procedural</b> (board)</td><td><b>Vector + SQL hybrid</b></td></tr>
+    </table>
+    <p class="hint">Components 3 and 4 are reconstructed from the transcript, because the "2/3" slide was not captured in the frames.</p>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy (professor's own)</span>
+    <h3>"An intelligent student locked in a room"</h3>
+    <p>Picture a brilliant student who has learned a lot, locked in a room with <b>no books, no laptop, no phone</b>. Ask anything and they answer only from what they learned before entering. That is an LLM: <b>frozen knowledge</b> up to its training cut-off. Worse, the student never says "I don't know". They answer smartly and confidently even when wrong. That is <b>hallucination</b>.</p>
+    <p>Components 3 (knowledge), 4 (actions) and 6 (memory) amount to giving the student books, a phone and a diary.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Memory types are like a storage hierarchy. Short-term ≈ RAM for the current session. Long-term profile ≈ EEPROM config. Episodic ≈ an event log. Semantic ≈ a lookup table of facts. Procedural ≈ stored routines (skills) in flash.</p></div>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Dialogue-state example from the board: one Claude chat session</h3>
+    <table class="given">
+      <tr><th>Turn</th><th>Query</th><th>Relation</th></tr>
+      <tr><td>1</td><td>Q1</td><td>new topic A</td></tr>
+      <tr><td>2</td><td>Q2</td><td>related to Q1 (topic A)</td></tr>
+      <tr><td>3</td><td>Q3</td><td>unrelated (topic B)</td></tr>
+      <tr><td>4</td><td>Q4</td><td>back to Q1 (topic A)</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step: what dialogue management must do</span>
+    <div class="step"><span class="n">1</span><div>Turn 1: open state for topic A and store Q1/A1 (<b>state tracking</b>).</div></div>
+    <div class="step"><span class="n">2</span><div>Turn 2: resolve references against topic A (<b>context maintenance</b>).</div></div>
+    <div class="step"><span class="n">3</span><div>Turn 3: switch to topic B but <b>keep</b> topic A's state, without overwriting it.</div></div>
+    <div class="step"><span class="n">4</span><div>Turn 4: recognise the return to A and reload Q1's context. If it is ambiguous, ask a clarifying question (<b>error handling / fallback</b>).</div></div>
+    <span class="pill">4 turns · 2 topics · state for A must survive turn 3</span>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Modern LLMs do NLU in a <b>single pass</b>: intent, entities and sentiment come out of one model call instead of a pipeline of separate classifiers.</li>
+      <li>You still need to know each component separately: "if you want to build our own system, we should know what all should happen".</li>
+      <li>Response control lets you set personality and tone, e.g. formal, funny or friendly, and pitched for a 5-year-old, a scientist or a finance person.</li>
+    </ul>
+    <ul class="cons"><li>On its own, an LLM has frozen knowledge and hallucinates, which is why knowledge access and memory components are added.</li></ul>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>"Memory = the context window." Memory is broader: long-term, episodic, semantic and procedural, stored outside the model (vector + SQL).</li>
+      <li>Treating hybrid search as "two searches you pick between". It <b>combines</b> dense (embedding) and sparse (keyword) scores.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Intelligent student locked in a room. I'm using the word <i>intelligent</i> carefully."</li>
+      <li>LLMs three or four years ago gave wrong answers "very confidently". Today hallucinations are controlled in many ways.</li>
+      <li><b>Procedural memory ↔ Claude Skills</b>: built-in skills, plus the ability to add your own.</li>
+      <li>Action execution today goes through <b>MCP</b>. "We give a bunch of tools to the model and the model decides which tool to use when."</li>
+      <li>Turn-taking will be revisited in Session 2.</li>
+    </ul>
+    <span class="fix">"cloud" → <b>Claude</b>. "unless sentiment" → "<b>and</b> sentiment". "We can use in Ncr" is unclear in the audio <span class="badge verify"></span>.</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Beyond the lecture: hybrid search score</span>
+    <p>A common way to combine scores is the convex combination <span class="math"><i>s</i> = α·<i>s</i><sub>dense</sub> + (1 − α)·<i>s</i><sub>sparse</sub></span>. For example, with α = 0.6, dense = 0.8 and sparse = 0.5: 0.6×0.8 + 0.4×0.5 = 0.48 + 0.20 = <b>0.68</b>. (Reciprocal-rank fusion is another option.) Details come in L6.</p>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2004.04906">DPR (dense retrieval)</a>: beats sparse BM25 by 9–19 points top-20.</li>
+      <li><a href="https://mallahyari.github.io/rag-ebook/">Allahyari RAG e-book</a>: retrieval pipelines.</li>
+    </ul>
+  </div>
+
+  <div class="takeaway">a conversational AI system is NLU + dialogue management + knowledge access + action execution + response generation + memory. LLMs fold several of these into one pass but still need external knowledge, tools and memory.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. What is the one thing Level 3 adds over Level 2?</summary>
+    <div class="ans">An iterative <b>plan → act → observe/evaluate → revise</b> loop driven by the LLM (autonomy). Tools and memory exist at both levels.</div></details>
+  <details><summary>2. Claude chat vs Claude Code: which is agentic, and why?</summary>
+    <div class="ans">Claude Code. It decides and acts on its own (reads and edits code). Chat only answers prompts and cannot change anything.</div></details>
+  <details><summary>3. Resolution time falls from 12 min to 3 min. What are the % reduction and the speed-up?</summary>
+    <div class="ans">(12 − 3)/12 = 9/12 = <b>75 %</b>. Speed-up = 12/3 = <b>4×</b>.</div></details>
+  <details><summary>4. Name the six components and the modern approach for memory.</summary>
+    <div class="ans">NLU, dialogue management, knowledge access, action execution, response generation, memory systems. Memory uses a <b>vector + SQL hybrid</b>.</div></details>
+  <details><summary>5. What does the "intelligent student locked in a room" stand for?</summary>
+    <div class="ans">An LLM: brilliant but with frozen training knowledge, no external access (no books, phone or laptop), and a tendency to answer confidently even when it does not know (hallucination).</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>Could you share the "Components 2/3" slide (knowledge access, action execution)? It was shown only briefly.</li>
+    <li>What framework will be used for "levels of autonomy", and in which lecture?</li>
+    <li>Is procedural memory part of the official memory taxonomy for exams, or only a board remark linking it to Claude Skills?</li>
+    <li>For hybrid search, which fusion method (weighted sum or RRF) will the course use?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[46:40 – 47:16]</span> Level 1 rule-based (ELIZA 1966, Eva, FAQs)</li>
+    <li><span class="t">[47:16 – 48:22]</span> Level 2 LLM-powered assistants (intent, multimodal, RAG, tools)</li>
+    <li><span class="t">[48:22 – 51:32]</span> Level 3 autonomous agents; Claude chat vs Claude Code; examples</li>
+    <li><span class="t">[51:32 – 53:14]</span> LLM workflow vs AI agent (Anthropic); levels of autonomy</li>
+    <li><span class="t">[53:14 – 54:54]</span> Level 2 vs Level 3 flow, iterative loop, iteration limits</li>
+    <li><span class="t">[54:54 – 57:32]</span> Customer-support evolution use case; 15 → 2 min impact</li>
+    <li><span class="t">[57:32 – 1:04:34]</span> Six components; student-in-a-room analogy; hallucination; memory types</li>
+  </ul>
+</section>
+
+<footer>Part 04 · segments 030–040 · <a href="part_03.html">← part 03</a> · <a href="part_05.html">part 05 →</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>

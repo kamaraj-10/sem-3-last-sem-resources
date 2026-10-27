@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cheatsheet – Session 1 | Conversational AI (AIMLCZG521)</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="compact">
+<div class="page">
+
+<header class="banner">
+  <div class="icon">⚡</div>
+  <div>
+    <h1>Session 1 Cheatsheet · Foundations of Conversational &amp; Agentic AI</h1>
+    <div class="sub">One-page revision · <a href="index.html" style="color:#ffd27a">index</a> · <a href="formula_sheet.html" style="color:#ffd27a">formula sheet</a></div>
+  </div>
+</header>
+
+<div class="grid-2">
+  <div class="card concept">
+    <span class="label">Definition</span>
+    <p><b>Conversational AI</b>: an AI system that converses in natural language to understand intent, retain context, retrieve knowledge, and respond or take action. Generation is <b>text only</b> in this course.</p>
+    <p><b>6 capabilities:</b> NLU · NLG · dialogue management · context awareness · multi-turn coherence · personalization. Objectives: <b>Understand → Reason → Act</b>.</p>
+    <p><b>Turn</b> = 1 query + 1 response.</p>
+  </div>
+  <div class="card concept">
+    <span class="label">Evolution (7 eras)</span>
+    <p>Rules (ELIZA 1966, ALICE) → statistical ML (SVM, CRF, HMM: intent and entity) → DL (RNN, LSTM, Seq2Seq) → Transformers 2017 (BERT, GPT-2, T5; still fine-tuned) → LLMs 2020–23 (few-shot; hallucinate, no real-time data, no actions) → <b>agentic 2023–25</b> → on-device/multimodal 2025–26.</p>
+    <p><b>Key driver:</b> Transformer + GPUs + web-scale data.</p>
+  </div>
+</div>
+
+<div class="grid-3">
+  <div class="card scenario"><span class="label">Level 1</span><h3>Rule-based</h3><p>Keyword match, scripts and decision trees, limited context. "Press 1 for lost card." <b>Answers questions.</b> e.g. HDFC Eva</p></div>
+  <div class="card scenario"><span class="label">Level 2</span><h3>LLM-powered assistant</h3><p>= <b>augmented LLM</b> (LLM + tools + memory + RAG). The <b>plan is in code</b> (workflow). Closed-ended. <b>Assists with tasks.</b> e.g. ChatGPT, NotebookLM, Q Business</p></div>
+  <div class="card scenario"><span class="label">Level 3</span><h3>Autonomous agent</h3><p>The <b>LLM plans</b>: plan → act → observe → revise <b>loop</b> with an iteration cap (e.g. 5). Open-ended. <b>Manages outcomes.</b> e.g. Claude Code, AutoGPT, Bedrock Agents, Agentforce</p></div>
+</div>
+
+<div class="card why">
+  <span class="label">The #1 exam distinction</span>
+  <p><b>Tools and memory exist at both Level 2 and Level 3.</b> The difference is <b>who plans</b>: code means a workflow (Anthropic's term). The LLM, with autonomy, means an agent. An <b>LLM alone is not an agent</b> ("purely a model"). <b>MCP is a protocol</b> ("like USB"), not an agent. Claude <i>chat</i> is not agentic, Claude <i>Code</i> is. Autonomy is <b>graded</b>: no full financial autonomy today.</p>
+</div>
+
+<div class="grid-2">
+  <div class="card formula">
+    <span class="label">6 components</span>
+    <table>
+      <tr><td>1 NLU</td><td>intent, entities, sentiment: LLM <b>single pass</b></td></tr>
+      <tr><td>2 Dialogue mgmt</td><td>state tracking, context, turn-taking, fallback</td></tr>
+      <tr><td>3 Knowledge</td><td>RAG, vector DB, semantic + <b>hybrid (dense + sparse)</b></td></tr>
+      <tr><td>4 Action</td><td>tool/function calling, APIs, DB, via <b>MCP</b></td></tr>
+      <tr><td>5 Response</td><td>generation with control: tone, persona, format</td></tr>
+      <tr><td>6 Memory</td><td>short-term + long-term (semantic, episodic, procedural): <b>vector + SQL</b></td></tr>
+    </table>
+  </div>
+  <div class="card formula">
+    <span class="label">Agent lifecycle (7 stages)</span>
+    <table>
+      <tr><td>1 Request</td><td>validate, sanitize, extract entities</td></tr>
+      <tr><td>2 Routing</td><td>classify intent, select tools or sub-agent</td></tr>
+      <tr><td>3 Reasoning ⇄</td><td>steps, info gaps, plan tool calls (<b>plan only</b>)</td></tr>
+      <tr><td>4 Tool invocation</td><td>call APIs, DB, code (<b>ReAct loop with 3</b>)</td></tr>
+      <tr><td>5 Memory</td><td><b>cross-cutting</b>: history, preferences, session</td></tr>
+      <tr><td>6 Safety</td><td><b>cross-cutting</b>: toxic, fact-check, redact PII (in and out)</td></tr>
+      <tr><td>7 Response</td><td>generate, format for channel, deliver</td></tr>
+    </table>
+    <p class="hint">Numbering is conceptual. Simple questions skip tools and go straight to the response.</p>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card mistakes">
+    <span class="label">LLM limitation → agentic fix</span>
+    <table>
+      <tr><td>No real-time data</td><td>tool calling (APIs, search)</td></tr>
+      <tr><td>Hallucinations</td><td>RAG (grounding)</td></tr>
+      <tr><td>Can't act</td><td>function calling = tool use</td></tr>
+      <tr><td>No memory (stateless)</td><td>external memory systems</td></tr>
+      <tr><td>Calculation errors</td><td>calculator, code execution</td></tr>
+      <tr><td>+ planning</td><td>ReAct (reason + act)</td></tr>
+    </table>
+    <p class="hint">Also: inconsistency, no verification. "An intelligent student locked in a room."</p>
+  </div>
+  <div class="card concept">
+    <span class="label">Transformer → conversation</span>
+    <table>
+      <tr><td>Self-attention</td><td>→ ambiguity handling</td></tr>
+      <tr><td>Contextual embeddings</td><td>→ intent understanding</td></tr>
+      <tr><td>Long-range deps (context window)</td><td>→ multi-turn coherence</td></tr>
+      <tr><td>Parallel processing</td><td>→ natural responses (scale)</td></tr>
+    </table>
+    <p class="hint">Pipeline: Transformer → pre-train → LLM → fine/instruction-tune → tools + memory + <b>planning</b> → agent.</p>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card why">
+    <span class="label">Production concerns</span>
+    <ul>
+      <li><b>Observability:</b> flows, tool calls, tokens per conversation, latency and errors (LangSmith, Phoenix, OpenTelemetry). HITL or LLM-in-the-loop for evaluation.</li>
+      <li><b>Cost:</b> prompt caching (up to 90% on cached input), model routing, token budgets, efficient retrieval. Support ≈ $0.02–0.10 per conversation.</li>
+      <li><b>Latency:</b> chat &lt; 2 s · tool &lt; 5 s · complex &lt; 30 s · progress indicators.</li>
+      <li><b>Safety:</b> input validation, PII redaction, output filtering, HITL for critical actions. <b>Never rely on a single layer.</b></li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor's key lines</span>
+    <ul>
+      <li>"AI is no longer judged by intelligence, but by <b>reliability</b>": correct, consistent, repeatable, robust.</li>
+      <li>"Using an AI agent for every task is foolishness." Everything costs.</li>
+      <li>"An AI system ≠ an LLM. The LLM is one component."</li>
+      <li>"RAG grounds answers in documents. Memory remembers <i>you</i>."</li>
+      <li>"Chatbots tell you <i>how</i>. Agents <i>do</i> the task."</li>
+    </ul>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card steps">
+    <span class="label">Hands-on 1 (weather agent)</span>
+    <p>Qwen2.5-1.5B-Instruct on a Colab T4 (no API key) · Open-Meteo tool · stages: baseline → schema → <b>LLM emits &lt;tool_call&gt;</b> → code executes → response. "Capital of France?" gives <code>tool_calls = []</code>. It is still a <b>workflow</b> (no loop).</p>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Exam traps</span>
+    <ul>
+      <li>A turn is a Q + R pair, not one message.</li>
+      <li>Transformers still needed fine-tuning. Few-shot use came with LLMs.</li>
+      <li>"Under ₹8,000" excludes 8,000 itself.</li>
+      <li>Memory and safety are cross-cutting, not steps after tools.</li>
+      <li>Quiz component = 10% total (best 2 of 3). Mid-sem is closed book (1–8), end-sem open book (1–16).</li>
+    </ul>
+  </div>
+</div>
+
+<div class="takeaway">LLM (stateless reasoner) + tools + memory + RAG = augmented LLM (a workflow). Add LLM-driven planning in a bounded loop to get an agent. Make it observable, affordable, fast and safe to get production.</div>
+</div>
+</body>
+</html>

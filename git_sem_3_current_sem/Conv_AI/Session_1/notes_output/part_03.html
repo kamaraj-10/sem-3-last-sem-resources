@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 03 – Evolution: Rule-based → LLM Assistants → Agents | Conversational AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">🧬</div>
+  <div>
+    <h1>Part 03 · Evolution of Chatbots: Rule-based → LLM Assistants → Autonomous Agents</h1>
+    <div class="sub">Conversational AI (S1-26_AIMLCZG521) · Session 1 · Prof. Bharathi R</div>
+    <span class="time">[30:30 – 46:40]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: links in the "Extra reading" cards were fetched and checked on 2026-10-26. Inferred statements carry the <span class="badge verify"></span> badge.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · Evolution journey 1960s–2026</a></li>
+  <li><a href="#t2">2 · Intent &amp; entity</a></li>
+  <li><a href="#t3">3 · Three levels</a></li>
+  <li><a href="#t4">4 · Assistant (workflow) vs agent</a></li>
+  <li><a href="#t5">5 · Q&amp;A: MCP, LLM ≠ agent</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>The evolution journey (1960s – 2026)</h2><span class="time">[30:30 – 35:28]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Seven eras. Each solved the previous era's main limitation and introduced a new one.</h3>
+    <table>
+      <tr><th>Era</th><th>Technology</th><th>Capabilities</th><th>Limitations</th></tr>
+      <tr><td>1960s–1990s</td><td>Rule-based (ELIZA, ALICE)</td><td>Pattern matching, keyword detection, simple scripted Q&amp;A</td><td>No learning, rigid, no context</td></tr>
+      <tr><td>2000–2010</td><td>Statistical ML (SVMs, CRFs, HMMs)</td><td>Intent classification, entity extraction</td><td>Limited context, hand-crafted features</td></tr>
+      <tr><td>2010–2017</td><td>Deep learning (RNNs, LSTMs, Seq2Seq, attention)</td><td>End-to-end learning, better context understanding</td><td>Data-hungry, task-specific training</td></tr>
+      <tr><td>2017–2020</td><td>Transformers (BERT, GPT-2, T5)</td><td>Transfer learning, contextual embeddings</td><td>Still needs task-specific fine-tuning</td></tr>
+      <tr><td>2020–2023</td><td>LLMs &amp; generative AI (GPT-3, ChatGPT, Claude, PaLM)</td><td>Few-shot learning, general-purpose, fluent generation</td><td>Hallucinations, no real-time data, no actions</td></tr>
+      <tr><td>2023–2025</td><td>Agentic AI (LLMs + tools + memory + planning)</td><td>Execute actions, multi-step reasoning, autonomous workflows</td><td>Complex orchestration, scaling, cost optimisation</td></tr>
+      <tr><td>2025–2026</td><td>On-device &amp; multimodal (SLMs, native multimodality)</td><td>Real-time voice/video, privacy-first local processing</td><td>Hardware constraints, fragmented ecosystems</td></tr>
+    </table>
+    <div class="remember"><b>Key driver:</b> the Transformer (2017), affordable GPU compute and internet-scale data together made LLMs possible. (Sources on slide: J&amp;M Ch. 1; Vaswani et al. 2017.)</div>
+    <div class="diagram">
+      <svg viewBox="0 0 900 110" role="img" aria-label="Timeline of eras">
+        <g font-family="Segoe UI, Arial" font-size="11" text-anchor="middle">
+          <line x1="20" y1="50" x2="880" y2="50" stroke="#13213c" stroke-width="3"/>
+          <circle cx="60" cy="50" r="9" fill="#8a93a3"/><text x="60" y="30" font-weight="700">1960s</text><text x="60" y="75">Rules</text><text x="60" y="89">ELIZA</text>
+          <circle cx="190" cy="50" r="9" fill="#3a7bd5"/><text x="190" y="30" font-weight="700">2000</text><text x="190" y="75">Stat. ML</text><text x="190" y="89">SVM/CRF/HMM</text>
+          <circle cx="320" cy="50" r="9" fill="#3a7bd5"/><text x="320" y="30" font-weight="700">2010</text><text x="320" y="75">Deep learning</text><text x="320" y="89">RNN/LSTM</text>
+          <circle cx="450" cy="50" r="11" fill="#d64545"/><text x="450" y="30" font-weight="700">2017</text><text x="450" y="75">Transformer</text><text x="450" y="89">BERT/GPT-2</text>
+          <circle cx="580" cy="50" r="9" fill="#e8833a"/><text x="580" y="30" font-weight="700">2020</text><text x="580" y="75">LLMs</text><text x="580" y="89">GPT-3/ChatGPT</text>
+          <circle cx="710" cy="50" r="9" fill="#2f9e5b"/><text x="710" y="30" font-weight="700">2023</text><text x="710" y="75">Agentic AI</text><text x="710" y="89">+tools+memory</text>
+          <circle cx="840" cy="50" r="9" fill="#8a4fd1"/><text x="840" y="30" font-weight="700">2025</text><text x="840" y="75">On-device</text><text x="840" y="89">SLM/multimodal</text>
+          <text x="450" y="106" fill="#d64545" font-size="10">red = key driver</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Think of the evolution of <b>navigation</b>.</p>
+    <ul>
+      <li><b>Rule-based:</b> a printed list of fixed directions. If you leave the route, it is useless.</li>
+      <li><b>Statistical ML:</b> a map with landmarks someone labelled by hand.</li>
+      <li><b>Deep learning:</b> a driver who learned one city from lots of trips.</li>
+      <li><b>Transformers:</b> a driver who learned driving in general and needs a short course for each new city.</li>
+      <li><b>LLMs:</b> a fluent guide who knows every city from books but has no live traffic, sometimes invents roads, and cannot drive.</li>
+      <li><b>Agentic AI:</b> that guide gets a car, a phone and a notebook, and plans the trip himself.</li>
+      <li><b>On-device:</b> a smaller guide that lives in your phone and works offline.</li>
+    </ul>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <h3>Why each step happened</h3>
+    <ul class="pros">
+      <li>Rules → ML: rules could not generalise, so systems started learning intents and entities from data.</li>
+      <li>ML → DL: hand-crafted features were the bottleneck, so models moved to end-to-end learning.</li>
+      <li>DL → Transformers: every task needed its own big dataset, so models were pre-trained once and transferred.</li>
+      <li>Transformers → LLMs: fine-tuning per task was still needed, so scale enabled few-shot use with no task-specific training.</li>
+      <li>LLMs → Agents: LLMs hallucinate, lack real-time data and cannot act, so tools, memory and planning were added.</li>
+    </ul>
+    <div class="balance">each era gains capability but adds cost and complexity. Agents bring orchestration, scaling and cost problems, and on-device models face hardware limits.</div>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Saying transformers removed fine-tuning. On the slide, transformers <b>still require task-specific fine-tuning</b>. Few-shot use without fine-tuning arrived with LLMs.</li>
+      <li>Listing "hallucination" as the only LLM limitation. The slide lists three: hallucinations, <b>no real-time data</b>, <b>no actions</b>.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>ELIZA and ALICE: rule-based, predefined Q&amp;A. When nothing matched they "very politely" said "I don't understand". There was <b>no learning, no model, no neural network</b>.</li>
+      <li>She described both as acting like a psychologist, in a medical context (board note: "Medical").</li>
+      <li>An LLM is a "pure intelligent reasoning model" but does not know current information and has no memory.</li>
+      <li>The course stops at <b>agentic AI and multi-agent systems</b>. On-device and multimodal is an active research area, not course scope.</li>
+    </ul>
+    <span class="fix">"Elisa / Alice" → <b>ELIZA / ALICE</b>. "RN and cell st… sequence to sequence" → <b>RNN, LSTM, Seq2Seq</b>. "few short learning" → <b>few-shot</b>. "agent KI" → <b>agentic AI</b>. "when you add Ml with the tools" → when you add an <b>LLM</b> with tools. "more 300 words only" is unclear in the audio <span class="badge verify"></span>.</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Beyond the lecture</span>
+    <ul>
+      <li>ELIZA (Weizenbaum, 1966) ran the "DOCTOR" script, which imitates a Rogerian psychotherapist. ALICE (Wallace, 1995) was a general-purpose AIML-based chatbot rather than a medical one <span class="badge verify"></span>.</li>
+      <li><a href="https://web.stanford.edu/~jurafsky/slp3/">J&amp;M SLP3 Ch. 1</a>: the historical overview the slide cites.</li>
+    </ul>
+  </div>
+
+  <div class="takeaway">rules → statistical ML → deep learning → transformers → LLMs → agents → on-device. The Transformer, GPUs and web-scale data were the turning point.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>Intent &amp; entity (class discussion)</h2><span class="time">[31:50 – 33:10]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Intent = what the user wants. Entity = the things it is about.</h3>
+    <p>Statistical ML chatbots (SVM, CRF, HMM) were built around two tasks: <b>intent classification</b> and <b>entity extraction</b>.</p>
+    <div class="goal">Turn a free-form sentence into an action plus its parameters.</div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Filling in a <b>form at a bank counter</b>. The form type is the intent ("withdrawal", "deposit"). The boxes you fill in are the entities (account number, amount). The clerk listens to your sentence and decides which form to use and what goes in each box.</p>
+  </div>
+
+  <div class="card formula">
+    <span class="label">Definition</span>
+    <div class="formula-box"><i>utterance</i> &nbsp;→&nbsp; ( <i>intent</i>, { <i>entity</i><sub>1</sub>, … , <i>entity</i><sub><i>k</i></sub> } )</div>
+    <ul class="where">
+      <li><b>intent</b> the user's goal. It is a label from a fixed set and is often signalled by the <b>verb</b>.</li>
+      <li><b>entity<sub>i</sub></b> a typed span (place, date, product). Often found among the <b>nouns</b> (POS tagging is a cue).</li>
+      <li><b>k</b> number of entities found (0 or more)</li>
+    </ul>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>"Book a flight from Bengaluru to Delhi tomorrow" <span class="badge beyond">illustrative</span></h3>
+    <table class="given">
+      <tr><th>Token</th><th>POS</th></tr>
+      <tr><td>Book</td><td>VB (verb)</td></tr>
+      <tr><td>flight</td><td>NN (noun)</td></tr>
+      <tr><td>Bengaluru, Delhi</td><td>NNP (proper nouns)</td></tr>
+      <tr><td>tomorrow</td><td>NN (time noun)</td></tr>
+    </table>
+  </div>
+
+  <div class="card steps">
+    <span class="label">Step-by-step extraction</span>
+    <div class="step"><span class="n">1</span><div>Verb "Book" + object "flight" gives the intent. <span class="calc">intent = book_flight</span></div></div>
+    <div class="step"><span class="n">2</span><div>Proper noun after "from" is the source. <span class="calc">source_city = Bengaluru</span></div></div>
+    <div class="step"><span class="n">3</span><div>Proper noun after "to" is the destination. <span class="calc">destination_city = Delhi</span></div></div>
+    <div class="step"><span class="n">4</span><div>Time word. <span class="calc">date = tomorrow</span></div></div>
+    <span class="pill">book_flight(source=Bengaluru, dest=Delhi, date=tomorrow)</span>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Verbs map to actions and nouns map to arguments. That is why POS tags were good cues for SVM/CRF systems.</li></ul>
+    <ul class="cons"><li>The features are hand-crafted and the context is limited. "Change it to Friday" in the next turn breaks this approach. That limitation motivated the next eras.</li></ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Student answer, accepted: intent is "what the user wants to know". The entity is the category or relation it belongs to.</li>
+      <li>With POS tagging, the <b>verb</b> can be identified as the intent and the <b>nouns</b> as entities.</li>
+    </ul>
+    <span class="fix">"PIYUSH tagging" → <b>POS tagging</b> (part-of-speech).</span>
+  </div>
+
+  <div class="takeaway">an intent is a verb-like goal and entities are noun-like parameters. Classical chatbots were essentially intent classifiers plus entity extractors.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>The three levels of conversational AI</h2><span class="time">[35:28 – 36:26]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>From scripted responses to goal-directed autonomy. The levels differ in how much initiative and control the system has.</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 840 200" role="img" aria-label="Three levels">
+        <defs><marker id="a31" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8a93a3"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="10" y="10" width="240" height="180" rx="16" fill="#ecf3fd" stroke="#3a7bd5" stroke-width="2"/>
+          <text x="130" y="35" font-weight="700" fill="#1f4f94">LEVEL 1</text>
+          <text x="130" y="58" font-weight="700" font-size="14">Rule-based chatbots</text>
+          <text x="130" y="78" font-style="italic">rule-driven &amp; reactive</text>
+          <text x="130" y="104">keyword matching</text><text x="130" y="122">scripts &amp; decision trees</text><text x="130" y="140">limited context</text>
+          <text x="130" y="175" font-weight="700" fill="#1f4f94">ANSWERS QUESTIONS</text>
+          <rect x="300" y="10" width="240" height="180" rx="16" fill="#ecf8f0" stroke="#2f9e5b" stroke-width="2"/>
+          <text x="420" y="35" font-weight="700" fill="#1b6b3b">LEVEL 2</text>
+          <text x="420" y="58" font-weight="700" font-size="14">LLM-powered assistants</text>
+          <text x="420" y="78" font-style="italic">context-aware, tool &amp; memory enabled</text>
+          <text x="420" y="104">LLM understanding + generation</text><text x="420" y="122">tool calling / API integration</text><text x="420" y="140">history, memory &amp; RAG</text>
+          <text x="420" y="175" font-weight="700" fill="#1b6b3b">ASSISTS WITH TASKS</text>
+          <rect x="590" y="10" width="240" height="180" rx="16" fill="#fff4ea" stroke="#e8833a" stroke-width="2"/>
+          <text x="710" y="35" font-weight="700" fill="#9a4a0f">LEVEL 3</text>
+          <text x="710" y="58" font-weight="700" font-size="14">Autonomous AI agents</text>
+          <text x="710" y="78" font-style="italic">goal-directed &amp; adaptive</text>
+          <text x="710" y="104">plans &amp; decomposes goals</text><text x="710" y="122">acts, observes, revises</text><text x="710" y="140">coordinates multi-step workflows</text>
+          <text x="710" y="175" font-weight="700" fill="#9a4a0f">MANAGES OUTCOMES</text>
+          <line x1="252" y1="100" x2="296" y2="100" stroke="#8a93a3" stroke-width="5" marker-end="url(#a31)"/>
+          <line x1="542" y1="100" x2="586" y2="100" stroke="#8a93a3" stroke-width="5" marker-end="url(#a31)"/>
+        </g>
+      </svg>
+    </div>
+    <div class="goal">Tell the levels apart by asking who has initiative and control: the script, the developer's code, or the LLM.</div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <div class="grid-3">
+      <div class="mini"><h4>L1 · Vending machine</h4><p>Press B4 and you get chips. Press anything else and nothing happens.</p></div>
+      <div class="mini"><h4>L2 · Trained clerk with a manual</h4><p>Understands you, looks things up and uses the phone, but follows the manual step by step.</p></div>
+      <div class="mini"><h4>L3 · Personal assistant</h4><p>"Get me to Delhi on Friday." They decide how and fix problems as they come up.</p></div>
+    </div>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Rule-based: answers by keyword, with no learning or training. It runs on scripts and decision trees and has limited context.</li>
+      <li>An LLM-powered assistant <b>already has tool calling and memory (and RAG)</b>, but it is still <b>not an agent</b>. See the next topic.</li>
+    </ul>
+  </div>
+
+  <div class="takeaway">Level 1 answers questions, Level 2 assists with tasks, Level 3 manages outcomes.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>LLM-powered assistant (workflow) vs autonomous agent: who makes the plan?</h2><span class="time">[36:26 – 42:59]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>An LLM with tools + memory is an <u>augmented LLM</u>. It becomes an <u>agent</u> only when the LLM itself plans.</h3>
+    <div class="grid-2">
+      <div class="mini">
+        <h4>LLM-powered assistant = <b>workflow</b></h4>
+        <ul><li>The plan is written <b>in code</b> by the developer: "call this tool, then fetch this memory, then respond".</li><li>No planning or reasoning about the steps by the LLM.</li><li>For <b>closed-ended</b> problems.</li></ul>
+      </div>
+      <div class="mini">
+        <h4>Autonomous AI agent</h4>
+        <ul><li>The developer gives a <b>goal + a list of tools + memory</b>.</li><li>The <b>LLM decides</b> which tool to call when, observes the result and revises. It retries within an iteration limit (e.g. 5).</li><li>For <b>open-ended</b> problems. Complex tasks can be split across multiple agents.</li></ul>
+      </div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 860 190" role="img" aria-label="Workflow versus agent loop">
+        <defs>
+          <marker id="a41" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1b6b3b"/></marker>
+          <marker id="a42" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#9a4a0f"/></marker>
+        </defs>
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <text x="200" y="18" font-weight="700" fill="#1b6b3b">WORKFLOW: plan fixed in code</text>
+          <rect x="10" y="40" width="80" height="36" rx="8" fill="#fff" stroke="#2f9e5b" stroke-width="2"/><text x="50" y="63">Query</text>
+          <rect x="110" y="40" width="80" height="36" rx="8" fill="#fff" stroke="#2f9e5b" stroke-width="2"/><text x="150" y="63">Tool A</text>
+          <rect x="210" y="40" width="80" height="36" rx="8" fill="#fff" stroke="#2f9e5b" stroke-width="2"/><text x="250" y="63">Memory</text>
+          <rect x="310" y="40" width="80" height="36" rx="8" fill="#ecf8f0" stroke="#2f9e5b" stroke-width="2"/><text x="350" y="63">LLM → reply</text>
+          <line x1="90" y1="58" x2="106" y2="58" stroke="#1b6b3b" stroke-width="2" marker-end="url(#a41)"/>
+          <line x1="190" y1="58" x2="206" y2="58" stroke="#1b6b3b" stroke-width="2" marker-end="url(#a41)"/>
+          <line x1="290" y1="58" x2="306" y2="58" stroke="#1b6b3b" stroke-width="2" marker-end="url(#a41)"/>
+          <text x="200" y="100" fill="#5b6475">same path every time · closed-ended</text>
+
+          <text x="650" y="18" font-weight="700" fill="#9a4a0f">AGENT: the LLM plans in a loop</text>
+          <rect x="590" y="35" width="120" height="40" rx="10" fill="#fff4ea" stroke="#e8833a" stroke-width="2"/><text x="650" y="52" font-weight="700">LLM</text><text x="650" y="67" font-size="11">reason / plan</text>
+          <rect x="740" y="95" width="110" height="36" rx="8" fill="#fff" stroke="#e8833a" stroke-width="2"/><text x="795" y="112">Act: pick a tool</text><text x="795" y="126" font-size="10">from the given list</text>
+          <rect x="590" y="140" width="120" height="36" rx="8" fill="#fff" stroke="#e8833a" stroke-width="2"/><text x="650" y="163">Observe result</text>
+          <rect x="450" y="95" width="110" height="36" rx="8" fill="#fff" stroke="#e8833a" stroke-width="2"/><text x="505" y="112">Revise /</text><text x="505" y="126">done? (≤ N iters)</text>
+          <path d="M710,60 Q790,60 795,92" fill="none" stroke="#9a4a0f" stroke-width="2" marker-end="url(#a42)"/>
+          <path d="M795,131 Q790,158 714,158" fill="none" stroke="#9a4a0f" stroke-width="2" marker-end="url(#a42)"/>
+          <path d="M590,158 Q510,158 505,135" fill="none" stroke="#9a4a0f" stroke-width="2" marker-end="url(#a42)"/>
+          <path d="M505,95 Q510,60 586,58" fill="none" stroke="#9a4a0f" stroke-width="2" marker-end="url(#a42)"/>
+        </g>
+      </svg>
+    </div>
+    <div class="goal">Ask "who writes the plan?" Code means workflow (augmented LLM). The LLM means agent.</div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy (professor's own)</span>
+    <p><b>A personal assistant.</b> You give them money and say "book the ticket and plan the trip". You do <i>not</i> say "come at 8:00, take the vehicle, go here, then there". Spelling out every step is the <b>workflow</b>. Handing over the goal and the means is the <b>agent</b>.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>A workflow is a fixed sequence in <code>main()</code>: <code>read_sensor(); filter(); send();</code>. An agent is a scheduler or state machine whose next state is chosen at runtime by a policy (here, the LLM), with a watchdog limiting iterations.</p></div>
+  </div>
+
+  <div class="card formula">
+    <span class="label">Definition</span>
+    <div class="formula-box">Augmented LLM = LLM + tools + memory (+ retrieval) &nbsp;&nbsp;|&nbsp;&nbsp; Agent = Augmented LLM + <b>autonomy</b> (LLM plans)</div>
+    <ul class="where">
+      <li><b>tools</b> external functions or APIs: the "hands"</li>
+      <li><b>memory</b> conversation history and stored user facts</li>
+      <li><b>autonomy</b> the LLM is allowed to decide the sequence of actions, observe, and retry up to an iteration limit <i>N</i> (the example in class was 5)</li>
+    </ul>
+    <div class="remember">The term "augmented LLM" is Anthropic's (Claude). It is still <b>not</b> an agent.</div>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Retry budget of an agent <span class="badge beyond">beyond lecture: why an iteration limit helps</span></h3>
+    <table class="given">
+      <tr><th>Given</th><th class="num">Value</th></tr>
+      <tr><td>Probability a single attempt solves the sub-task, <i>p</i></td><td class="num">0.4</td></tr>
+      <tr><td>Iteration limit <i>N</i> (from class)</td><td class="num">5</td></tr>
+      <tr><td>Assumption</td><td>attempts independent</td></tr>
+    </table>
+  </div>
+
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Probability that one attempt fails. <span class="calc">1 − p = 1 − 0.4 = 0.6</span></div></div>
+    <div class="step"><span class="n">2</span><div>Probability that all 5 attempts fail. <span class="calc">0.6⁵ = 0.6 × 0.6 × 0.6 × 0.6 × 0.6 = 0.07776</span></div></div>
+    <div class="step"><span class="n">3</span><div>Probability of success within 5 attempts. <span class="calc">1 − 0.07776 = 0.92224</span></div></div>
+    <span class="pill">≈ 92.2 % vs 40 % for a single fixed attempt</span><span class="hint">higher is better, but each retry costs tokens</span>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Agents handle <b>open-ended</b> tasks where the steps cannot be known in advance.</li>
+      <li>Observe → revise loops recover from errors, as the retry calculation shows.</li>
+    </ul>
+    <ul class="cons">
+      <li>Less predictable, and every loop iteration costs tokens and latency. That is why an iteration cap is needed.</li>
+      <li>For closed-ended tasks, a workflow is simpler, cheaper and easier to test.</li>
+    </ul>
+    <div class="balance">workflow = control and predictability. Agent = flexibility and autonomy. Choose based on how open-ended the task is.</div>
+  </div>
+
+  <div class="card code">
+    <span class="label">Code (sketch)</span>
+    <pre><span class="c"># WORKFLOW: the developer hard-codes the plan</span>
+<span class="k">def</span> assistant(query):
+    weather = get_weather(extract_city(query))          <span class="c"># step 1 fixed</span>
+    prefs   = memory.load(user_id)                      <span class="c"># step 2 fixed</span>
+    <span class="k">return</span> llm(<span class="s">f"{query}\n{weather}\n{prefs}"</span>)          <span class="c"># step 3 fixed</span>
+
+<span class="c"># AGENT: the LLM chooses tools in a loop, capped at N iterations</span>
+<span class="k">def</span> agent(goal, tools, N=5):
+    history = [goal]
+    <span class="k">for</span> _ <span class="k">in</span> range(N):
+        step = llm.decide(history, tools)               <span class="c"># returns {"tool":..., "args":...} or {"final":...}</span>
+        <span class="k">if</span> <span class="s">"final"</span> <span class="k">in</span> step:
+            <span class="k">return</span> step[<span class="s">"final"</span>]
+        obs = tools[step[<span class="s">"tool"</span>]](**step[<span class="s">"args"</span>])
+        history.append(obs)                             <span class="c"># observe, then revise next turn</span>
+    <span class="k">return</span> <span class="s">"Stopped: iteration limit reached"</span></pre>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>"It has tools and memory, so it's an agent." <b>Wrong.</b> Without LLM-driven planning it is an augmented LLM, i.e. a workflow.</li>
+      <li>Forgetting the iteration limit. An unbounded agent loop can burn tokens forever.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Here the plan is done by code. Here the plan is done by the LLM itself. That's the fundamental difference."</li>
+      <li>"We are hard-coding it" (assistant) vs "we will give the list of tools, and the agent itself will decide which tool to call when".</li>
+      <li>"If it goes wrong, it will try again several times. If I set the iteration to five, that's autonomy."</li>
+      <li>Board notes: Level 2 = <b>workflow, closed-ended</b>, no plan, gives a response. Level 3 = <b>LLM → plan</b>, <b>open-ended problems</b>.</li>
+    </ul>
+    <span class="fix">"as per Cloud" → as per <b>Claude</b> (Anthropic). "Ml powered assistant" → <b>LLM</b>-powered assistant. "autonomous AI adjustance" → autonomous AI <b>agents</b>. "a context server tool enabled" → <b>context-aware</b>, tool-enabled. "very good, Troy" → "very good, try".</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul>
+      <li><a href="https://www.anthropic.com/research/building-effective-agents">Anthropic – Building effective agents</a>: "<i>Workflows</i> are systems where LLMs and tools are orchestrated through predefined code paths. <i>Agents</i> are systems where LLMs dynamically direct their own processes and tool usage." This matches the professor's distinction exactly.</li>
+      <li><a href="https://arxiv.org/abs/2308.11432">Wang et al. survey</a> (cited on the slide as 2024): the planning, memory and action modules of LLM agents.</li>
+    </ul>
+  </div>
+
+  <div class="takeaway">tools + memory make an augmented LLM (a workflow). Giving the LLM autonomy to plan, act, observe and retry makes it an agent.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t5">
+  <div class="topic-title"><span class="num">5</span><h2>Q&amp;A: Is MCP an agent? Is an LLM an agent?</h2><span class="time">[42:59 – 46:40]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <ul>
+      <li><b>MCP is a protocol, not an agent.</b> It is a standard way to connect an LLM application to tools and external parties, "like your USB". You can use it in workflows <i>and</i> in agents.</li>
+      <li><b>An LLM by itself is not an agent.</b> "LLM is purely a model." You <i>build</i> an agent from an LLM by giving it autonomy.</li>
+    </ul>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p><b>USB vs the person using the computer.</b> USB lets any keyboard, printer or drive plug in the same way, but USB does not decide what to print. MCP is the plug. Whether the system is an agent depends on <i>who decides</i> which plugged-in tool to use. Like HTTP, it is a standard that anyone can use anywhere.</p>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Without MCP you write separate integration code for every tool. With MCP, one connection reaches all the tools on a server.</li>
+      <li>Where the tool list comes from (MCP or hard-coded) is a separate question from who plans. Keep the two questions apart.</li>
+    </ul>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>"I used an MCP server, so I built an agent." Not necessarily. MCP only standardises access.</li>
+      <li>"LLM = agent." The LLM is the reasoning engine inside the agent. Autonomy is what turns it into an agent.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"MCP is like your USB": a standardised way to connect with tools. It is not only for AI agents.</li>
+      <li>When the MCP client lets the LLM choose among the tools without the developer dictating the order, that is agent-like behaviour. She confirmed this to the student and promised a <b>code demo</b> of turning an LLM-powered assistant into an autonomous agent.</li>
+    </ul>
+    <span class="fix">"SMPC server" → <b>MCP server</b>. "SLM powered assistant" → <b>LLM</b>-powered assistant. "HTP" → <b>HTTP</b>.</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://modelcontextprotocol.io/docs/getting-started/intro">MCP – official intro</a>: "Think of MCP like a USB-C port for AI applications". The official docs use the same analogy as the professor.</li></ul>
+  </div>
+
+  <div class="takeaway">MCP is plumbing and the LLM is the engine. Autonomy in planning is what makes it an agent.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. What three limitations of LLMs (2020–2023) does the slide list?</summary>
+    <div class="ans">Hallucinations, no real-time data, no actions.</div></details>
+  <details><summary>2. What was the "key driver" that made LLMs possible?</summary>
+    <div class="ans">The Transformer (2017), affordable GPU compute and internet-scale data, together.</div></details>
+  <details><summary>3. An app always calls a search API, then the LLM, then returns the answer. Agent or not?</summary>
+    <div class="ans">Not an agent. The plan is fixed in code, so it is an LLM-powered assistant (augmented LLM, workflow).</div></details>
+  <details><summary>4. Single-attempt success p = 0.5, iteration limit 3. What is P(success)?</summary>
+    <div class="ans">1 − 0.5³ = 1 − 0.125 = <b>0.875</b> (assuming independent attempts).</div></details>
+  <details><summary>5. Is MCP an agent?</summary>
+    <div class="ans">No. It is a standard protocol for connecting LLM applications to tools ("like USB"), and it can be used in workflows or agents.</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>Was ALICE really medical or psychologist-oriented, or was that only ELIZA's DOCTOR script?</li>
+    <li>If a workflow lets the LLM pick from 2 tools at <i>one</i> fixed step (routing), is that an agent or still a workflow?</li>
+    <li>When will the code demo of "assistant → agent" be shown, and in which lab?</li>
+    <li>What does "300 words" refer to for ELIZA/ALICE (vocabulary, rules, or responses)?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[30:30 – 35:28]</span> Evolution journey 1960s–2026 (7 eras) and the key driver</li>
+    <li><span class="t">[31:50 – 33:10]</span> Intent vs entity (POS tagging cue)</li>
+    <li><span class="t">[35:28 – 36:26]</span> Three levels: rule-based, LLM-powered assistants, autonomous agents</li>
+    <li><span class="t">[36:26 – 42:59]</span> Workflow (code plans) vs agent (LLM plans), augmented LLM, iteration limit, personal-assistant analogy</li>
+    <li><span class="t">[42:59 – 46:40]</span> Q&amp;A: MCP = USB-like protocol; an LLM alone is not an agent</li>
+  </ul>
+</section>
+
+<footer>Part 03 · segments 026–029 · <a href="part_02.html">← part 02</a> · <a href="part_04.html">part 04 →</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 02 – What is Conversational AI | Conversational AI (AIMLCZG521)</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">💬</div>
+  <div>
+    <h1>Part 02 · Course Architecture &amp; What Is Conversational AI</h1>
+    <div class="sub">Conversational AI (S1-26_AIMLCZG521) · Session 1 · Prof. Bharathi R</div>
+    <span class="time">[15:10 – 30:30]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: links in the "Extra reading" cards were fetched and checked on 2026-10-26. Statements that were inferred rather than said in class carry the <span class="badge verify"></span> badge.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · Group work &amp; labs Q&amp;A</a></li>
+  <li><a href="#t2">2 · 4 modules / paradigm shift</a></li>
+  <li><a href="#t3">3 · Prerequisites &amp; tips</a></li>
+  <li><a href="#t4">4 · Session outline</a></li>
+  <li><a href="#t5">5 · What is Conversational AI</a></li>
+  <li><a href="#t6">6 · Daily-life examples</a></li>
+  <li><a href="#t7">7 · Market trends</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>Q&amp;A: group assignments and lab access</h2><span class="time">[15:10 – 17:49]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <ul>
+      <li><b>Assignments are group work.</b> Students form their own groups within a given timeline. Anyone not in a group by then is assigned to one.</li>
+      <li><b>A dedicated lab (remote compute) will be provided soon.</b> Use it for the webinars, in-class hands-on work and assignments.</li>
+    </ul>
+    <div class="goal">Form your group early, and plan to run serious open-source LLMs on the lab machines, not on a laptop.</div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Free Colab is like a shared public computer in a library: fine for a quick check, but slow to start and too weak for heavy work. The course lab is your reserved workstation with a big GPU <span class="badge verify"></span>.</p>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Lightweight open-source models often do not meet the assignment requirements. Larger open-source LLMs need the lab hardware.</li></ul>
+    <ul class="cons"><li>Colab takes time to load. If you do use it, keep the session open.</li></ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"If you want to use seriously very good models … use our lab resource. We insist all of you to use that."</li>
+      <li>"If you don't make a group, we will make the group."</li>
+    </ul>
+    <span class="fix">"You will get an axis" → you will get <b>access</b>. "collab" → <b>Colab</b>. "lab resource pre option" → lab resource for that option.</span>
+  </div>
+
+  <div class="takeaway">assignments are done in groups, and the course lab is the place to run good open-source LLMs.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>Course architecture: the paradigm shift</h2><span class="time">[17:49 – 20:22]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>"Conversational AI has moved from rule-based systems to autonomous agents."</h3>
+    <div class="grid-2">
+      <div class="mini"><h4>01 Foundations (L1–L3)</h4><p>Conversational and agentic AI, LLM foundations, prompting, structured outputs, response control, system architecture.</p></div>
+      <div class="mini"><h4>02 Core building blocks (L4–L8)</h4><p>Tool integration, function calling and ReAct. Agent memory (short-term, long-term, hybrid). Embeddings, vector DBs. RAG (chunking, re-ranking, contextual retrieval).</p></div>
+      <div class="mini"><h4>03 Autonomous agents (L9–L11)</h4><p>Planning and multi-agent systems, state management, hierarchical architectures. RAG and agent evaluation (LLM-as-Judge). Cost optimisation and model routing.</p></div>
+      <div class="mini"><h4>04 Production ecosystem (L12–L16)</h4><p>Security (prompt injection, PII, red-teaming). MCP deep dive (client-server, resources, tools). A2A and interoperability. Ethics, governance and bias mitigation.</p></div>
+    </div>
+    <div class="goal">Understand why each module exists: the LLM on its own lacks real-world access and memory.</div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>An LLM is a <b>genius locked in a room with no windows and no diary</b>. It reasons well but cannot see the world and forgets what happened before. Module 2 gives it <b>hands</b> (tools, through a standard interface) and a <b>diary</b> (memory). Module 3 lets it <b>manage projects and teams</b> (agents, multi-agent). Module 4 adds the <b>law and security</b> (guardrails, protocols, regulations).</p>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <h3>Two kinds of evaluation in Module 3</h3>
+    <div class="grid-2">
+      <div class="mini"><h4>Model evaluation</h4><p>How good is the LLM itself, for example at answering or reasoning?</p></div>
+      <div class="mini"><h4>System evaluation</h4><p>How good is the whole pipeline (retrieval + tools + agents) end to end?</p></div>
+    </div>
+    <ul class="pros"><li>A strong model inside a badly built pipeline can still fail, so both levels have to be measured.</li></ul>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Assuming every LLM has built-in memory. The professor contrasted the model's "naive/inbuilt" memory with an <b>extra memory added outside</b> the model.</li>
+      <li>Treating tool access as ad-hoc glue code. Tools must be accessed in a <b>standard, structured</b> way.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>An LLM is "a very good reasoning model" but it <b>does not have access to the real world</b> and <b>has no memory</b> of what happened before.</li>
+      <li>You saw an introduction to RAG in NLP. Here it is covered in depth.</li>
+      <li>Multi-agent systems have <b>orchestration patterns</b>, much like network topologies have patterns.</li>
+      <li>Module 4 also covers <b>government rules</b> for AI: India, US, UK, and so on.</li>
+    </ul>
+    <span class="fix">"first model / 4th model" → first / fourth <b>module</b>. "across 12 lectures" → 16 lectures.</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://www.anthropic.com/research/building-effective-agents">Anthropic – Building effective agents</a>: the "augmented LLM" building block, plus orchestration patterns (routing, orchestrator-workers, evaluator-optimizer).</li></ul>
+  </div>
+
+  <div class="takeaway">foundations, then building blocks (hands + memory + knowledge), then agents, then production. Each module fixes a limitation of the bare LLM.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Prerequisites &amp; study tips</h2><span class="time">[20:22 – 21:18]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <div class="grid-2">
+      <table>
+        <tr><th colspan="2">What you need coming in</th></tr>
+        <tr><td>Python</td><td>Functions, classes, basic libraries</td></tr>
+        <tr><td>ML basics</td><td>Training, inference, evaluation</td></tr>
+        <tr><td>Deep learning</td><td>Neural networks, parameters, transformers</td></tr>
+        <tr><td>API basics</td><td>REST calls, <b>JSON</b> data handling</td></tr>
+        <tr><td>Basic statistics</td><td>Precision, recall, probability</td></tr>
+      </table>
+      <table>
+        <tr><th colspan="2">Tips (slide)</th></tr>
+        <tr><td>1</td><td>Code every lecture: run the demo and change one thing.</td></tr>
+        <tr><td>2</td><td>Read the abstract and results of the ReAct, DPR and DPO papers.</td></tr>
+        <tr><td>3</td><td>Get an API key (OpenAI, Anthropic, Gemini; low-cost tiers are enough) or use open-source models.</td></tr>
+        <tr><td>4</td><td>Start assignments early. No extensions.</td></tr>
+        <tr><td>5</td><td>Ask on Canvas. Peer discussion is encouraged.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>JSON is the <b>order form</b> between the LLM and a tool. A waiter (LLM) does not shout "something spicy" to the kitchen. They fill in a form with fixed fields (<code>dish</code>, <code>qty</code>, <code>spice</code>) that the kitchen (the API) can parse every time.</p>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Tool use relies on <b>structured JSON</b>, so you need REST/JSON basics.</li>
+      <li>Precision and recall come back in retrieval and RAG evaluation.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul><li>"We use structured data … JSON structured data for tool use." Check Taxila regularly.</li></ul>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Extra reading (papers named on the slide)</span>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2210.03629">ReAct</a> (Yao et al.): interleaves reasoning and acting.</li>
+      <li><a href="https://arxiv.org/abs/2004.04906">DPR – Dense Passage Retrieval</a> (Karpukhin et al., EMNLP 2020): a dual-encoder dense retriever that beats BM25 by 9–19 points absolute on top-20 retrieval accuracy.</li>
+      <li><a href="https://arxiv.org/abs/2305.18290">DPO – Direct Preference Optimization</a> (Rafailov et al.): preference alignment with a simple classification loss instead of RLHF's RL loop.</li>
+    </ul>
+  </div>
+
+  <div class="takeaway">Python + ML/DL + JSON APIs + precision/recall is the toolkit. Code every lecture and read ReAct, DPR and DPO.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>Today's session outline</h2><span class="time">[21:18 – 22:34]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <ol>
+      <li>What exactly is conversational AI?</li>
+      <li>Evolution of chatbots, from rule-based to agents.</li>
+      <li>Why agents are needed today.</li>
+      <li>Building blocks of chatbots and agentic chatbots.</li>
+      <li>The agentic lifecycle, and protocols (high level).</li>
+      <li>NLP foundations: <b>tokenization</b> (not word-wise), the <b>context window</b>, and databases.</li>
+    </ol>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul><li>In NLP you tokenized <b>word by word</b> with NLTK. LLM tokenization is "<b>completely different</b>" (sub-word). This is covered later today.</li></ul>
+    <span class="fix">"Nlp Kit" → <b>NLTK</b> (Natural Language Toolkit).</span>
+  </div>
+
+  <div class="takeaway">today runs from definition to evolution to agents to building blocks to lifecycle and protocols to tokens and context window.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t5">
+  <div class="topic-title"><span class="num">5</span><h2>What is Conversational AI?</h2><span class="time">[22:34 – 25:46]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>An AI system that converses in natural language to understand intent, retain context, retrieve knowledge, and respond or take action</h3>
+    <div class="goal">Understand → Reason → Act, across many turns, adapting to the user.</div>
+    <div class="diagram">
+      <svg viewBox="0 0 640 120" role="img" aria-label="Understand, reason, act">
+        <defs><marker id="a51" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#13213c"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="10" y="20" width="180" height="70" rx="12" fill="#ecf3fd" stroke="#3a7bd5" stroke-width="2"/>
+          <text x="100" y="45" font-weight="700" font-size="14">💬 Understand</text><text x="100" y="66">intent, entities, sentiment</text>
+          <rect x="230" y="20" width="180" height="70" rx="12" fill="#f5effd" stroke="#8a4fd1" stroke-width="2"/>
+          <text x="320" y="45" font-weight="700" font-size="14">🧠 Reason</text><text x="320" y="62">plan, chain thoughts,</text><text x="320" y="77">decompose problems</text>
+          <rect x="450" y="20" width="180" height="70" rx="12" fill="#fff4ea" stroke="#e8833a" stroke-width="2"/>
+          <text x="540" y="45" font-weight="700" font-size="14">⚡ Act</text><text x="540" y="62">call APIs, write code,</text><text x="540" y="77">retrieve docs, orchestrate</text>
+          <line x1="190" y1="55" x2="226" y2="55" stroke="#13213c" stroke-width="2" marker-end="url(#a51)"/>
+          <line x1="410" y1="55" x2="446" y2="55" stroke="#13213c" stroke-width="2" marker-end="url(#a51)"/>
+          <text x="320" y="112" font-size="11" fill="#5b6475">Source on slide: T1 – Jurafsky &amp; Martin, Ch. 1</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A good <b>hotel concierge</b>. They understand what you mean even when you phrase it oddly (NLU) and reply politely (NLG). They keep track of the conversation (dialogue management). They remember you asked about dinner five minutes ago (context awareness). They handle back-and-forth questions (multi-turn), and they know you are vegetarian from your last stay (personalization). Then they actually <b>book the table</b> (act).</p>
+  </div>
+
+  <div class="card formula">
+    <span class="label">Definition</span>
+    <h3>Six core capabilities, numbered as on the board</h3>
+    <table>
+      <tr><th>#</th><th>Capability</th><th>Meaning</th></tr>
+      <tr><td>1</td><td>NLU: Natural Language Understanding</td><td>Understand the user's intent and entities</td></tr>
+      <tr><td>2</td><td>NLG: Natural Language Generation</td><td>Generate human-like responses</td></tr>
+      <tr><td>3</td><td>Dialogue management</td><td>Manage the conversation flow and context (which topic is active)</td></tr>
+      <tr><td>4</td><td>Context awareness</td><td>Remember the conversation history</td></tr>
+      <tr><td>5</td><td>Multi-turn interaction</td><td>Handle complex dialogues while keeping them <b>coherent</b></td></tr>
+      <tr><td>6</td><td>Personalization</td><td>Adapt to user preferences (stored profile)</td></tr>
+    </table>
+    <div class="formula-box"><i>turn</i> = ( <i>query</i>, <i>response</i> ) &nbsp;&nbsp;⇒&nbsp;&nbsp; <i>messages</i> = 2 × <i>N</i><sub>turns</sub></div>
+    <ul class="where">
+      <li><b>turn</b> one user query plus the system's response to it (written on the board as "turn → 1. Q, 2. R")</li>
+      <li><b>N<sub>turns</sub></b> number of query–response pairs in the conversation (integer ≥ 1). Multi-turn means N<sub>turns</sub> &gt; 1.</li>
+    </ul>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Booking a table with a chatbot <span class="badge beyond">illustrative</span></h3>
+    <table class="given">
+      <tr><th>#</th><th>User</th><th>Bot</th></tr>
+      <tr><td>1</td><td>"Book a table for 2 tonight."</td><td>"Sure, which restaurant?"</td></tr>
+      <tr><td>2</td><td>"The Italian place near my office."</td><td>"Booked La Piazza for 2 at 8 pm."</td></tr>
+      <tr><td>3</td><td>"Make it 3 people."</td><td>"Updated: 3 people at 8 pm."</td></tr>
+    </table>
+  </div>
+
+  <div class="card steps">
+    <span class="label">Step-by-step analysis</span>
+    <div class="step"><span class="n">1</span><div>Count the turns: three query–response pairs. <span class="calc">N_turns = 3</span></div></div>
+    <div class="step"><span class="n">2</span><div>Count the messages. <span class="calc">2 × 3 = 6 messages</span></div></div>
+    <div class="step"><span class="n">3</span><div>Turn 1, "book … for 2 tonight": NLU extracts intent = book_table, entities = {party: 2, time: tonight}. The bot's question back is <b>dialogue management</b>, asking for the missing slot.</div></div>
+    <div class="step"><span class="n">4</span><div>Turn 2, "near my office": <b>personalization</b>, because the bot must know where the user's office is from the stored profile.</div></div>
+    <div class="step"><span class="n">5</span><div>Turn 3, "make <i>it</i> 3": <b>context awareness + coherence</b>, because "it" refers to the booking from turn 2. Then <b>act</b>: update the reservation through an API.</div></div>
+    <span class="pill">3 turns · 6 messages · all 6 capabilities used</span>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Without context awareness, turn 3 cannot be answered, because "it" has nothing to refer to.</li>
+      <li>Without personalization, "near my office" needs another clarifying turn, so the conversation gets longer.</li>
+    </ul>
+    <div class="remember">Understand, Reason, Act are the three main objectives of any conversational system.</div>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Counting each <i>message</i> as a turn. A turn is a query <b>plus</b> its response.</li>
+      <li>Expecting multimodal content. In this course, generation is <b>limited to text</b>.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Our generative system is limited to <b>text</b>. Images and video generation are out of scope.</li>
+      <li>Conversations are almost never single Q&amp;A. "We will not close the window, we will ask the next related question", so multi-turn coherence matters.</li>
+      <li>Example: Claude remembers your profile (name, programming language) when you are signed in. That is personalization.</li>
+    </ul>
+    <span class="fix">"One greedy and one response" → one <b>query</b> and one response. "cloud" → <b>Claude</b>.</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://web.stanford.edu/~jurafsky/slp3/">J&amp;M SLP3</a>: Ch. 1 (source of this slide), Ch. 26 "Conversation and its Structure", Appendix K "Frame-based Dialogue Systems".</li></ul>
+  </div>
+
+  <div class="takeaway">conversational AI = NLU + NLG + dialogue management + context + multi-turn coherence + personalization, all serving Understand → Reason → Act.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t6">
+  <div class="topic-title"><span class="num">6</span><h2>Examples in daily life</h2><span class="time">[25:46 – 29:56]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <div class="grid-3">
+      <div class="mini"><h4>🔊 Voice assistants</h4><p>Alexa, Siri, Google Assistant.<br><b>Wake word → ASR → NLU → Action → TTS</b></p></div>
+      <div class="mini"><h4>🏦 Customer support</h4><p>Banking chatbots (HDFC <b>Eva</b>), e-commerce help (Amazon <b>Rufus</b>). They handle tier-1 queries 24/7 and escalate complex cases to humans.</p></div>
+      <div class="mini"><h4>🏥 Virtual agents</h4><p>Healthcare triage and HR assistants. They triage symptoms and suggest care pathways, which is <b>safety-critical</b>.</p></div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 760 90" role="img" aria-label="Voice assistant pipeline">
+        <defs><marker id="a61" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f4f94"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="5" y="15" width="120" height="46" rx="10" fill="#fff" stroke="#3a7bd5" stroke-width="2"/><text x="65" y="35" font-weight="700">Wake word</text><text x="65" y="51">"Alexa"</text>
+          <rect x="160" y="15" width="120" height="46" rx="10" fill="#fff" stroke="#3a7bd5" stroke-width="2"/><text x="220" y="35" font-weight="700">ASR</text><text x="220" y="51">speech → text</text>
+          <rect x="315" y="15" width="120" height="46" rx="10" fill="#fff" stroke="#3a7bd5" stroke-width="2"/><text x="375" y="35" font-weight="700">NLU</text><text x="375" y="51">intent + entities</text>
+          <rect x="470" y="15" width="120" height="46" rx="10" fill="#fff4ea" stroke="#e8833a" stroke-width="2"/><text x="530" y="35" font-weight="700">Action</text><text x="530" y="51">open app / play</text>
+          <rect x="625" y="15" width="130" height="46" rx="10" fill="#fff" stroke="#3a7bd5" stroke-width="2"/><text x="690" y="35" font-weight="700">TTS</text><text x="690" y="51">text → speech</text>
+          <line x1="125" y1="38" x2="156" y2="38" stroke="#1f4f94" stroke-width="2" marker-end="url(#a61)"/>
+          <line x1="280" y1="38" x2="311" y2="38" stroke="#1f4f94" stroke-width="2" marker-end="url(#a61)"/>
+          <line x1="435" y1="38" x2="466" y2="38" stroke="#1f4f94" stroke-width="2" marker-end="url(#a61)"/>
+          <line x1="590" y1="38" x2="621" y2="38" stroke="#1f4f94" stroke-width="2" marker-end="url(#a61)"/>
+          <text x="380" y="82" font-size="11" fill="#5b6475">Pipeline written on the slide (red text) for voice assistants</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>The <b>wake word</b> is like calling someone's name in a crowded room: until you say "Alexa", the device assumes you are talking to someone else. <b>Triage</b> is the hospital receptionist who looks at your symptoms and sends you to ortho or neuro.</p>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>"Alexa, open Amazon Music" (example from class)</h3>
+  </div>
+
+  <div class="card steps">
+    <span class="label">Step-by-step trace</span>
+    <div class="step"><span class="n">1</span><div><b>Wake word:</b> "Alexa" tells the device that this utterance is for it.</div></div>
+    <div class="step"><span class="n">2</span><div><b>ASR</b> (automatic speech recognition): audio → text "open amazon music".</div></div>
+    <div class="step"><span class="n">3</span><div><b>NLU:</b> intent = open_app, entity = Amazon Music.</div></div>
+    <div class="step"><span class="n">4</span><div><b>Action:</b> the music app is launched. A follow-up such as "play this song / this genre" is a new turn.</div></div>
+    <div class="step"><span class="n">5</span><div><b>TTS</b> (text-to-speech): the spoken reply to the user.</div></div>
+    <span class="pill blue">Speech in → text inside → speech out</span>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Early voice assistants were built on classical ML pipelines, so they needed the wake word on every command. Today these assistants use LLMs and agents.</li>
+      <li>Escalating complex cases to humans keeps support bots safe. Triage is safety-critical, so mistakes matter more there.</li>
+    </ul>
+    <ul class="cons"><li>A rule-based bot (e.g. Eva) only handles paths it was programmed for. Anything else fails.</li></ul>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul><li>Assuming every branded banking bot is "AI". The professor said HDFC <b>Eva is rule-based</b>, with no AI model behind it.</li></ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>In the early days you could not just say "play music". You had to say "<b>Alexa</b>, play music" every time.</li>
+      <li>Amazon's shopping assistant persona is <b>Rufus</b> (answered by a student). HDFC's is <b>Eva</b>, and it is rule-based.</li>
+      <li>Healthcare triage works like a receptionist directing you to the right department.</li>
+    </ul>
+    <span class="fix">"speech reorganization" → speech <b>recognition</b>. "TSS" → <b>TTS</b>. "try age / try aging" → <b>triage</b>. "HHR assistance" → <b>HR assistants</b>. "Group" (student reply) is noise.</span>
+  </div>
+
+  <div class="takeaway">real conversational systems are pipelines (wake word → ASR → NLU → action → TTS), and a "chatbot" can be anything from rule-based (Eva) to LLM-powered (Rufus).</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t7">
+  <div class="topic-title"><span class="num">7</span><h2>Market trends &amp; industry impact</h2><span class="time">[29:56 – 30:30]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <div class="grid-3">
+      <div class="mini"><h4>$41.39 B</h4><p>Conversational-AI market by 2030 (Grand View Research, 2025)</p></div>
+      <div class="mini"><h4>100 M</h4><p>ChatGPT users in 2 months, the fastest-growing consumer app (UBS, 2023)</p></div>
+      <div class="mini"><h4>80 %</h4><p>Fortune 500 companies using AI agents (Microsoft, Nov 2025)</p></div>
+    </div>
+    <table>
+      <tr><th>Sector</th><th>Impact on slide</th></tr>
+      <tr><td>Banking &amp; finance</td><td>~70% of tier-1 queries handled by AI, up to 60% cost reduction</td></tr>
+      <tr><td>Healthcare</td><td>AI triage cuts ER wait times, 24/7 remote monitoring</td></tr>
+      <tr><td>Enterprise software</td><td>Agents browse, code, draft contracts and operate tools</td></tr>
+      <tr><td>E-commerce</td><td>15–26% conversion lift from AI-personalised recommendations</td></tr>
+    </table>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>A bank's support desk <span class="badge beyond">illustrative, using the slide's percentages</span></h3>
+    <table class="given">
+      <tr><th>Given</th><th class="num">Value</th></tr>
+      <tr><td>Tier-1 queries per day</td><td class="num">1,000</td></tr>
+      <tr><td>Share handled by AI</td><td class="num">70 %</td></tr>
+      <tr><td>Monthly support cost before AI</td><td class="num">₹10,00,000</td></tr>
+      <tr><td>Cost reduction (upper bound)</td><td class="num">60 %</td></tr>
+    </table>
+  </div>
+
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div><span class="calc">AI-handled = 1,000 × 0.70 = 700 queries/day</span></div></div>
+    <div class="step"><span class="n">2</span><div><span class="calc">Escalated to humans = 1,000 − 700 = 300 queries/day</span></div></div>
+    <div class="step"><span class="n">3</span><div><span class="calc">Max saving = ₹10,00,000 × 0.60 = ₹6,00,000/month</span></div></div>
+    <div class="step"><span class="n">4</span><div><span class="calc">Cost after AI (best case) = ₹10,00,000 − ₹6,00,000 = ₹4,00,000/month</span></div></div>
+    <span class="pill">300 escalations/day</span><span class="pill blue">≥ ₹4,00,000/month</span><span class="hint">lower cost is better, but "up to" means best case</span>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul><li>"You know better than me, so no need to discuss this". The slide was skipped quickly. Not likely to be examined in depth <span class="badge verify"></span>.</li></ul>
+  </div>
+
+  <div class="takeaway">conversational and agentic AI is already mainstream (80% of the Fortune 500), and its value comes from automating tier-1 work while escalating the rest.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. Give the slide definition of conversational AI.</summary>
+    <div class="ans">An AI system that converses in natural language to understand intent, retain context, retrieve knowledge, and respond or take action.</div></details>
+  <details><summary>2. List the six core capabilities.</summary>
+    <div class="ans">NLU, NLG, dialogue management, context awareness, multi-turn interaction (coherence), personalization.</div></details>
+  <details><summary>3. A chat has 5 user questions, each answered. How many turns and how many messages?</summary>
+    <div class="ans">5 turns (query + response pairs) and 2 × 5 = <b>10 messages</b>.</div></details>
+  <details><summary>4. Give the voice-assistant pipeline in order.</summary>
+    <div class="ans">Wake word → ASR (speech-to-text) → NLU → Action → TTS (text-to-speech).</div></details>
+  <details><summary>5. Why is an LLM alone not enough? (Module 2 motivation)</summary>
+    <div class="ans">It has no access to the real world (it needs tools through a structured interface) and no memory of earlier interactions (it needs added memory). Its knowledge is also limited, which is why RAG is added.</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>What is the group size for assignments, and what is the deadline for forming groups?</li>
+    <li>What GPU or model resources does the course lab provide, and when will access start?</li>
+    <li>Which government AI regulations (India, US, UK, EU?) will be in the syllabus for L15?</li>
+    <li>Is "model evaluation vs system evaluation" examinable as a formal distinction, and with which metrics?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[15:10 – 17:49]</span> Q&amp;A: group assignments, lab access, Colab vs lab</li>
+    <li><span class="t">[17:49 – 20:22]</span> Course architecture, paradigm shift, model vs system evaluation, regulations</li>
+    <li><span class="t">[20:22 – 21:18]</span> Prerequisites and tips (ReAct, DPR, DPO papers, API keys)</li>
+    <li><span class="t">[21:18 – 22:34]</span> Session outline (incl. sub-word tokenization, context window)</li>
+    <li><span class="t">[22:34 – 25:46]</span> Definition, 6 core capabilities, turn, Understand/Reason/Act</li>
+    <li><span class="t">[25:46 – 29:56]</span> Voice assistants, customer support (Eva, Rufus), virtual agents (triage)</li>
+    <li><span class="t">[29:56 – 30:30]</span> Market trends and industry impact</li>
+  </ul>
+</section>
+
+<footer>Part 02 · segments 017–025 · <a href="part_01.html">← part 01</a> · <a href="part_03.html">part 03 →</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>

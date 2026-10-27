@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 01 – Course Handout &amp; Roadmap | Conversational AI (AIMLCZG521)</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">🧭</div>
+  <div>
+    <h1>Part 01 · Course Handout, Roadmap &amp; Evaluation</h1>
+    <div class="sub">Conversational AI (S1-26_AIMLCZG521) · Session 1 · Prof. Bharathi R</div>
+    <span class="time">[00:00 – 15:10]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: every link in the gray "Extra reading" cards was fetched and checked on 2026-10-26. Anything inferred rather than stated in class is marked <span class="badge verify"></span>.</div>
+<div class="notice">Source: the VTT transcript plus slide frames taken from the recording (segments 001–016). In this part the professor walks through the course handout (a Word document), not lecture slides.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · Course scope</a></li>
+  <li><a href="#t2">2 · Textbooks</a></li>
+  <li><a href="#t3">3 · Module 1 (L1–L3)</a></li>
+  <li><a href="#t4">4 · Module 2 (L4–L8)</a></li>
+  <li><a href="#t5">5 · Module 3 (L9–L11)</a></li>
+  <li><a href="#t6">6 · Module 4 (L12–L16)</a></li>
+  <li><a href="#t7">7 · Evaluation scheme</a></li>
+  <li><a href="#t8">8 · Deadlines &amp; rules</a></li>
+  <li><a href="#t9">9 · Labs &amp; webinars</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>What this course is about</h2><span class="time">[00:13 – 03:00]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Conversational AI = systems that understand <u>and</u> generate natural language, and can now think, plan and act</h3>
+    <p>The course takes you from a plain <b>LLM</b>, to an <b>augmented LLM</b> (with memory, tools and information retrieval), to <b>agentic AI</b> (autonomous agents that reason, plan and act), and finally to running these systems safely in <b>production</b>.</p>
+    <div class="goal">Design, build, evaluate and deploy production-ready conversational AI agents.</div>
+    <div class="diagram">
+      <svg viewBox="0 0 660 150" role="img" aria-label="LLM to augmented LLM to agentic AI to production">
+        <defs><marker id="ar1" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#13213c"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="13" text-anchor="middle">
+          <rect x="10" y="30" width="140" height="80" rx="12" fill="#fff4ea" stroke="#e8833a" stroke-width="2"/>
+          <text x="80" y="62" font-weight="700">LLM</text>
+          <text x="80" y="82" font-size="11">generates text</text>
+          <rect x="176" y="30" width="140" height="80" rx="12" fill="#ecf8f0" stroke="#2f9e5b" stroke-width="2"/>
+          <text x="246" y="56" font-weight="700">Augmented LLM</text>
+          <text x="246" y="76" font-size="11">+ memory</text>
+          <text x="246" y="91" font-size="11">+ tools + retrieval</text>
+          <rect x="342" y="30" width="140" height="80" rx="12" fill="#ecf3fd" stroke="#3a7bd5" stroke-width="2"/>
+          <text x="412" y="62" font-weight="700">Agentic AI</text>
+          <text x="412" y="82" font-size="11">think → plan → act</text>
+          <rect x="508" y="30" width="142" height="80" rx="12" fill="#f5effd" stroke="#8a4fd1" stroke-width="2"/>
+          <text x="579" y="56" font-weight="700">Production</text>
+          <text x="579" y="76" font-size="11">security · eval</text>
+          <text x="579" y="91" font-size="11">monitoring · ethics</text>
+          <line x1="150" y1="70" x2="172" y2="70" stroke="#13213c" stroke-width="2" marker-end="url(#ar1)"/>
+          <line x1="316" y1="70" x2="338" y2="70" stroke="#13213c" stroke-width="2" marker-end="url(#ar1)"/>
+          <line x1="482" y1="70" x2="504" y2="70" stroke="#13213c" stroke-width="2" marker-end="url(#ar1)"/>
+          <text x="330" y="135" font-size="11" fill="#5b6475">The course follows this ladder from left to right over 16 sessions and 4 modules</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <h3>The brilliant new hire</h3>
+    <div class="grid-2">
+      <div class="mini">
+        <h4>Everyday picture</h4>
+        <ul>
+          <li><b>LLM:</b> a very well-read new hire who has no notebook and no phone, and who forgets each conversation once it ends.</li>
+          <li><b>Augmented LLM:</b> the same person with a <i>notebook</i> (memory), a <i>phone and calculator</i> (tools), and a <i>library card</i> (retrieval).</li>
+          <li><b>Agent:</b> you hand over a goal ("book my trip") and they break it into steps, make the calls, check the results and finish the job.</li>
+          <li><b>Production:</b> before letting them deal with real customers you add ID checks, audits, budgets and a code of conduct.</li>
+        </ul>
+      </div>
+      <div class="mini">
+        <h4>Embedded-dev lens</h4>
+        <ul>
+          <li>LLM ≈ a powerful pure function: tokens in, tokens out, no persistent state.</li>
+          <li>Memory ≈ RAM for the current session and flash/EEPROM for long-lived user data.</li>
+          <li>Tools ≈ calling peripherals through a driver API.</li>
+          <li>Agent ≈ the main control loop (sense → decide → actuate) with a watchdog and iteration limits.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card concept">
+    <span class="label">From the handout</span>
+    <h3>Course objectives (slide: segment 003)</h3>
+    <table>
+      <tr><th>CO</th><th>What you should be able to do</th></tr>
+      <tr><td>CO1</td><td>Understand the principles, architecture and lifecycle of real-world conversational AI agents that reason, plan, use memory and act autonomously in dynamic contexts.</td></tr>
+      <tr><td>CO2</td><td>Design and build intelligent conversational systems using LLMs, memory mechanisms, tool integration and information retrieval.</td></tr>
+      <tr><td>CO3</td><td>Apply production-ready practices: system architecture, security, ethical safeguards, cost optimisation, reliability and performance monitoring.</td></tr>
+      <tr><td>CO4</td><td>Design, implement, evaluate and deploy scalable agents for enterprise applications with governance, monitoring and deployment considerations.</td></tr>
+    </table>
+    <p class="hint">Course AIMLCZG521 · 4 credits · credit model 3-1-0 · authors Prof Chetana Gavankar &amp; Prof Bharathi R · handout v3.0.</p>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <h3>Why the course follows this ladder</h3>
+    <ul class="pros">
+      <li>Each rung fixes a specific weakness of the one below it. The LLM has no memory, so we add memory. It cannot act, so we add tools. Its knowledge is stale, so we add retrieval. It cannot handle long tasks on its own, so we add agents.</li>
+      <li>Production topics come last because you need a working system before you can secure, evaluate and monitor it.</li>
+    </ul>
+    <ul class="cons">
+      <li>Each rung adds cost, latency and new ways to fail. That is why evaluation, token economics and guardrails get lectures of their own (L11–L12).</li>
+    </ul>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Treating "LLM", "augmented LLM" and "agent" as synonyms. They are different rungs of the ladder.</li>
+      <li>Assuming you must have taken the <i>LLMs for GenAI</i> elective first. The professor said the two courses are independent.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Prerequisites she assumes: <b>NLP</b> and <b>deep neural networks</b>.</li>
+      <li>If you skipped the LLMs-for-GenAI elective, that's fine. Wherever a prerequisite is needed there will be a <b>quick brush-up</b> in class.</li>
+      <li>The course is aimed at <b>production-ready skills</b>: architecture, security, ethics, responsible AI, defence mechanisms and monitoring. It covers both design and implementation, plus evaluation.</li>
+      <li>16 sessions in 4 modules. The handout and today's slides (with the hands-on material) are on the LMS portal.</li>
+    </ul>
+    <span class="fix">"it's a need of the art" → most likely "need of the hour" / "state of the art". "Llms" → LLMs. "LLM for Gen. Ai" → the <i>LLMs for GenAI</i> elective. "Taxila portal" kept as spoken (the handout itself says <i>Canvas</i>; Taxila appears to be the name of the BITS LMS <span class="badge verify"></span>).</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Extra reading · beyond the lecture</span>
+    <ul>
+      <li><a href="https://www.anthropic.com/research/building-effective-agents">Anthropic – Building effective agents</a>. Introduces the "augmented LLM" as the basic building block, and separates <i>workflows</i> (fixed code paths) from <i>agents</i> (the LLM decides its own steps).</li>
+      <li><a href="https://arxiv.org/abs/2308.11432">Wang et al. – A Survey on LLM-based Autonomous Agents</a> (reference R1 for L1).</li>
+    </ul>
+  </div>
+
+  <div class="takeaway">the course climbs LLM → augmented LLM (memory, tools, retrieval) → agentic AI → secure, evaluated production systems.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>Textbooks, references &amp; papers</h2><span class="time">[03:00 – 05:22]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Two free textbooks for the foundations, plus research papers to keep up with the state of the art</h3>
+    <table>
+      <tr><th>ID</th><th>Resource</th><th>Use it for</th></tr>
+      <tr><td>T1</td><td>Jurafsky &amp; Martin, <i>Speech and Language Processing</i>, 3rd ed. draft (2026 release, free online)</td><td>NLP and LLM foundations, dialogue systems, IR, evaluation</td></tr>
+      <tr><td>T2</td><td>Allahyari, M., <i>A Practical Approach to Retrieval Augmented Generation Systems</i> (free e-book)</td><td>RAG pipelines, chat-with-documents, embeddings, vector databases</td></tr>
+      <tr><td>Ref</td><td>Indian-edition books: Bhattacharyya &amp; Joshi (NLP); Vajjala et al. (<i>Practical NLP</i>); Tunstall et al. (<i>NLP with Transformers</i>); Siddiqui &amp; Tiwary (<i>NLP and IR</i>)</td><td>Supporting reading; the professor says one of these is free online and the others can be bought</td></tr>
+      <tr><td>R</td><td>Core research papers, e.g. Yao et al. 2023 <i>ReAct</i>, Li et al. (review of LLM-agent paradigms)</td><td>Agents, tool use, planning. Shared during lectures.</td></tr>
+    </table>
+    <div class="goal">Know where each topic will be read from: J&amp;M for foundations, Allahyari for RAG, papers for agents.</div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p><b>Textbooks are the map. Papers are the traffic updates.</b> The map (J&amp;M, Allahyari) shows the roads, and they barely change. The traffic updates (arXiv papers) tell you what changed this month. Conversational AI is changing fast, so you need both.</p>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Both textbooks are <b>open-access</b>, so everyone has the same version at no cost.</li>
+      <li>Papers are needed because "this subject is an evolving subject". To build a current system you have to look at the current state of the art.</li>
+    </ul>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Waiting for the professor to upload J&amp;M. She will <b>not</b> share it because of its size, so download it yourself.</li>
+      <li>Citing an old J&amp;M draft. The chapter numbering changes between releases (for example, the 2026 release has <i>Information Retrieval and RAG</i> as Ch. 11). <span class="badge beyond">beyond lecture</span></li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>You already know J&amp;M from the NLP course. This time use the <b>2026 edition</b>.</li>
+      <li>The Allahyari RAG book is "a very good online e-book" for building RAG pipelines, creating embeddings and storing them in vector databases.</li>
+      <li>Journal and conference papers will be shared <b>during lectures</b> when needed. URLs to free resources are already included in the slides.</li>
+    </ul>
+    <span class="fix">The handout spells the author "Mallahyari, M." The book site lists the authors as <b>Mehdi Allahyari</b> and Angelina Yang. "web sessions" → sessions. "EA system" → AI system.</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul>
+      <li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky &amp; Martin – SLP 3rd ed. draft</a>: full PDF plus per-chapter slides.</li>
+      <li><a href="https://mallahyari.github.io/rag-ebook/">Allahyari &amp; Yang – A Practical Approach to RAG Systems</a>: free online book.</li>
+      <li><a href="https://arxiv.org/abs/2210.03629">Yao et al. – ReAct: Synergizing Reasoning and Acting in Language Models</a></li>
+    </ul>
+  </div>
+
+  <div class="takeaway">download J&amp;M (2026) and the Allahyari RAG e-book now. Papers will arrive lecture by lecture.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Roadmap · Module 1: Foundations (L1–L3)</h2><span class="time">[05:22 – 07:14]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>The 16 sessions at a glance</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 900 140" role="img" aria-label="Four modules with mid-semester exam after L8">
+        <g font-family="Segoe UI, Arial" text-anchor="middle">
+          <rect x="10" y="20" width="190" height="80" rx="12" fill="#fff4ea" stroke="#e8833a" stroke-width="2"/>
+          <text x="105" y="45" font-size="14" font-weight="700">Module 1 · L1–L3</text>
+          <text x="105" y="66" font-size="11.5">Foundations · LLMs · prompting</text>
+          <text x="105" y="83" font-size="11.5">system architecture</text>
+          <rect x="220" y="20" width="190" height="80" rx="12" fill="#ecf8f0" stroke="#2f9e5b" stroke-width="2"/>
+          <text x="315" y="45" font-size="14" font-weight="700">Module 2 · L4–L8</text>
+          <text x="315" y="66" font-size="11.5">Tools · Memory</text>
+          <text x="315" y="83" font-size="11.5">Embeddings · RAG</text>
+          <line x1="430" y1="10" x2="430" y2="112" stroke="#d64545" stroke-width="3" stroke-dasharray="6 4"/>
+          <text x="430" y="130" font-size="12" font-weight="700" fill="#d64545">MID-SEM (L1–L8)</text>
+          <rect x="450" y="20" width="190" height="80" rx="12" fill="#ecf3fd" stroke="#3a7bd5" stroke-width="2"/>
+          <text x="545" y="45" font-size="14" font-weight="700">Module 3 · L9–L11</text>
+          <text x="545" y="66" font-size="11.5">Planning · Multi-agent</text>
+          <text x="545" y="83" font-size="11.5">Evaluation · Cost</text>
+          <rect x="660" y="20" width="230" height="80" rx="12" fill="#f5effd" stroke="#8a4fd1" stroke-width="2"/>
+          <text x="775" y="45" font-size="14" font-weight="700">Module 4 · L12–L16</text>
+          <text x="775" y="66" font-size="11.5">Security · Deployment</text>
+          <text x="775" y="83" font-size="11.5">MCP/A2A · Responsible AI · Revision</text>
+        </g>
+      </svg>
+    </div>
+    <table>
+      <tr><th>L</th><th>Title (from handout)</th><th>Content</th></tr>
+      <tr><td>L1</td><td>Foundations of Conversational &amp; Agentic AI</td><td>Evolution from chatbots to autonomous agents. Agent lifecycle, reasoning, planning and action loops. <i>(Today.)</i></td></tr>
+      <tr><td>L2</td><td>LLM Foundations for Conversational Agents</td><td>LLM capabilities, limitations and conversational design patterns. Prompting strategies, structured outputs, <b>response control</b>.</td></tr>
+      <tr><td>L3</td><td>System Architecture for Real-World Conversational AI</td><td>Conversation state, orchestration and application architecture. Model selection and the trade-offs between latency, reliability and cost.</td></tr>
+    </table>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Think of opening a restaurant. <b>L1</b> is the history of restaurants and the job of a chef. <b>L2</b> is how the chef cooks and how you phrase an order so you get exactly the dish you want (prompting, response control). <b>L3</b> is the kitchen layout: who keeps track of each table's order (conversation state), who passes orders between stations (orchestration), and whether to hire an expensive star chef or a fast line cook (model selection).</p>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <h3>Why L3 is about trade-offs</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 420 150" role="img" aria-label="Balance scale: quality versus latency and cost">
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <polygon points="210,120 195,145 225,145" fill="#8a4fd1"/>
+          <line x1="210" y1="40" x2="210" y2="120" stroke="#5a2a96" stroke-width="3"/>
+          <line x1="80" y1="50" x2="340" y2="30" stroke="#5a2a96" stroke-width="3"/>
+          <line x1="80" y1="50" x2="60" y2="85" stroke="#5a2a96"/><line x1="80" y1="50" x2="100" y2="85" stroke="#5a2a96"/>
+          <line x1="340" y1="30" x2="320" y2="65" stroke="#5a2a96"/><line x1="340" y1="30" x2="360" y2="65" stroke="#5a2a96"/>
+          <path d="M50,85 Q80,105 110,85 z" fill="#f5effd" stroke="#5a2a96"/>
+          <path d="M310,65 Q340,85 370,65 z" fill="#f5effd" stroke="#5a2a96"/>
+          <text x="80" y="122">bigger model:</text>
+          <text x="80" y="137">quality, reliability ↑</text>
+          <text x="340" y="102">smaller model:</text>
+          <text x="340" y="117">latency, cost ↓</text>
+        </g>
+      </svg>
+    </div>
+    <div class="balance">no single model is best on every axis. You pick the one that meets the quality bar at an acceptable latency and cost. <span class="badge beyond">elaboration</span></div>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>L3 covers how to hold a conversation, where the conversation state is stored (memory), and how components talk to each other in a <b>structured</b> way.</li>
+      <li>L2 includes prompt engineering and prompt techniques. <b>Response control</b> is "very important, interesting": LLMs mostly generate text, but now also images, audio and video, so how do we control what they output?</li>
+      <li>The L3 slides contain a high-level view that shows how it connects to every other session.</li>
+    </ul>
+    <span class="fix">"the dash for the session one" is a filler phrase, ignored.</span>
+  </div>
+
+  <div class="takeaway">Module 1 covers the LLM itself, how to steer it, and how to put it into a system architecture. It is the base for everything that follows.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>Roadmap · Module 2: Tools, Memory, Embeddings, RAG (L4–L8)</h2><span class="time">[07:14 – 09:02]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Module 2 gives the LLM hands (tools), a memory, and a library (RAG)</h3>
+    <table>
+      <tr><th>L</th><th>Title</th><th>Content</th></tr>
+      <tr><td>L4</td><td>Tool Integration &amp; Function Calling</td><td>Function calling, tool schemas, API integration and validation. ReAct-style <b>thought → action → observation</b> workflows.</td></tr>
+      <tr><td>L5</td><td>Memory Mechanisms</td><td>Short-term (working) memory, long-term memory (user preferences), episodic and semantic memory. Context engineering and context-window management. Personalisation and privacy concerns.</td></tr>
+      <tr><td>L6</td><td>Embeddings, Vector Databases &amp; Retrieval</td><td>Moving from static embeddings to <b>contextual embeddings</b>. Semantic search, hybrid retrieval, vector indexing. IR pipelines for enterprise knowledge.</td></tr>
+      <tr><td>L7–L8</td><td>RAG &amp; Agentic Retrieval</td><td>Chunking, retrieval, re-ranking, grounding and citation-aware answers. Kinds of RAG, from advanced RAG up to <b>agentic RAG</b> (routing, iterative search). <b>Mid-sem follows.</b></td></tr>
+    </table>
+    <div class="diagram">
+      <svg viewBox="0 0 860 90" role="img" aria-label="RAG pipeline">
+        <defs><marker id="ar2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f4f94"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="5" y="20" width="110" height="44" rx="10" fill="#fff" stroke="#3a7bd5" stroke-width="2"/><text x="60" y="47">Documents</text>
+          <rect x="150" y="20" width="120" height="44" rx="10" fill="#fff" stroke="#3a7bd5" stroke-width="2"/><text x="210" y="40">Chunk +</text><text x="210" y="55">embed</text>
+          <rect x="305" y="20" width="110" height="44" rx="10" fill="#ecf8f0" stroke="#2f9e5b" stroke-width="2"/><text x="360" y="47">Vector DB</text>
+          <rect x="450" y="20" width="120" height="44" rx="10" fill="#fff" stroke="#3a7bd5" stroke-width="2"/><text x="510" y="40">Retrieve</text><text x="510" y="55">top-k for query</text>
+          <rect x="605" y="20" width="120" height="44" rx="10" fill="#fff4ea" stroke="#e8833a" stroke-width="2"/><text x="665" y="40">LLM +</text><text x="665" y="55">retrieved context</text>
+          <rect x="760" y="20" width="95" height="44" rx="10" fill="#fff" stroke="#3a7bd5" stroke-width="2"/><text x="807" y="47">Answer</text>
+          <line x1="115" y1="42" x2="146" y2="42" stroke="#1f4f94" stroke-width="2" marker-end="url(#ar2)"/>
+          <line x1="270" y1="42" x2="301" y2="42" stroke="#1f4f94" stroke-width="2" marker-end="url(#ar2)"/>
+          <line x1="415" y1="42" x2="446" y2="42" stroke="#1f4f94" stroke-width="2" marker-end="url(#ar2)"/>
+          <line x1="570" y1="42" x2="601" y2="42" stroke="#1f4f94" stroke-width="2" marker-end="url(#ar2)"/>
+          <line x1="725" y1="42" x2="756" y2="42" stroke="#1f4f94" stroke-width="2" marker-end="url(#ar2)"/>
+          <text x="430" y="84" font-size="11" fill="#5b6475">The RAG flow named in the L6–L8 descriptions (detail comes in those lectures)</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <div class="grid-2">
+      <div class="mini">
+        <h4>Everyday picture</h4>
+        <ul>
+          <li><b>Tools (L4):</b> the assistant can now <i>call</i> the bank or the weather office instead of guessing.</li>
+          <li><b>Short-term memory (L5):</b> what you remember from this phone call. <b>Long-term memory:</b> knowing that this customer is vegetarian.</li>
+          <li><b>Embeddings (L6):</b> a library shelved by <i>meaning</i>, not alphabetically, so "car" and "automobile" sit next to each other.</li>
+          <li><b>RAG (L7–L8):</b> an open-book exam. Look up the relevant page first, then answer.</li>
+        </ul>
+      </div>
+      <div class="mini">
+        <h4>Embedded-dev lens</h4>
+        <ul>
+          <li>Function calling ≈ a dispatch table. The model emits <code>{name, args}</code>, your code validates the arguments and runs the handler.</li>
+          <li>Context window ≈ a fixed-size buffer. When it is full, something has to be evicted or summarised.</li>
+          <li>Vector DB ≈ a lookup table indexed by nearest neighbour instead of exact key.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <h3>Static vs contextual embeddings (as framed in class)</h3>
+    <div class="grid-2">
+      <div class="mini"><h4>Static (seen in NLP course)</h4><p>CBOW / word2vec, GloVe: <b>one vector per word</b>. "bank" gets the same vector in "river bank" and in "bank loan".</p></div>
+      <div class="mini"><h4>Contextual (used by LLMs)</h4><p>The vector depends on the <b>surrounding words</b>, so the two senses of "bank" get different vectors. This is what L6 builds up to.</p></div>
+    </div>
+    <ul class="pros"><li>Contextual vectors resolve ambiguity, so retrieval in RAG returns more relevant chunks.</li></ul>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Thinking RAG is a single technique. The professor listed <i>kinds</i> of RAG, from basic to advanced to agentic.</li>
+      <li>Mixing up <i>memory</i> (what the agent remembers about the conversation or user, L5) with <i>retrieval</i> (fetching external knowledge, L6–L8).</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>L4 is a <b>structured way of connecting components</b> through tool calling.</li>
+      <li>L5 covers context engineering, short-term memory and context-window management, long-term memory and user preferences.</li>
+      <li>You learned <b>static</b> embeddings in NLP. Here the step is to <b>contextual</b> embeddings, then how to store them in and retrieve them from vector databases.</li>
+      <li>After this module comes the <b>mid-sem exam</b>.</li>
+    </ul>
+    <span class="fix">"glow representations" → <b>GloVe</b>. "vector bases" → vector <b>databases</b>. "EL, after this is still your mid sem" → "after <b>L8</b> is your mid-sem". "Agentic. concepts" → agentic concepts.</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2210.03629">ReAct paper (Yao et al.)</a>: interleaves reasoning traces with actions (for example Wikipedia API calls) to reduce hallucination. Reference for L4.</li>
+      <li><a href="https://web.stanford.edu/~jurafsky/slp3/">J&amp;M Ch. 5 "Embeddings" and Ch. 11 "Information Retrieval and RAG"</a> (2026 release).</li>
+      <li><a href="https://mallahyari.github.io/rag-ebook/">Allahyari RAG e-book</a>: practical chunking, embedding and vector-store pipelines.</li>
+    </ul>
+  </div>
+
+  <div class="takeaway">Module 2 turns the bare LLM into an augmented LLM (tools, memory, contextual embeddings, RAG), and it is the syllabus boundary for the mid-sem.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t5">
+  <div class="topic-title"><span class="num">5</span><h2>Roadmap · Module 3: Agents, Multi-agent, Evaluation (L9–L11)</h2><span class="time">[09:02 – 11:00]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>After mid-sem: from a tool-using LLM to agents that plan, delegate and can be trusted</h3>
+    <table>
+      <tr><th>L</th><th>Title</th><th>Content</th></tr>
+      <tr><td>L9</td><td>Autonomous Agent Planning &amp; Task Decomposition</td><td>Planning strategies, goal decomposition, state management, execution control. Error recovery, iteration limits, human-in-the-loop checkpoints.</td></tr>
+      <tr><td>L10</td><td>Multi-Agent Collaboration &amp; Orchestration</td><td>Single-agent vs multi-agent architectures, role-based collaboration. Orchestration patterns, delegation, coordination, interoperability.</td></tr>
+      <tr><td>L11</td><td>Evaluation, Reliability &amp; Cost Optimisation</td><td>RAG and agent evaluation metrics, hallucination control, benchmark design. Latency, reliability, <b>token economics</b>, caching, model routing. Cost-aware optimisation.</td></tr>
+    </table>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p><b>A wedding planner.</b> L9: split "plan the wedding" into venue, food and invitations, and keep a checklist (state). L10: hire specialists (caterer, decorator) and coordinate them, which is the multi-agent setup. L11: the inspector asks "was every promise kept?" (reliability), and the accountant asks "did we stay within budget?" (token economics). Paying for a ChatGPT/Claude/Gemini pro plan is the everyday version of the token bill.</p>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <h3>Why AI evaluation ≠ traditional software testing</h3>
+    <div class="grid-2">
+      <div class="mini"><h4>Traditional software</h4><ul class="pros"><li>Deterministic: same input, same output.</li><li>Pass/fail unit tests with exact expected values.</li></ul></div>
+      <div class="mini"><h4>AI systems (as stated in class)</h4><ul class="cons"><li>Models keep learning and adapting, so behaviour drifts over time.</li><li>Outputs are open-ended text, so reliability has to be checked <b>continuously</b>.</li></ul></div>
+    </div>
+    <div class="balance">a bigger or better model raises quality but burns more tokens. Choosing the model (and routing between models) is an economic decision as well as a technical one.</div>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Shipping an agent after one successful demo. Reliability means it keeps working across inputs and over time.</li>
+      <li>Ignoring token cost during design. Every extra agent or retrieval step adds tokens.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>L9/L10: if a task is complex, how do you break it into smaller tasks and assign them to <b>multiple agents</b>? What orchestration techniques are there?</li>
+      <li>Here she recapped the course ladder: "what is LLM, what is augmented LLM, what is agentic AI".</li>
+      <li><b>New keyword: reliability.</b> How reliable is your AI system, <i>continuously</i>?</li>
+      <li>Token economics: we all buy pro versions, even of Claude Code. How do you use tokens efficiently and choose models?</li>
+    </ul>
+    <span class="fix">"a cloud" / "cloud code" → <b>Claude</b> / <b>Claude Code</b>.</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul>
+      <li><a href="https://www.anthropic.com/research/building-effective-agents">Anthropic – Building effective agents</a>: orchestrator-workers, routing (cheap vs capable model) and evaluator-optimizer patterns map directly onto L9–L11.</li>
+      <li><a href="https://arxiv.org/abs/2308.11432">Wang et al. survey</a>: has sections on agent planning and on evaluation strategies.</li>
+    </ul>
+  </div>
+
+  <div class="takeaway">Module 3 covers making agents plan and cooperate, then proving they are reliable and affordable.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t6">
+  <div class="topic-title"><span class="num">6</span><h2>Roadmap · Module 4: Security, Deployment, Protocols, Ethics (L12–L16)</h2><span class="time">[11:00 – 12:46]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Taking agents to production safely</h3>
+    <table>
+      <tr><th>L</th><th>Title</th><th>Content</th></tr>
+      <tr><td>L12</td><td>Security &amp; Guardrails</td><td>Prompt-injection defence, data-leakage prevention, access control. PII protection, red-teaming, safety filters, policy enforcement.</td></tr>
+      <tr><td>L13</td><td>Production Deployment &amp; AgentOps</td><td>Scalable deployment architecture, CI/CD, versioning, rollout strategies. Observability, logging, monitoring, drift detection, incident response.</td></tr>
+      <tr><td>L14</td><td>Enterprise Integration: MCP &amp; Tool Protocols</td><td>Model Context Protocol (resources, tools, prompts, connector design). Agent-to-agent (A2A) and the Agent Network Protocol, mentioned in class.</td></tr>
+      <tr><td>L15–L16</td><td>Ethics, Governance &amp; Enterprise-Scale Deployment</td><td>Ethical risks, bias mitigation, responsible AI, auditability. End-to-end deployment review, then revision.</td></tr>
+    </table>
+    <div class="diagram">
+      <svg viewBox="0 0 760 90" role="img" aria-label="Guardrails at every point of the flow">
+        <defs><marker id="ar3" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5a2a96"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="5" y="20" width="100" height="40" rx="10" fill="#fff" stroke="#8a4fd1" stroke-width="2"/><text x="55" y="45">User input</text>
+          <circle cx="150" cy="40" r="16" fill="#e8f7f7" stroke="#149c9c" stroke-width="2"/><text x="150" y="45">🛡</text>
+          <rect x="195" y="20" width="110" height="40" rx="10" fill="#fff4ea" stroke="#e8833a" stroke-width="2"/><text x="250" y="45">LLM / Agent</text>
+          <circle cx="350" cy="40" r="16" fill="#e8f7f7" stroke="#149c9c" stroke-width="2"/><text x="350" y="45">🛡</text>
+          <rect x="395" y="20" width="120" height="40" rx="10" fill="#fff" stroke="#8a4fd1" stroke-width="2"/><text x="455" y="45">Tools / data</text>
+          <circle cx="560" cy="40" r="16" fill="#e8f7f7" stroke="#149c9c" stroke-width="2"/><text x="560" y="45">🛡</text>
+          <rect x="605" y="20" width="150" height="40" rx="10" fill="#fff" stroke="#8a4fd1" stroke-width="2"/><text x="680" y="45">Response to user</text>
+          <line x1="105" y1="40" x2="131" y2="40" stroke="#5a2a96" stroke-width="2" marker-end="url(#ar3)"/>
+          <line x1="166" y1="40" x2="191" y2="40" stroke="#5a2a96" stroke-width="2" marker-end="url(#ar3)"/>
+          <line x1="305" y1="40" x2="331" y2="40" stroke="#5a2a96" stroke-width="2" marker-end="url(#ar3)"/>
+          <line x1="366" y1="40" x2="391" y2="40" stroke="#5a2a96" stroke-width="2" marker-end="url(#ar3)"/>
+          <line x1="515" y1="40" x2="541" y2="40" stroke="#5a2a96" stroke-width="2" marker-end="url(#ar3)"/>
+          <line x1="576" y1="40" x2="601" y2="40" stroke="#5a2a96" stroke-width="2" marker-end="url(#ar3)"/>
+          <text x="380" y="84" font-size="11" fill="#5b6475">"Set the guardrails at every point in the flow line" (L12)</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <div class="grid-2">
+      <div class="mini">
+        <h4>Everyday picture</h4>
+        <ul>
+          <li><b>Guardrails:</b> security checks at the building gate, at the lift <i>and</i> at the server-room door, not just at one place.</li>
+          <li><b>Red-teaming:</b> hire someone to try to break in, so you find the holes first.</li>
+          <li><b>MCP:</b> a standard plug socket. Any appliance (tool) works with any house (AI app).</li>
+          <li><b>A2A:</b> a common language that lets agents from different companies hand work to each other.</li>
+        </ul>
+      </div>
+      <div class="mini">
+        <h4>Embedded-dev lens</h4>
+        <ul>
+          <li>Guardrails ≈ input validation and bounds checks at every interface, not only at <code>main()</code>.</li>
+          <li>MCP ≈ a standard HAL/driver interface: write the driver once and use it from any application.</li>
+          <li>CI/CD + rollout ≈ staged OTA firmware updates with rollback.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Agents act on real data and real APIs, so a single prompt injection can leak data or trigger unwanted actions. That is why the course has a whole lecture on defence.</li>
+      <li>Standard protocols (MCP, A2A) avoid writing a custom glue layer for every tool–agent pair.</li>
+      <li>Responsible AI (bias, ethics, auditability) is required before enterprises will deploy.</li>
+    </ul>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Putting a single guardrail only at the input. The professor stressed guardrails at <b>every</b> point.</li>
+      <li>Confusing MCP and A2A. MCP connects an agent to <i>tools and data</i>; A2A connects an agent to <i>other agents</i>. <span class="badge beyond">beyond lecture</span></li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Security means preventing <b>data leakage</b>, preventing <b>unwanted access</b>, and protecting data. Red-teaming and safety filters are covered.</li>
+      <li>Deployment covers CI/CD and rollout strategies.</li>
+      <li>Protocols: MCP, <b>A2A</b> (agent-to-agent communication), and the <b>Agent Network Protocol</b> for reaching third-party agents across a network.</li>
+      <li>L15 is responsible AI: building in ethics and mitigating bias. L16 is revision.</li>
+    </ul>
+    <span class="fix">"difference mechanism" → <b>defence</b> mechanism. "model control context protocol" → <b>Model Context Protocol (MCP)</b>. "L4, we will discuss integration" → <b>L14</b>.</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul>
+      <li><a href="https://genai.owasp.org/llm-top-10/">OWASP Top 10 for LLM &amp; GenAI Apps (2025)</a>. LLM01 is prompt injection, LLM02 sensitive-information disclosure, LLM06 excessive agency. Referenced for L12.</li>
+      <li><a href="https://modelcontextprotocol.io/docs/getting-started/intro">MCP – official introduction</a>: "a USB-C port for AI applications".</li>
+      <li><a href="https://a2a-protocol.org/latest/">A2A Protocol</a>: an open standard for agent-to-agent communication that complements MCP.</li>
+    </ul>
+  </div>
+
+  <div class="takeaway">Module 4 makes agents safe (guardrails everywhere), shippable (CI/CD, AgentOps), interoperable (MCP, A2A) and responsible.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t7">
+  <div class="topic-title"><span class="num">7</span><h2>Evaluation scheme</h2><span class="time">[12:46 – 13:32]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>100 marks = EC-1 (30) + EC-2 mid-sem (30) + EC-3 end-sem (40)</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 820 80" role="img" aria-label="Weight bar: quiz 10, assignments 20, mid-sem 30, end-sem 40">
+        <g font-family="Segoe UI, Arial" font-size="13" text-anchor="middle" font-weight="700">
+          <rect x="10" y="10" width="80" height="40" fill="#e0b100"/><text x="50" y="35">Quiz 10</text>
+          <rect x="90" y="10" width="160" height="40" fill="#e8833a"/><text x="170" y="35" fill="#fff">Assign 20</text>
+          <rect x="250" y="10" width="240" height="40" fill="#3a7bd5"/><text x="370" y="35" fill="#fff">Mid-sem 30 (closed)</text>
+          <rect x="490" y="10" width="320" height="40" fill="#2f9e5b"/><text x="650" y="35" fill="#fff">End-sem 40 (open)</text>
+          <text x="130" y="70" font-size="11" font-weight="400" fill="#5b6475">EC-1 = 30</text>
+          <text x="410" y="70" font-size="11" font-weight="400" fill="#5b6475">bar width ∝ weight (8 px per mark)</text>
+        </g>
+      </svg>
+    </div>
+    <div class="goal">Know which components can be dropped (one quiz) and which cannot (assignments, exams).</div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>It works like a three-match series where only your <b>best two</b> innings count. One bad day, or one missed match, does not hurt you. Assignments and exams are single matches with no replay.</p>
+  </div>
+
+  <div class="card formula">
+    <span class="label">Formula / definition</span>
+    <h3>Total score</h3>
+    <div class="formula-box"><i>T</i> = <i>Q</i> + <i>A</i> + <i>M</i> + <i>C</i></div>
+    <div class="formula-box">
+      <i>Q</i> = 10 ×
+      <span class="frac"><span class="num"><i>q</i><sub>(1)</sub> + <i>q</i><sub>(2)</sub></span><span class="den">2 · <i>q</i><sub>max</sub></span></span>
+      &nbsp;&nbsp;&nbsp;
+      <i>A</i> =
+      <span class="bigop"><span class="lim">2</span><span class="op">Σ</span><span class="lim"><i>j</i>=1</span></span>
+      10 ×
+      <span class="frac"><span class="num"><i>a</i><sub><i>j</i></sub></span><span class="den"><i>a</i><sub><i>j</i>,max</sub></span></span>
+    </div>
+    <div class="formula-box">
+      <i>M</i> = 30 ×
+      <span class="frac"><span class="num"><i>m</i></span><span class="den"><i>m</i><sub>max</sub></span></span>
+      &nbsp;&nbsp;&nbsp;
+      <i>C</i> = 40 ×
+      <span class="frac"><span class="num"><i>c</i></span><span class="den"><i>c</i><sub>max</sub></span></span>
+    </div>
+    <ul class="where">
+      <li><b>T</b> final total, range 0–100</li>
+      <li><b>Q</b> quiz component (0–10). <i>q</i><sub>(1)</sub>, <i>q</i><sub>(2)</sub> are the two <b>highest</b> of the 3 quiz scores, each out of <i>q</i><sub>max</sub>. Averaging the best two and scaling to 10 is an assumption <span class="badge verify"></span></li>
+      <li><b>A</b> assignment component (0–20). Assignment 1 is pre-mid-sem and Assignment 2 is post-mid-sem, 10 marks each. <i>a</i><sub><i>j</i></sub> is the raw score out of <i>a</i><sub><i>j</i>,max</sub>.</li>
+      <li><b>M</b> mid-sem (EC-2, 0–30), <b>closed book</b>. Syllabus: sessions 1–8.</li>
+      <li><b>C</b> comprehensive / end-sem (EC-3, 0–40), <b>open book</b>. Syllabus: sessions 1–16.</li>
+    </ul>
+    <div class="remember">EC-1 = Q + A = 10 + 20 = 30. The weightages are marked "tentative" on the handout.</div>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario / example setup</span>
+    <h3>Student "Ravi" at the end of the semester <span class="badge beyond">illustrative numbers</span></h3>
+    <table class="given">
+      <tr><th>Component</th><th class="num">Raw score</th><th class="num">Out of</th><th class="num">Weight</th></tr>
+      <tr><td>Quiz 1, 2, 3</td><td class="num">6, 9, 7</td><td class="num">10 each</td><td class="num">10 (best 2)</td></tr>
+      <tr><td>Assignment 1</td><td class="num">16</td><td class="num">20</td><td class="num">10</td></tr>
+      <tr><td>Assignment 2</td><td class="num">18</td><td class="num">20</td><td class="num">10</td></tr>
+      <tr><td>Mid-sem (closed)</td><td class="num">42</td><td class="num">60</td><td class="num">30</td></tr>
+      <tr><td>End-sem (open)</td><td class="num">60</td><td class="num">80</td><td class="num">40</td></tr>
+    </table>
+  </div>
+
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Drop the lowest quiz (6) and keep 9 and 7.<br><span class="calc">Q = 10 × (9 + 7) / (2 × 10) = 10 × 16/20 = 10 × 0.80 = 8.00</span></div></div>
+    <div class="step"><span class="n">2</span><div>Scale each assignment to 10.<br><span class="calc">A = 10 × 16/20 + 10 × 18/20 = 8.00 + 9.00 = 17.00</span></div></div>
+    <div class="step"><span class="n">3</span><div>Scale the mid-sem to 30.<br><span class="calc">M = 30 × 42/60 = 30 × 0.70 = 21.00</span></div></div>
+    <div class="step"><span class="n">4</span><div>Scale the end-sem to 40.<br><span class="calc">C = 40 × 60/80 = 40 × 0.75 = 30.00</span></div></div>
+    <div class="step"><span class="n">5</span><div>Add them up.<br><span class="calc">T = 8.00 + 17.00 + 21.00 + 30.00 = 76.00</span></div></div>
+    <span class="pill big">T = 76 / 100</span><span class="hint">higher is better</span>
+    <div class="step"><span class="n">6</span><div>For comparison: what if all three quizzes were averaged instead?<br><span class="calc">Q' = 10 × (6 + 9 + 7) / 30 = 10 × 22/30 = 7.33 → T' = 75.33</span></div></div>
+    <span class="pill blue">Best-2 rule gains +0.67 marks here</span>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <h3>Why best 2 of 3?</h3>
+    <ul class="pros">
+      <li>It absorbs one <b>missed</b> quiz. If Ravi had missed Quiz 1 entirely (score 0), Q would still be 8.00, because 0 is the score that gets dropped.</li>
+      <li>It is fair at scale. With a large cohort, individual make-ups are not feasible, so the third quiz works as a built-in make-up.</li>
+    </ul>
+    <ul class="cons">
+      <li>There is no such cushion for assignments. Missing Assignment 2 removes up to <b>10 marks</b> outright (Ravi would drop from 76 to 67).</li>
+    </ul>
+    <div class="balance">Quizzes forgive one miss, assignments forgive none. Plan your effort with that in mind.</div>
+  </div>
+
+  <div class="card code">
+    <span class="label">Code</span>
+    <pre><span class="k">def</span> final_score(quizzes, q_max, assigns, a_max, mid, mid_max, comp, comp_max):
+    best2 = sorted(quizzes, reverse=<span class="k">True</span>)[:2]          <span class="c"># drop the lowest quiz</span>
+    q = 10 * sum(best2) / (2 * q_max)
+    a = sum(10 * s / m <span class="k">for</span> s, m <span class="k">in</span> zip(assigns, a_max))
+    <span class="k">return</span> q + a + 30 * mid / mid_max + 40 * comp / comp_max
+
+print(final_score([6, 9, 7], 10, [16, 18], [20, 20], 42, 60, 60, 80))  <span class="c"># 76.0</span></pre>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Thinking each quiz is worth 10%. The <b>whole quiz component</b> is 10%.</li>
+      <li>Preparing for the mid-sem as if it were open book. It is <b>closed book</b>. Only the end-sem is open book.</li>
+      <li>Revising only sessions 9–16 for the end-sem. The syllabus is <b>1–16</b>.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Out of three quizzes, we will take the best two, because some of you will miss one quiz. To give a chance, we will conduct 3 quizzes."</li>
+      <li>Two assignments, one pre-mid-sem and one post-mid-sem, 10% each. Together with the quizzes, EC-1 = 30.</li>
+      <li>Mid-sem: closed book, 30. End-sem: 40.</li>
+    </ul>
+    <span class="fix">"many best two" → "only the best two". "K." is filler.</span>
+  </div>
+
+  <div class="takeaway">T = Q(10, best 2 of 3) + A(2×10) + M(30, closed) + C(40, open). Only a quiz can be safely missed.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t8">
+  <div class="topic-title"><span class="num">8</span><h2>Deadlines, make-ups &amp; integrity rules</h2><span class="time">[13:32 – 14:22]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Hard deadlines, no make-ups, plagiarism checks</h3>
+    <ul>
+      <li>Deadlines for evaluation components will <b>not</b> be extended. Don't wait for the deadline to start a quiz or assignment.</li>
+      <li><b>No make-ups</b> for quizzes or assignments. Late submissions are <b>not evaluated</b>.</li>
+      <li>All assignments are <b>plagiarism-checked</b>. Violations lead to disciplinary action and the marks are nullified.</li>
+      <li>Check the LMS (Canvas) regularly for announcements and deadlines.</li>
+    </ul>
+    <div class="goal">Submit early and flag problems before the deadline, not after.</div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p><b>A train leaves on time.</b> The station master cannot hold the train for each of hundreds of passengers. If you know you will be late, you call ahead before departure. Afterwards nothing can be done.</p>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>With a large pool of students, individual extensions cannot be monitored or controlled fairly. One strict rule is the fair rule.</li></ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"We will be giving a lot of reminders, but please submit" on time.</li>
+      <li>If you face any difficulty, <b>tell us well in advance</b>.</li>
+    </ul>
+  </div>
+
+  <div class="takeaway">treat every deadline as final. The only safety net is the dropped quiz.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t9">
+  <div class="topic-title"><span class="num">9</span><h2>Experiential learning: labs &amp; webinars</h2><span class="time">[14:22 – 15:10]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Hands-on implementation with state-of-the-art tools</h3>
+    <div class="grid-2">
+      <div>
+        <table>
+          <tr><th>Component</th><th>Count</th></tr>
+          <tr><td>Lab work</td><td>10</td></tr>
+          <tr><td>Case study (webinars)</td><td>4</td></tr>
+          <tr><td>Work-integrated assignment</td><td>1 simple + 1 experiential</td></tr>
+          <tr><td>Project / simulation / field work</td><td>0</td></tr>
+        </table>
+      </div>
+      <div>
+        <table>
+          <tr><th>Item</th><th>Detail</th></tr>
+          <tr><td>Language</td><td>Python</td></tr>
+          <tr><td>Libraries</td><td>NLTK, spaCy, Jupyter, scikit-learn, OpenAI, etc.</td></tr>
+          <tr><td>Infra</td><td>Online / open source: Google Colab, VS Code, Antigravity</td></tr>
+        </table>
+      </div>
+    </div>
+    <table>
+      <tr><th>Lab</th><th>Objective (tentative, first three visible)</th></tr>
+      <tr><td>1</td><td>Tokenization and an AI bot with tool calling (Tavily API)</td></tr>
+      <tr><td>2</td><td>Similarity metrics, text-to-speech, rule-based systems, sentiment analysis</td></tr>
+      <tr><td>3</td><td>Hybrid search implementation</td></tr>
+    </table>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Lectures are the driving-theory class, labs are the actual driving lessons, and the webinars are ride-alongs with professional drivers (industry case studies).</p>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li><b>4 webinars</b>. Dates and the pro forma will be shared soon on the portal, together with approximate quiz and assignment opening dates.</li>
+      <li>The in-class hands-on schedule is <b>tentative</b> and may change as needed.</li>
+    </ul>
+  </div>
+
+  <div class="takeaway">set up Python, Colab or VS Code now. Labs start with tokenization and a tool-calling bot, then move to retrieval.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. Which three augmentations turn an LLM into an "augmented LLM" in this course?</summary>
+    <div class="ans"><b>Memory</b>, <b>tools</b> (function calling), and <b>information retrieval</b> (RAG). Agents then add autonomous thinking, planning and acting.</div></details>
+  <details><summary>2. Give the full evaluation breakdown.</summary>
+    <div class="ans">EC-1 = 30: quizzes 10 (best 2 of 3) plus assignments 20 (2 × 10). EC-2 is the mid-sem, 30, closed book, sessions 1–8. EC-3 is the end-sem, 40, open book, sessions 1–16.</div></details>
+  <details><summary>3. Quizzes 5, 8, 6 (each out of 10). What is Q?</summary>
+    <div class="ans">Best two are 8 and 6. Q = 10 × 14/20 = <b>7.0</b> (assuming best-two average scaling <span class="badge verify"></span>).</div></details>
+  <details><summary>4. Static vs contextual embeddings, in one line each?</summary>
+    <div class="ans">Static (CBOW, GloVe): one fixed vector per word type. Contextual (LLMs): the vector depends on the surrounding words, so "bank" gets different vectors in different contexts.</div></details>
+  <details><summary>5. Which communication protocols are planned for L14, and what does each connect?</summary>
+    <div class="ans"><b>MCP</b> connects an agent to tools and data, <b>A2A</b> connects an agent to another agent, and the <b>Agent Network Protocol</b> is for reaching third-party agents across a network.</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>How exactly are the best two quizzes scaled to 10%: averaged, or summed and scaled?</li>
+    <li>The handout says <i>Canvas</i>, but in class it was "Taxila portal". Are these the same LMS, and where exactly do submissions go?</li>
+    <li>Are the 10 labs and 4 webinars graded, or are they part of experiential learning only?</li>
+    <li>What is allowed in the open-book end-sem: printed material only, or also laptops and online/AI tools?</li>
+    <li>Are assignments individual or group work (about 15 days each)?</li>
+    <li>Where can we see the full list of 10 labs (only Labs 1–3 were visible)?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[00:13 – 03:00]</span> Course scope, description, objectives CO1–CO4, prerequisites</li>
+    <li><span class="t">[03:00 – 05:22]</span> Textbooks (J&amp;M 2026, Allahyari RAG), reference books, research papers</li>
+    <li><span class="t">[05:22 – 07:14]</span> Module 1: L1 foundations, L2 LLMs, prompting, response control, L3 architecture</li>
+    <li><span class="t">[07:14 – 09:02]</span> Module 2: L4 tools, L5 memory, L6 embeddings and vector DBs, L7–L8 RAG and agentic RAG; mid-sem</li>
+    <li><span class="t">[09:02 – 11:00]</span> Module 3: L9 planning, L10 multi-agent, L11 evaluation, reliability, token economics</li>
+    <li><span class="t">[11:00 – 12:46]</span> Module 4: L12 guardrails, L13 deployment, L14 MCP/A2A/ANP, L15 responsible AI, L16 revision</li>
+    <li><span class="t">[12:46 – 13:32]</span> Evaluation scheme (EC-1/2/3, best 2 of 3 quizzes)</li>
+    <li><span class="t">[13:32 – 14:22]</span> Deadlines, no make-ups, plagiarism</li>
+    <li><span class="t">[14:22 – 15:10]</span> Experiential learning: 4 webinars, 10 labs, tools and infrastructure</li>
+  </ul>
+</section>
+
+<footer>Part 01 · segments 001–016 · <a href="index.html">index</a> · <a href="part_02.html">part 02 →</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>

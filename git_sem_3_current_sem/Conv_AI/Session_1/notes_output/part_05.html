@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 05 – Transformers, LLM Limits, Agentic Architecture, Agent Lifecycle | Conversational AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">🧠</div>
+  <div>
+    <h1>Part 05 · Transformers as the Brain, LLM Limits, Why Agentic Architecture &amp; Agent Lifecycle</h1>
+    <div class="sub">Conversational AI (S1-26_AIMLCZG521) · Session 1 · Prof. Bharathi R</div>
+    <span class="time">[1:04:34 – 1:22:24]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: links in the "Extra reading" cards were fetched and checked on 2026-10-26. Inferred statements carry the <span class="badge verify"></span> badge.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · Transformers &amp; LLMs: the brain</a></li>
+  <li><a href="#t2">2 · LLM capabilities &amp; limitations</a></li>
+  <li><a href="#t3">3 · Why agentic architecture</a></li>
+  <li><a href="#t4">4 · RAG vs external memory (Q&amp;A)</a></li>
+  <li><a href="#t5">5 · AI system ≠ LLM</a></li>
+  <li><a href="#t6">6 · Agent lifecycle (7 stages)</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>Transformers &amp; LLMs: the brain</h2><span class="time">[1:04:34 – 1:08:12]</span></div>
+
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Every conversational agent is built on an LLM, and every LLM is built on the Transformer</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 900 90" role="img" aria-label="Transformer to conversational agent pipeline">
+        <defs><marker id="c1" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e8833a"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="11.5" text-anchor="middle">
+          <rect x="5" y="15" width="120" height="50" rx="8" fill="#ecf3fd" stroke="#3a7bd5"/><text x="65" y="38">Transformer</text><text x="65" y="54">(2017)</text>
+          <rect x="155" y="15" width="120" height="50" rx="8" fill="#ecf3fd" stroke="#3a7bd5"/><text x="215" y="38">Pre-training on</text><text x="215" y="54">massive data</text>
+          <rect x="305" y="15" width="120" height="50" rx="8" fill="#ecf3fd" stroke="#3a7bd5"/><text x="365" y="38">LLM</text><text x="365" y="54">GPT / Claude / Llama</text>
+          <rect x="455" y="15" width="130" height="50" rx="8" fill="#ecf3fd" stroke="#3a7bd5"/><text x="520" y="38">Fine-tuning /</text><text x="520" y="54">instruction tuning</text>
+          <rect x="615" y="15" width="130" height="50" rx="8" fill="#fff4ea" stroke="#e8833a" stroke-width="2"/><text x="680" y="38">Tools + Memory</text><text x="680" y="54">+ <tspan font-weight="700">Planning</tspan></text>
+          <rect x="775" y="15" width="120" height="50" rx="8" fill="#ecf8f0" stroke="#2f9e5b" stroke-width="2"/><text x="835" y="38">Conversational</text><text x="835" y="54">agent</text>
+          <line x1="125" y1="40" x2="151" y2="40" stroke="#e8833a" stroke-width="3" marker-end="url(#c1)"/>
+          <line x1="275" y1="40" x2="301" y2="40" stroke="#e8833a" stroke-width="3" marker-end="url(#c1)"/>
+          <line x1="425" y1="40" x2="451" y2="40" stroke="#e8833a" stroke-width="3" marker-end="url(#c1)"/>
+          <line x1="585" y1="40" x2="611" y2="40" stroke="#e8833a" stroke-width="3" marker-end="url(#c1)"/>
+          <line x1="745" y1="40" x2="771" y2="40" stroke="#e8833a" stroke-width="3" marker-end="url(#c1)"/>
+          <text x="450" y="85" font-size="11" fill="#5b6475">Without the planning step it is an assistant, not an agent</text>
+        </g>
+      </svg>
+    </div>
+    <table>
+      <tr><th>Technical capability</th><th></th><th>Impact on conversations</th></tr>
+      <tr><td><b>Self-attention</b>: relates every word to all others in the input</td><td>→</td><td><b>Ambiguity handling</b>: resolves unclear or underspecified requests</td></tr>
+      <tr><td><b>Contextual understanding</b>: word meaning depends on surrounding context</td><td>→</td><td><b>Intent understanding</b>: grasps user goals from context</td></tr>
+      <tr><td><b>Long-range dependencies</b>: connects ideas across very long passages (the context window)</td><td>→</td><td><b>Multi-turn coherence</b>: remembers and tracks earlier parts of the chat</td></tr>
+      <tr><td><b>Parallel processing</b>: faster training than RNNs, enabling massive scale</td><td>→</td><td><b>Natural responses</b>: fluent, human-like (indirectly, through scale)</td></tr>
+    </table>
+    <div class="remember"><b>Key insight:</b> each internal capability of the Transformer shows up as a visible conversational behaviour.</div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <ul>
+      <li><b>Self-attention</b> is a meeting where every participant listens to every other participant before speaking, so "it" in "put the cake in the oven until <i>it</i> is golden" is linked to the cake, not the oven.</li>
+      <li><b>Context window</b> is the size of the whiteboard. Anything that does not fit on it is invisible to the model.</li>
+      <li><b>Parallel processing</b>: an RNN reads a book one word at a time. A Transformer spreads all pages on a table and reads them at once.</li>
+    </ul>
+  </div>
+
+  <div class="card formula">
+    <span class="label">Formula / rule of thumb</span>
+    <h3>How much fits in a context window?</h3>
+    <div class="formula-box"><i>W</i> ≈ 0.75 × <i>T</i> &nbsp;&nbsp;&nbsp; <i>P</i> = <span class="frac"><span class="num"><i>W</i></span><span class="den"><i>w</i><sub>page</sub></span></span> &nbsp;&nbsp;&nbsp; <i>N</i><sub>turns</sub> = <span class="frac"><span class="num"><i>T</i></span><span class="den"><i>t</i><sub>turn</sub></span></span></div>
+    <ul class="where">
+      <li><b>T</b> context window size in tokens</li>
+      <li><b>W</b> approximate English words. 0.75 words per token is a common rule of thumb for English, and it varies by tokenizer and language <span class="badge verify"></span>.</li>
+      <li><b>w<sub>page</sub></b> words per page (≈ 500 for a dense page)</li>
+      <li><b>t<sub>turn</sub></b> tokens per query + response pair</li>
+    </ul>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>A 2-million-token context window (the figure quoted in class)</h3>
+    <table class="given">
+      <tr><th>Given</th><th class="num">Value</th></tr>
+      <tr><td>T</td><td class="num">2,000,000 tokens</td></tr>
+      <tr><td>w<sub>page</sub></td><td class="num">500 words</td></tr>
+      <tr><td>t<sub>turn</sub></td><td class="num">1,000 tokens</td></tr>
+    </table>
+  </div>
+
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div><span class="calc">W ≈ 0.75 × 2,000,000 = 1,500,000 words</span></div></div>
+    <div class="step"><span class="n">2</span><div><span class="calc">P = 1,500,000 / 500 = 3,000 pages</span></div></div>
+    <div class="step"><span class="n">3</span><div><span class="calc">N_turns = 2,000,000 / 1,000 = 2,000 turns</span></div></div>
+    <span class="pill">≈ 3,000 pages</span><span class="pill blue">≈ 2,000 turns before anything is forgotten</span><span class="hint">bigger window = longer coherent conversations</span>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>A large window lets you upload a document and hold a long, coherent multi-turn chat about it.</li>
+      <li>Contextual embeddings fix the static-embedding problem (word2vec, GloVe, CBOW give one vector per word).</li>
+    </ul>
+    <ul class="cons"><li>Even 2M tokens is finite. Past the window the model forgets, which is why external memory is needed (topic 4).</li></ul>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Treating "tokens" as "words". A token is a sub-word unit (covered later today).</li>
+      <li>Assuming every model has a 2M window. Sizes vary widely by model and version <span class="badge verify"></span>.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Pre-training alone is not sufficient. Fine-tuning or instruction tuning follows (details later). Then tools, extra books (memory) and planning turn the model into an agent.</li>
+      <li>"No more word2vec, GloVe and CBOW giving static embeddings": here meaning depends on context.</li>
+      <li>Board: "context → 2M". The long-range dependency is what lets the model see up to that many tokens.</li>
+    </ul>
+    <span class="fix">"what to wake / glow / see bow" → <b>word2vec / GloVe / CBOW</b>. "Cloud, LLAMA" → <b>Claude, Llama</b>. "with applaud" → with <b>Claude</b>. "NLM can see" → <b>LLM</b> can see.</span>
+  </div>
+
+  <div class="card extra">
+    <span class="label">Beyond the lecture: the self-attention equation</span>
+    <div class="formula-box">Attention(<i>Q</i>, <i>K</i>, <i>V</i>) = softmax
+      ( <span class="frac"><span class="num"><i>Q K</i><sup>T</sup></span><span class="den">√<i>d</i><sub><i>k</i></sub></span></span> ) <i>V</i></div>
+    <ul class="where">
+      <li><b>Q, K, V</b> query, key and value matrices (one row per token)</li>
+      <li><b>d<sub>k</sub></b> key dimension. Dividing by √d<sub>k</sub> keeps scores from growing with dimension.</li>
+    </ul>
+    <p>Tiny example: one query, two keys, with q·k₁ = 2, q·k₂ = 0 and d<sub>k</sub> = 4. Scaled scores: 2/2 = 1 and 0/2 = 0. Softmax: e¹/(e¹+e⁰) = 2.718/3.718 = <b>0.731</b> and 1/3.718 = <b>0.269</b>. With scalar values v₁ = 10 and v₂ = 2, the output is 0.731×10 + 0.269×2 = 7.31 + 0.54 = <b>7.85</b>, pulled toward the more relevant token.</p>
+    <ul><li><a href="https://arxiv.org/abs/1706.03762">Vaswani et al. 2017 – Attention Is All You Need</a> (cited on the evolution slide)</li></ul>
+  </div>
+
+  <div class="takeaway">Transformer mechanics (attention, context, long range, parallelism) are what make LLM conversations disambiguating, intent-aware, coherent and fluent.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>LLM capabilities and limitations</h2><span class="time">[1:08:12 – 1:10:36]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>An LLM is <u>stateless</u> but a very good reasoner (that reasoning comes from training)</h3>
+    <div class="grid-2">
+      <div class="mini"><h4>✅ What LLMs do well</h4>
+        <ul class="pros"><li>Natural conversation: human-like dialogue</li><li>Intent understanding: grasp user goals</li><li>Context retention: multi-turn conversations</li><li>Generation: fluent, contextual replies</li><li>Summarization: condense information</li><li>Entity extraction: identify key information</li><li>Sentiment analysis: detect user emotions</li></ul></div>
+      <div class="mini"><h4>✗ LLM limitations</h4>
+        <ul class="cons"><li>No real-time data: training cut-off date</li><li>Hallucinations: plausible but false output</li><li>Can't act: no access to external systems</li><li>No memory: forgets after the context window</li><li>Calculation errors: struggles with maths</li><li>Inconsistency: varying answers to one question</li><li>No verification: can't check facts</li></ul></div>
+    </div>
+    <p class="hint">Source on slide: Bommasani et al. (2021).</p>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A <b>brilliant goldfish with an encyclopedia memorised up to 2025</b>. It talks beautifully and summarises anything, but it doesn't know today's news, can't pick up a phone, forgets you once the conversation scrolls away, and sometimes recites an entry that never existed.</p>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Every item on the right-hand list maps to an augmentation in the next topic. That mapping is the reason for building an agentic architecture.</li></ul>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul><li>Confusing "context retention" (a strength, <i>within</i> the window) with "no memory" (a limitation, <i>beyond</i> the window). Both are true at once.</li></ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Board: "LLM → <b>stateless</b> → [needs] memory". "Very good reasoning capability ← training".</li>
+      <li>"If the model is trained till 2025, it knows only what happened till 2025."</li>
+      <li>Entity extraction and sentiment analysis come by default, because the LLM is a good reasoning model.</li>
+    </ul>
+    <span class="fix">"understand intense" → understand <b>intents</b>.</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://arxiv.org/abs/2108.07258">Bommasani et al. – On the Opportunities and Risks of Foundation Models</a> (slide source)</li></ul>
+  </div>
+  <div class="takeaway">an LLM is a stateless, very capable reasoner with seven systematic weaknesses. Each one needs an external fix.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Why we need agentic architecture</h2><span class="time">[1:10:36 – 1:11:42]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Solution: augment LLMs with external capabilities</h3>
+    <table>
+      <tr><th>LLM limitation</th><th>Agentic solution</th><th>Example</th></tr>
+      <tr><td>No real-time data</td><td>Tool calling (APIs, search)</td><td>Check current flight prices</td></tr>
+      <tr><td>Hallucinations</td><td><b>RAG</b> (retrieval-augmented generation): grounding</td><td>Ground answers in company docs</td></tr>
+      <tr><td>Can't take actions</td><td>Function calling (also called <b>tool use</b>)</td><td>Book appointment, send email</td></tr>
+      <tr><td>No memory</td><td>External memory systems</td><td>Remember user preferences</td></tr>
+      <tr><td>Calculation errors</td><td>Calculator tool, code execution</td><td>Precise maths computations</td></tr>
+    </table>
+    <div class="remember">Plus reasoning and planning (board: "Reason/plan → <b>ReAct</b>"), the Reasoning + Acting capability. Sources: Lewis et al. 2020 (RAG); Yao et al. 2023 (ReAct).</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Back to the student locked in a room: give them a <b>phone</b> (tools / real-time data), the <b>company handbook</b> (RAG), a <b>pen to sign forms</b> (function calling), a <b>diary</b> (memory) and a <b>calculator</b>. Then teach them to <b>think before acting</b> (ReAct).</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>You don't make the CPU do floating point in software when there is an FPU. In the same way, you don't make the LLM do arithmetic "in its head" when a calculator tool exists. Offload to the right peripheral.</p></div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul><li>In 2020–2023, ChatGPT "confidently gave wrong answers" to maths questions. Now it can call a calculator or execute code for precise computation.</li></ul>
+    <span class="fix">"argument LLMs" → <b>augment</b> LLMs. "Excel memory systems" → <b>external</b> memory systems. "the react tool" → <b>ReAct</b> (reasoning + acting).</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2005.11401">Lewis et al. 2020 – Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</a>: combines parametric memory (the seq2seq model) with non-parametric memory (a dense Wikipedia index).</li>
+      <li><a href="https://arxiv.org/abs/2210.03629">Yao et al. – ReAct</a></li>
+    </ul>
+  </div>
+  <div class="takeaway">each LLM limitation has a matching augmentation (tools, RAG, function calling, memory, calculator), and ReAct-style reasoning ties them together.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>Q&amp;A: what is "external memory" if we already have RAG?</h2><span class="time">[1:11:42 – 1:18:46]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>RAG grounds answers in a document. Memory systems remember <i>you</i> and past interactions.</h3>
+    <div class="grid-2">
+      <div class="mini"><h4>Short-term memory</h4><p>Within one instance or episode, i.e. the current conversation.</p></div>
+      <div class="mini"><h4>Long-term memory (3 kinds)</h4><ul><li><b>Semantic</b>: facts and preferences ("user codes in Rust")</li><li><b>Episodic</b>: what happened in earlier conversations (a chat from a month ago)</li><li><b>Procedural</b>: how to do things (skills, procedures)</li></ul></div>
+    </div>
+    <div class="remember">RAG is <i>a</i> storage-and-retrieval mechanism and can implement some memory, but grounding alone is not enough.</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p><b>RAG</b> is the <i>open textbook</i> on your desk during an exam: answers come from that book. <b>Memory</b> is your <i>personal tutor</i> who knows you always code in Rust, remembers last month's doubts, and knows your preferred way of solving problems.</p>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario (from the board)</span>
+    <h3>Company HR bot, with and without the HR policy document</h3>
+    <table class="given">
+      <tr><th>Setup</th><th>Query</th><th>What the bot does</th></tr>
+      <tr><td>LLM-based HR bot, <b>no</b> company HR docs</td><td>"How many casual leaves do I get?"</td><td>Gives a <b>generic</b> HR answer based on general reasoning</td></tr>
+      <tr><td>Same bot <b>with</b> the HR policy PDF (RAG)</td><td>Same query</td><td>Looks it up in the PDF and gives a <b>company-specific, grounded</b> answer</td></tr>
+      <tr><td>Bot with RAG <b>+ memory</b></td><td>"Write a script for this"</td><td>Answers in <b>Rust</b> without asking, because the stored preference says the user codes in Rust</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step: which mechanism answers what</span>
+    <div class="step"><span class="n">1</span><div>Is it company-specific knowledge? → <b>RAG</b> (grounding in documents).</div></div>
+    <div class="step"><span class="n">2</span><div>Is it about this user's preferences? → <b>Long-term semantic memory</b>.</div></div>
+    <div class="step"><span class="n">3</span><div>Is it about what happened in an earlier chat? → <b>Episodic memory</b>.</div></div>
+    <div class="step"><span class="n">4</span><div>Is it about how to carry out a known procedure? → <b>Procedural memory</b> (e.g. skills).</div></div>
+    <div class="step"><span class="n">5</span><div>Is it about earlier in <i>this</i> conversation? → <b>Short-term memory</b> (context window).</div></div>
+    <span class="pill">RAG = grounding · Memory = personalisation + continuity</span>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul><li>"RAG is the memory system." RAG is one mechanism. You still need short-term, semantic, episodic and procedural memory for a personalised assistant.</li></ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"RAG is a kind of memory, I agree, but it is used to ground your answer in the particular document."</li>
+      <li>Earlier you had to say "write this in Rust". Now ChatGPT and Claude remember your preference, because user preferences are stored in memory.</li>
+      <li>Every memory type will have a hands-on session later.</li>
+    </ul>
+    <span class="fix">"Other than rank" → other than <b>RAG</b>. "Chat GPD" → <b>ChatGPT</b>. "Excel memory" → <b>external</b> memory.</span>
+  </div>
+  <div class="takeaway">use RAG for "what does the document say" and memory for "who is this user and what happened before". A real assistant needs both.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t5">
+  <div class="topic-title"><span class="num">5</span><h2>An AI system ≠ an LLM</h2><span class="time">[1:18:46 – 1:19:40]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <p>Memory, RAG and tools are not "inside the model you choose". They are parts of the <b>AI system you build</b>. "In the AI system, the LLM is just one component." Board: <b>AI system ⊃ LLM + other boxes</b>.</p>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>The LLM is the <b>engine</b>. An AI system is the whole <b>car</b>: fuel tank (data), steering (planning), brakes (safety), dashboard memory (preferences). Buying the best engine doesn't give you a car.</p>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul><li>"An AI system is not always equivalent to an LLM. An agent is not equivalent to an LLM." You must decide <b>which kinds of memory</b> your system needs.</li></ul>
+  </div>
+  <div class="takeaway">designing conversational AI means designing the system around the LLM, not just picking a model.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t6">
+  <div class="topic-title"><span class="num">6</span><h2>Agent lifecycle: request → response (7 stages)</h2><span class="time">[1:19:40 – 1:22:24]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Seven stages. Reasoning ↔ tool invocation repeats as a loop until the goal is met (ReAct).</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 880 210" role="img" aria-label="Seven stages of the agent lifecycle with a loop between reasoning and tool invocation">
+        <defs><marker id="c6" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#13213c"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="11" text-anchor="middle">
+          <rect x="5" y="20" width="110" height="70" rx="10" fill="#dbe8f7" stroke="#3a7bd5"/><text x="60" y="42" font-weight="700">1 REQUEST</text><text x="60" y="60">validate &amp;</text><text x="60" y="74">sanitize · entities</text>
+          <rect x="130" y="20" width="110" height="70" rx="10" fill="#d8f2f2" stroke="#149c9c"/><text x="185" y="42" font-weight="700">2 ROUTING</text><text x="185" y="60">classify intent ·</text><text x="185" y="74">select tools / sub-agent</text>
+          <rect x="255" y="20" width="110" height="70" rx="10" fill="#fdebd9" stroke="#e8833a" stroke-width="2"/><text x="310" y="42" font-weight="700">3 REASONING</text><text x="310" y="60">steps · info gaps ·</text><text x="310" y="74">plan tool calls</text>
+          <rect x="380" y="20" width="110" height="70" rx="10" fill="#fdebd9" stroke="#e8833a" stroke-width="2"/><text x="435" y="42" font-weight="700">4 TOOL CALL</text><text x="435" y="60">APIs · DB queries ·</text><text x="435" y="74">execute code</text>
+          <rect x="505" y="20" width="110" height="70" rx="10" fill="#dbe8f7" stroke="#3a7bd5"/><text x="560" y="42" font-weight="700">5 MEMORY</text><text x="560" y="60">store history ·</text><text x="560" y="74">prefs · session state</text>
+          <rect x="630" y="20" width="110" height="70" rx="10" fill="#fbdede" stroke="#d64545"/><text x="685" y="42" font-weight="700">6 SAFETY</text><text x="685" y="60">block toxic · check</text><text x="685" y="74">facts · redact PII</text>
+          <rect x="755" y="20" width="120" height="70" rx="10" fill="#fdebd9" stroke="#e8833a"/><text x="815" y="42" font-weight="700">7 RESPONSE</text><text x="815" y="60">generate · format for</text><text x="815" y="74">text/voice/UI · deliver</text>
+          <line x1="115" y1="55" x2="127" y2="55" stroke="#13213c" stroke-width="2" marker-end="url(#c6)"/>
+          <line x1="240" y1="55" x2="252" y2="55" stroke="#13213c" stroke-width="2" marker-end="url(#c6)"/>
+          <line x1="365" y1="50" x2="377" y2="50" stroke="#13213c" stroke-width="2" marker-end="url(#c6)"/>
+          <line x1="490" y1="55" x2="502" y2="55" stroke="#13213c" stroke-width="2" marker-end="url(#c6)"/>
+          <line x1="615" y1="55" x2="627" y2="55" stroke="#13213c" stroke-width="2" marker-end="url(#c6)"/>
+          <line x1="740" y1="55" x2="752" y2="55" stroke="#13213c" stroke-width="2" marker-end="url(#c6)"/>
+          <path d="M435,90 Q372,140 314,94" fill="none" stroke="#d64545" stroke-width="2.5" marker-end="url(#c6)"/>
+          <text x="372" y="140" fill="#d64545" font-weight="700">ReAct loop until goal met</text>
+          <text x="440" y="190" fill="#5b6475">Numbering is a conceptual order, not a strict timeline</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A <b>hospital visit</b>. Reception checks your ID (request). Triage sends you to the right department (routing). The doctor thinks about what tests are needed (reasoning) and orders them (tool invocation), maybe several rounds. The file is updated (memory), the report is reviewed for errors and privacy (safety), and you get the prescription in a form you understand (response).</p>
+  </div>
+
+  <div class="card scenario">
+    <span class="label">Scenario (professor's example)</span>
+    <h3>Weather agent: "Check the weather and plan my Saturday evening in Bangalore"</h3>
+    <p>The weather API may fail. The agent retries the same API, and after two failures switches to a different weather API. <span class="badge beyond">illustrative probabilities below</span></p>
+    <table class="given">
+      <tr><th>Given</th><th class="num">Value</th></tr>
+      <tr><td>P(API-A call succeeds), each try</td><td class="num">0.7</td></tr>
+      <tr><td>Tries on API-A before fallback</td><td class="num">2</td></tr>
+      <tr><td>P(API-B call succeeds)</td><td class="num">0.9</td></tr>
+      <tr><td>Assumption</td><td>independent attempts</td></tr>
+    </table>
+  </div>
+
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Probability API-A fails once. <span class="calc">1 − 0.7 = 0.3</span></div></div>
+    <div class="step"><span class="n">2</span><div>Probability API-A fails both tries. <span class="calc">0.3 × 0.3 = 0.09</span></div></div>
+    <div class="step"><span class="n">3</span><div>Probability fallback API-B also fails. <span class="calc">1 − 0.9 = 0.1</span></div></div>
+    <div class="step"><span class="n">4</span><div>Probability everything fails. <span class="calc">0.09 × 0.1 = 0.009</span></div></div>
+    <div class="step"><span class="n">5</span><div>Probability the agent gets the weather. <span class="calc">1 − 0.009 = 0.991</span></div></div>
+    <span class="pill">99.1 % vs 70 % with a single fixed call</span><span class="hint">higher is better, at the cost of up to 3 calls</span>
+  </div>
+
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>The reasoning ↔ tool loop is what makes an agent robust to flaky real-world APIs.</li>
+      <li>Safety comes before the response, so toxic content or PII never reaches the user.</li>
+    </ul>
+    <ul class="cons"><li>Each retry adds latency and cost. An iteration cap is needed.</li></ul>
+    <div class="balance">reliability (more retries and fallbacks) vs latency and cost (fewer calls).</div>
+  </div>
+
+  <div class="card code">
+    <span class="label">Code (retry + fallback sketch)</span>
+    <pre><span class="k">def</span> get_weather(city, apis, tries_per_api=2):
+    <span class="k">for</span> api <span class="k">in</span> apis:                         <span class="c"># e.g. [api_a, api_b]</span>
+        <span class="k">for</span> _ <span class="k">in</span> range(tries_per_api):
+            <span class="k">try</span>:
+                <span class="k">return</span> api(city)                  <span class="c"># observe success</span>
+            <span class="k">except</span> (TimeoutError, ConnectionError):
+                <span class="k">continue</span>                         <span class="c"># reason: retry, then fall back</span>
+    <span class="k">return</span> <span class="k">None</span>                                 <span class="c"># let the agent tell the user it failed</span></pre>
+  </div>
+
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Reading the 1–7 numbering as a strict pipeline. It is a <b>conceptual</b> order. Stages 3 and 4 loop, and memory and safety can act at several points.</li>
+      <li>Dropping the request stage's <b>validate &amp; sanitize</b> step. It is the first defence against prompt injection.</li>
+    </ul>
+  </div>
+
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Board: "Numbering → not a strict order." "AI system ⊃ LLM."</li>
+      <li>"It is not always that the connection will be established and the weather API is working … It will not stop … it will try the other weather API. There will always be a loop."</li>
+    </ul>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://arxiv.org/abs/2308.11432">Wang et al. survey (R1)</a> and <a href="https://arxiv.org/abs/2210.03629">ReAct</a>, the slide's sources for the lifecycle.</li></ul>
+  </div>
+  <div class="takeaway">request → routing → (reasoning ⇄ tool invocation) → memory → safety → response. The ReAct loop gives agents their robustness.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. Map the four Transformer capabilities to their conversational impact.</summary>
+    <div class="ans">Self-attention → ambiguity handling. Contextual understanding → intent understanding. Long-range dependencies → multi-turn coherence. Parallel processing → natural responses (through scale).</div></details>
+  <details><summary>2. A 128,000-token window at 0.75 words per token and 500 words per page holds how many pages?</summary>
+    <div class="ans">0.75 × 128,000 = 96,000 words, and 96,000 / 500 = <b>192 pages</b>.</div></details>
+  <details><summary>3. Give the agentic solution for each LLM limitation: real-time data, hallucinations, actions, memory, maths.</summary>
+    <div class="ans">Tool calling (APIs, search), RAG, function calling (tool use), external memory systems, calculator tool / code execution.</div></details>
+  <details><summary>4. Name the three long-term memory types and give an example of each.</summary>
+    <div class="ans">Semantic (user codes in Rust), episodic (last month's conversation), procedural (skills, e.g. Claude Skills).</div></details>
+  <details><summary>5. List the seven lifecycle stages. Which two loop?</summary>
+    <div class="ans">Request, routing, reasoning, tool invocation, memory, safety, response. <b>Reasoning ⇄ tool invocation</b> loop (ReAct).</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>Which models actually offer 2M-token windows today, and does a bigger window reduce the need for RAG?</li>
+    <li>Is procedural memory implemented with RAG, with prompts (skills), or with fine-tuning in this course?</li>
+    <li>In the lifecycle, does safety run only before the response, or also on tool inputs and outputs (stage 4)?</li>
+    <li>Where does instruction tuning vs fine-tuning get covered in detail (L2?)?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[1:04:34 – 1:08:12]</span> Transformer → LLM → conversational agent; 4 capability → impact mappings; context window</li>
+    <li><span class="t">[1:08:12 – 1:10:36]</span> LLM capabilities (7) and limitations (7); stateless</li>
+    <li><span class="t">[1:10:36 – 1:11:42]</span> Why agentic architecture: limitation → solution table, ReAct</li>
+    <li><span class="t">[1:11:42 – 1:18:46]</span> RAG vs external memory; short-term vs semantic, episodic, procedural; HR-bot and Rust examples</li>
+    <li><span class="t">[1:18:46 – 1:19:40]</span> AI system ≠ LLM</li>
+    <li><span class="t">[1:19:40 – 1:22:24]</span> Agent lifecycle, 7 stages; weather-agent retry loop</li>
+  </ul>
+</section>
+
+<footer>Part 05 · segments 041–045 · <a href="part_04.html">← part 04</a> · <a href="part_06.html">part 06 →</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>
