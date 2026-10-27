@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 07 – Types of Embeddings, Positional Encoding &amp; Live Q&amp;A on the Input Pipeline | Large Language Models for Generative AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">📍</div>
+  <div>
+    <h1>Part 07 · Types of Embeddings, Positional Encoding &amp; Q&amp;A on the Input Pipeline</h1>
+    <div class="sub">Large Language Models for Generative AI (S1-26_AIMLCZG536) · Session 1 · Prof. Monali Tushar Mavani</div>
+    <span class="time">[1:37:37 – 1:53:01]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: links in the "Extra reading" cards were fetched and checked on 2026-10-26. Inferred statements carry the <span class="badge verify"></span> badge.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · Types of text embeddings</a></li>
+  <li><a href="#t2">2 · Positional encoding: learned, sinusoidal, RoPE</a></li>
+  <li><a href="#t3">3 · Input embedding = token + position</a></li>
+  <li><a href="#t4">4 · Q&amp;A: vocabulary before model training</a></li>
+  <li><a href="#t5">5 · Q&amp;A: meaningless pieces in the vocabulary, rare words</a></li>
+  <li><a href="#t6">6 · Q&amp;A: who designs the tokenizer</a></li>
+  <li><a href="#t7">7 · Q&amp;A: tokens → IDs → embeddings, built on the fly</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>Types of text embeddings: document, sentence, word, token</h2><span class="time">[1:37:39 – 1:38:35]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>A representation model can embed different units of text. LLM input uses <b>token embeddings</b>.</h3>
+    <table>
+      <tr><th>Type</th><th>Unit</th><th>Typical way to create it (professor)</th></tr>
+      <tr><td>Document embedding</td><td>whole document</td><td><b>doc2vec</b></td></tr>
+      <tr><td>Sentence embedding</td><td>one sentence</td><td><b>Sentence Transformers</b> (SBERT)</td></tr>
+      <tr><td>Word embedding</td><td>one word</td><td>static embeddings (see the note in topic 3)</td></tr>
+      <tr><td><b>Token embedding</b></td><td>one token</td><td>used <b>as the input to LLMs</b> (board)</td></tr>
+    </table>
+    <div class="remember">Slide figure 1-10: "Embeddings can be created for different types of input."</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Zoom levels on a map. Token embedding = a street. Sentence embedding = a neighbourhood. Document embedding = the whole city. Each is a point on its own map.</p>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Board: "document embeddings: doc2vec", "sentence transformer", "token embeddings ⇒ as in the input to LLM".</li>
+      <li>"There are different algorithms and different ways to create document embeddings."</li>
+    </ul>
+    <span class="fix">"doc2vec" and "sentence transformer" as named on the board. "he used to create all of this" → "which is used to create".</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul>
+      <li><a href="https://arxiv.org/abs/1405.4053">Paragraph Vector (Le and Mikolov, 2014)</a>: the idea behind doc2vec. Fetched and checked.</li>
+      <li><a href="https://arxiv.org/abs/1908.10084">Sentence-BERT (Reimers and Gurevych, 2019)</a>: sentence embeddings compared with cosine similarity. Fetched and checked.</li>
+    </ul>
+  </div>
+  <div class="takeaway">Embeddings exist at many granularities. The Transformer's input layer uses token embeddings.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>Positional encoding: why it is needed and how it evolved</h2><span class="time">[1:38:37 – 1:41:35]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Attention has no inherent sense of order, so <b>position information must be injected</b> for the model to infer sequence structure.</h3>
+    <table>
+      <tr><th>Method</th><th>Used in</th><th>How</th><th>Status today</th></tr>
+      <tr><td>Naive index (1, 2, 3, …)</td><td>none</td><td>Use the raw position number</td><td>"Has its own disadvantage"</td></tr>
+      <tr><td><b>Sinusoidal</b></td><td>Original Transformer</td><td>Fixed sine/cosine functions at multiple frequencies, <b>added</b> to the token embedding</td><td>Not used now</td></tr>
+      <tr><td><b>Learned positional embeddings</b></td><td>GPT-2, BERT</td><td>Trainable lookup table, one vector per position, same size as the token embedding, <b>added</b> to it</td><td>Not used now</td></tr>
+      <tr><td><b>RoPE</b> (rotary)</td><td>Llama, Qwen, DeepSeek</td><td>Not added to the input. <b>Rotates Q and K</b> inside every attention layer, so scores depend on <b>relative</b> position</td><td><b>Current standard</b>, covered in module 3</td></tr>
+    </table>
+    <div class="goal">Why the Transformer needs it: shuffled words would otherwise give the same result.</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A <b>bag of Scrabble tiles</b> has the letters but not the order. Position encoding is a <b>numbered tag stuck on each tile</b>, so "dog bites man" and "man bites dog" can be told apart.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Like adding a timestamp or sequence number to each packet. Without it, an unordered network cannot reassemble the stream.</p></div>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Why token ID cannot be the position (the professor's point)</h3>
+    <table class="given">
+      <tr><th>Sentence</th><th>IDs from the part-03 vocabulary</th></tr>
+      <tr><td>"the dog … the fox"</td><td>the = 7 at position 1 <b>and</b> position 4</td></tr>
+      <tr><td>Position</td><td>1, 2, 3, 4 (changes along the sentence)</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Token ID of "the" at position 1. <span class="calc">7</span></div></div>
+    <div class="step"><span class="n">2</span><div>Token ID of "the" at position 4. <span class="calc">7 (the ID is fixed by the vocabulary)</span></div></div>
+    <div class="step"><span class="n">3</span><div>The positions are 1 and 4, but the IDs are identical. <span class="calc">7 = 7, so the ID carries no order information</span></div></div>
+    <div class="step"><span class="n">4</span><div>Learned table size, GPT-2 style, for 1,024 positions and d = 768. <span class="calc">1,024 × 768 = 786,432 parameters <span class="badge beyond">beyond lecture</span></span></div></div>
+    <span class="pill">token ID ≠ position</span><span class="hint">ID depends on vocabulary entry, position depends on order in this input</span>
+  </div>
+  <div class="card formula">
+    <span class="label">Sinusoidal encoding <span class="badge beyond">recap, not derived in lecture</span></span>
+    <div class="formula-box"><i>PE</i>(<i>pos</i>, 2<i>i</i>) = sin <span class="frac"><span class="num"><i>pos</i></span><span class="den">10000<sup>2<i>i</i>/<i>d</i></sup></span></span> &nbsp;&nbsp;·&nbsp;&nbsp; <i>PE</i>(<i>pos</i>, 2<i>i</i>+1) = cos <span class="frac"><span class="num"><i>pos</i></span><span class="den">10000<sup>2<i>i</i>/<i>d</i></sup></span></span></div>
+    <ul class="where">
+      <li><b>pos</b> position in the sequence (0, 1, 2, …)</li>
+      <li><b>i</b> index of the sin/cos pair (0 … d/2 − 1)</li>
+      <li><b>d</b> embedding dimension</li>
+      <li>Result lies in [−1, 1]. Low <i>i</i> = fast oscillation, high <i>i</i> = slow oscillation</li>
+    </ul>
+  </div>
+  <div class="card steps">
+    <span class="label">Worked example, d = 4 <span class="badge beyond">illustrative</span></span>
+    <div class="step"><span class="n">1</span><div>pos = 1, i = 0: denominator 10000<sup>0</sup> = 1. <span class="calc">sin(1) = 0.8415, cos(1) = 0.5403</span></div></div>
+    <div class="step"><span class="n">2</span><div>pos = 1, i = 1: denominator 10000<sup>2/4</sup> = 100. <span class="calc">sin(0.01) = 0.0100, cos(0.01) = 0.99995</span></div></div>
+    <div class="step"><span class="n">3</span><div>So <i>PE</i>(1) = <span class="calc">[0.8415, 0.5403, 0.0100, 1.0000]</span> (rounded). <i>PE</i>(0) = <span class="calc">[0, 1, 0, 1]</span></div></div>
+    <div class="step"><span class="n">4</span><div>Add to an assumed token vector <i>x</i> = [0.5, −0.2, 0.1, 0.3] at position 1. <span class="calc">[0.5+0.8415, −0.2+0.5403, 0.1+0.0100, 0.3+1.0000] = [1.3415, 0.3403, 0.1100, 1.3000]</span></div></div>
+    <span class="pill">input vector = [1.34, 0.34, 0.11, 1.30]</span><span class="hint">same token at another position gets a different input vector</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Sinusoidal: no parameters to learn and works for any length in principle.</li>
+      <li>Learned: flexible, but limited to the trained maximum length.</li>
+      <li>RoPE: models <b>relative</b> distance directly inside attention, which suits long contexts.</li>
+    </ul>
+    <div class="balance">simple additive schemes (sinusoidal, learned) gave way to RoPE because relative position generalises better. The professor calls RoPE "very mathematics intensive".</div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Using the token ID as position. "In any case we cannot use the token ID as my positional embedding."</li>
+      <li>Believing all current LLMs add a position vector to the input. Llama, Qwen and DeepSeek use RoPE inside attention instead.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Board (slide): numbers 1 2 3 4 5 over a sentence "going to LLM for inference" show position, and a matrix labelled "token ID / vocab" shows that IDs are fixed per vocabulary entry.</li>
+      <li>GPT-2 and BERT created the position embedding vector <b>randomly</b> and learned it during training along with the token embeddings. Its size equals the token embedding size.</li>
+      <li>"That is also not in use now. What is used today is <b>RoPE</b>. We will learn it in the third module." The older methods will not be re-taught.</li>
+    </ul>
+    <span class="fix">"Dnn" → <b>DNN</b>. "ROPE" → <b>RoPE</b>. "GPT-2 and BERT; they changed, they learned this" → they <b>learned</b> position vectors.</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul>
+      <li><a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a>: introduces the sinusoidal encoding. Fetched and checked.</li>
+      <li><a href="https://arxiv.org/abs/2104.09864">RoFormer: Rotary Position Embedding</a>: encodes absolute position with a rotation matrix and brings in explicit relative position. Fetched and checked.</li>
+    </ul>
+  </div>
+  <div class="takeaway">Position must be injected. Learned (GPT-2, BERT) and sinusoidal (original) add vectors. RoPE rotates Q and K in every layer and is the current standard.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Input embedding = token embedding + positional embedding</h2><span class="time">[1:41:37 – 1:42:37]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>The classical input to the Transformer is <b>token embedding + positional embedding</b>.</h3>
+    <div class="formula-box"><i>x</i><sub>t</sub> = <i>E</i>[<i>id</i><sub>t</sub>] + <i>P</i>[<i>t</i>]</div>
+    <ul class="where">
+      <li><b>E[id<sub>t</sub>]</b> token embedding from the embedding matrix (row for token ID at position <i>t</i>)</li>
+      <li><b>P[t]</b> positional embedding for position <i>t</i> (learned or sinusoidal)</li>
+      <li><b>x<sub>t</sub></b> vector that enters the first Transformer layer, same size <i>d</i></li>
+    </ul>
+    <p class="hint">Formula is a symbolic restatement of the spoken "token embedding + position embedding = input embedding". With RoPE (topic 2) the second term is not added at the input. <span class="badge beyond">notation added</span></p>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>A student wrote "token embedding plus word embedding". Answer: "No, it is token embedding plus <b>positional</b> embedding. There is nothing called word embedding" in this pipeline.</li>
+      <li>She then asked whether to stop for the day and <b>unmuted the mics</b> for questions.</li>
+    </ul>
+    <span class="fix">Earlier (part 06) "word embedding" was used loosely. In LLM pipelines say <b>token embedding</b>. Static "word embeddings" (word2vec) are a different, earlier technique.</span>
+  </div>
+  <div class="takeaway">Say token embedding. Input = token embedding + position (for learned and sinusoidal schemes).</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>Q&amp;A: the vocabulary is built before the model is trained</h2><span class="time">[1:42:37 – 1:43:45]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Tokenizer training processes the <b>whole corpus first</b>. Only then does model training start.</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 700 90" role="img" aria-label="Order of steps">
+        <defs><marker id="a74" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6475"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="5" y="25" width="150" height="40" rx="8" fill="#fff" stroke="#5b6475"/><text x="80" y="49">1 · Build corpus</text>
+          <rect x="190" y="25" width="170" height="40" rx="8" fill="#fff4ea" stroke="#e8833a"/><text x="275" y="49">2 · Train tokenizer</text>
+          <rect x="395" y="25" width="140" height="40" rx="8" fill="#ecf3fd" stroke="#3a7bd5"/><text x="465" y="49">3 · Tokenize corpus</text>
+          <rect x="570" y="25" width="125" height="40" rx="8" fill="#ecf8f0" stroke="#2f9e5b"/><text x="632" y="49">4 · Train model</text>
+          <line x1="155" y1="45" x2="188" y2="45" stroke="#5b6475" stroke-width="2" marker-end="url(#a74)"/>
+          <line x1="360" y1="45" x2="393" y2="45" stroke="#5b6475" stroke-width="2" marker-end="url(#a74)"/>
+          <line x1="535" y1="45" x2="568" y2="45" stroke="#5b6475" stroke-width="2" marker-end="url(#a74)"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Students Vikash Gaurav and Vivek Ranjan Upadhyay asked; she confirmed "Yes, it has to be like that".</li>
+      <li>"Every model builder first trains their tokenizer and then, based on the tokenizer, they train their model. That is all part of pre-processing."</li>
+    </ul>
+    <span class="fix">"water" in "to build a water" → <b>vocab</b> (speech-to-text slip).</span>
+  </div>
+  <div class="takeaway">Corpus → tokenizer training → tokenized corpus → model training. The order is fixed.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t5">
+  <div class="topic-title"><span class="num">5</span><h2>Q&amp;A: BPE vocabulary has "meaningless" pieces. Lemmatization? Rare words</h2><span class="time">[1:43:47 – 1:46:43]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <ul>
+      <li><b>Question (Harmanpreet Singh):</b> The vocabulary has single letters like b, g, h, n, p, s, u that mean nothing. Is there a lemmatization or filtering step afterwards?</li>
+      <li><b>Answer:</b> No. Those pieces <b>do have a use</b>, because they allow rare words to be built.</li>
+    </ul>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>The rare word "taaaaasty" under two different vocabularies</h3>
+    <table class="given">
+      <tr><th>Case</th><th>Pieces</th><th class="num">Tokens</th></tr>
+      <tr><td>Corpus has seen many a's: "aaa" exists</td><td>t | aaa | a | a | sty (similar splits possible)</td><td class="num">≈ 3–5</td></tr>
+      <tr><td>Corpus rarely has repeated a</td><td>t | a | a | a | a | a | sty</td><td class="num">7</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>"tasty" with five a's has 1 t + 5 a's + "sty". <span class="calc">1 + 5 + (s,t,y as one piece "sty") = 7 pieces in the worst case</span></div></div>
+    <div class="step"><span class="n">2</span><div>If "sty" exists as one token. <span class="calc">t, a, a, a, a, a, sty = 7 tokens</span></div></div>
+    <div class="step"><span class="n">3</span><div>If "ta" and "aa" merges exist. <span class="calc">fewer tokens (e.g. t | aa | aa | a | sty = 5), still no [UNK]</span></div></div>
+    <span class="pill">no [UNK]</span><span class="hint">more rare = more tokens, never a failure (if the base characters exist)</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Single characters are the <b>fallback pieces</b>. Without them rare words would hit [UNK].</li>
+      <li>This is also why modern chat models cope with spelling mistakes: tokenization is one of the reasons (the professor adds that "obviously there are other things also").</li>
+    </ul>
+    <div class="balance">rare or misspelt words cost more tokens, but the model still receives something it can interpret.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Nowadays you write anything, we write so fast in Claude or ChatGPT, we misspell, but it still understands. One of the criteria is this tokenization process."</li>
+      <li>Social-media text with unusual spellings is where this matters.</li>
+    </ul>
+    <span class="fix">"limitization" → <b>lemmatization</b>. "cloud or charge" → <b>Claude or ChatGPT</b>. "Non. No, no." is the answer "No".</span>
+  </div>
+  <div class="takeaway">Single-character pieces are not noise. They are the safety net that makes rare words and typos representable.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t6">
+  <div class="topic-title"><span class="num">6</span><h2>Q&amp;A: when do I care about byte- or character-level tokenization?</h2><span class="time">[1:46:43 – 1:48:25]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>If you build an <b>application</b> on an existing LLM, you do <b>not</b> train the tokenizer. The LLM builder already did.</h3>
+    <ul>
+      <li>Tokenizer design matters only when you <b>train your own tokenizer and your own model</b>.</li>
+      <li>LLMs are designed to be used in many applications, so their builders take care of the tokenizer from the start.</li>
+      <li>If an LLM used a tokenizer unsuitable for, say, social media text, that is the LLM builder's problem, not the application designer's <b>worry</b>.</li>
+    </ul>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Driving a car vs designing the engine. The driver uses the engine and does not redesign it. Tokenizer design is the engine work, done by model builders.</p>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"As an application designer, you don't have to do all these things."</li>
+      <li>Harmanpreet: "So it's universal." Answered by the above.</li>
+    </ul>
+    <span class="fix">"Anurag" is the name used to thank the student, not a transcript fix.</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Application designers can focus on prompts, data and evaluation.</li></ul>
+    <ul class="cons"><li>You inherit the tokenizer's weaknesses, such as poor handling of your language, and may pay more per request in tokens <span class="badge verify"></span>.</li></ul>
+    <div class="balance">convenience of reuse vs control. Own tokenizer only if you train your own model.</div>
+  </div>
+  <div class="takeaway">Application designers pick a model and use its tokenizer. Tokenizer design matters when you train a model from scratch.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t7">
+  <div class="topic-title"><span class="num">7</span><h2>Q&amp;A: tokens → token IDs → embeddings. Are embeddings precomputed?</h2><span class="time">[1:48:25 – 1:53:01]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Three representations of the <i>same</i> input, one after another (board drawn on slide).</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 700 150" role="img" aria-label="Tokens, token IDs and embeddings of one input">
+        <defs><marker id="a77" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6475"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <text x="85" y="20" font-weight="700">Tokens</text>
+          <rect x="20" y="30" width="130" height="34" fill="#fff" stroke="#e8833a"/><line x1="52" y1="30" x2="52" y2="64" stroke="#e8833a"/><line x1="85" y1="30" x2="85" y2="64" stroke="#e8833a"/><line x1="118" y1="30" x2="118" y2="64" stroke="#e8833a"/>
+          <text x="350" y="20" font-weight="700">Token IDs</text>
+          <rect x="285" y="30" width="130" height="34" fill="#fff" stroke="#e8833a"/><line x1="317" y1="30" x2="317" y2="64" stroke="#e8833a"/><line x1="350" y1="30" x2="350" y2="64" stroke="#e8833a"/><line x1="383" y1="30" x2="383" y2="64" stroke="#e8833a"/>
+          <text x="600" y="20" font-weight="700">Embeddings</text>
+          <rect x="545" y="30" width="22" height="90" fill="#fff" stroke="#e8833a"/><rect x="575" y="30" width="22" height="90" fill="#fff" stroke="#e8833a"/><rect x="605" y="30" width="22" height="90" fill="#fff" stroke="#e8833a"/><rect x="635" y="30" width="22" height="90" fill="#fff" stroke="#e8833a"/>
+          <line x1="160" y1="47" x2="283" y2="47" stroke="#5b6475" stroke-width="2" marker-end="url(#a77)"/>
+          <line x1="425" y1="47" x2="543" y2="47" stroke="#5b6475" stroke-width="2" marker-end="url(#a77)"/>
+          <text x="222" y="40" font-size="11">vocabulary</text><text x="484" y="40" font-size="11">embedding layer</text>
+        </g>
+      </svg>
+      <div class="cap">Board on the "Tokenization" slide. Each token → one ID → one column vector.</div>
+    </div>
+    <ul>
+      <li><b>Token IDs</b> are assigned to <b>every vocabulary word at tokenizer-training time</b>, once.</li>
+      <li>At inference the prompt is tokenized with the <b>same tokenizer</b>, and IDs are read from that fixed table.</li>
+      <li><b>Embeddings are not pre-generated and stored per word for the prompt.</b> The embedding layer produces vectors for the tokens actually present in the input.</li>
+    </ul>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Student's picture vs the professor's correction</h3>
+    <table class="given">
+      <tr><th>View</th><th>Statement</th></tr>
+      <tr><td>Student</td><td>"We have a 50 × 10 matrix already created. At inference we just retrieve the rows by token ID."</td></tr>
+      <tr><td>Professor</td><td>Yes during <b>training</b> the matrix is learned. At <b>inference</b> only the words in the input are processed by the Transformer.</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Learned table for a 50-word vocabulary and d = 10. <span class="calc">50 × 10 = 500 numbers (exists after training)</span></div></div>
+    <div class="step"><span class="n">2</span><div>Prompt with 4 tokens. <span class="calc">4 IDs → 4 rows picked</span></div></div>
+    <div class="step"><span class="n">3</span><div>Only these enter the Transformer. <span class="calc">4 × 10 = 40 numbers, not 500</span></div></div>
+    <div class="step"><span class="n">4</span><div>Real scale, 50,000 × 768. <span class="calc">38.4 M stored, but a 4-token prompt uses 4 × 768 = 3,072 values</span></div></div>
+    <span class="pill">only n rows used per prompt</span><span class="hint">weights are fixed after training. They are "looked up", not "generated"</span>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Thinking each vocabulary word has a stored "meaning vector" independent of training. It is only meaningful <b>after</b> training.</li>
+      <li>Reading the slide diagram too literally. The professor said the figure (from a book, "JLMR" in the transcript) "is a little bit misleading", because it shows 50,000 embeddings drawn next to the 50,000-entry vocabulary.</li>
+      <li>Saying "word embedding" for the LLM input. Use <b>token embedding</b>.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"When you use the model, you have to use the same tokenizer with which the model is trained on."</li>
+      <li>"Do not use word embedding, use token embeddings."</li>
+      <li>"During training, yes. But during inferencing, only the tokens in your input get processed by the Transformer."</li>
+      <li>Chat questions (visible on screen) asked: "For 'mug', u,g is there but not m, can you explain?" and "What is the use of token ID?"</li>
+    </ul>
+    <span class="fix">"JLMR" → probably the book <b>Hands-On Large Language Models</b> (Figure 3-5 style) <span class="badge verify"></span>. "BOLLIGORLA SHEKAR: this token is randomly generated" refers to the <b>initial random values</b> of E. "Search" in the transcript is background noise.</span>
+  </div>
+  <div class="takeaway">IDs come from the fixed tokenizer vocabulary. Embedding vectors come from the learned embedding matrix, and only the input tokens' rows are used.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. Why can the token ID not be used as positional information?</summary>
+    <div class="ans">The ID is fixed per vocabulary entry. The same word at positions 1 and 4 has the same ID, so IDs cannot encode order.</div></details>
+  <details><summary>2. Name the three position schemes and one model family for each.</summary>
+    <div class="ans">Sinusoidal (original Transformer), learned embeddings (GPT-2, BERT), RoPE (Llama, Qwen, DeepSeek).</div></details>
+  <details><summary>3. Compute PE(1) for d = 4 with the sinusoidal formula (2 decimals).</summary>
+    <div class="ans">[sin 1, cos 1, sin 0.01, cos 0.01] = <b>[0.84, 0.54, 0.01, 1.00]</b>.</div></details>
+  <details><summary>4. Which is correct for the LLM input: "token + word embedding" or "token + positional embedding"?</summary>
+    <div class="ans"><b>Token embedding + positional embedding</b> (for learned/sinusoidal). There is no "word embedding" in this pipeline. With RoPE, position is applied inside attention instead.</div></details>
+  <details><summary>5. In what order do corpus, tokenizer training and model training happen?</summary>
+    <div class="ans">Build corpus → train tokenizer (vocabulary and merges) → tokenize the corpus → train the model.</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>With RoPE, is there no separate position vector added at the input at all? How does that change "input embedding = token + position"?</li>
+    <li>Is the input embedding contextual or static before attention? The professor's answers in parts 06 and 07 stress training updates. Can this be stated more precisely in module 3?</li>
+    <li>Which book is the "misleading" Figure 3-5 from, and what should we remember instead?</li>
+    <li>Is the maximum learned positional index (e.g. 1,024 in GPT-2) examinable?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[1:37:39 – 1:38:35]</span> Types of text embeddings: document, sentence, word, token</li>
+    <li><span class="t">[1:38:37 – 1:41:35]</span> Positional encoding: need, learned, sinusoidal, RoPE</li>
+    <li><span class="t">[1:41:37 – 1:42:37]</span> Input embedding = token + positional; no "word embedding"</li>
+    <li><span class="t">[1:42:37 – 1:43:45]</span> Q&amp;A: tokenizer training precedes model training</li>
+    <li><span class="t">[1:43:47 – 1:46:43]</span> Q&amp;A: single-letter pieces, rare words, misspellings</li>
+    <li><span class="t">[1:46:43 – 1:48:25]</span> Q&amp;A: application designer vs model builder</li>
+    <li><span class="t">[1:48:25 – 1:53:01]</span> Q&amp;A: tokens → IDs → embeddings, inference vs training</li>
+  </ul>
+</section>
+
+<footer>Part 07 · segments 060–069 · <a href="part_06.html">← part 06</a> · <a href="index.html">index</a> · <a href="part_08.html">part 08 →</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>

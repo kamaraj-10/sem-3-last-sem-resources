@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 01 – Course Logistics, Module Map &amp; Evaluation | Large Language Models for Generative AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">🗺️</div>
+  <div>
+    <h1>Part 01 · Course Logistics, Module Map, Labs &amp; Evaluation</h1>
+    <div class="sub">Large Language Models for Generative AI (S1-26_AIMLCZG536) · Session 1 · Prof. Monali Tushar Mavani</div>
+    <span class="time">[00:00 – 18:15]</span>
+  </div>
+</header>
+
+<div class="notice">No web links are cited in this part. Content comes from the transcript and the handout shown on screen. Unclear audio is marked <span class="badge verify"></span>.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · Expectations &amp; announcements</a></li>
+  <li><a href="#t2">2 · Course page, handout &amp; slides</a></li>
+  <li><a href="#t3">3 · Module map: modules 1–9</a></li>
+  <li><a href="#t4">4 · Modules 9–11 &amp; overlap policy</a></li>
+  <li><a href="#t5">5 · Session-wise plan &amp; open sessions</a></li>
+  <li><a href="#t6">6 · Labs &amp; webinars</a></li>
+  <li><a href="#t7">7 · Evaluation scheme &amp; assignments</a></li>
+  <li><a href="#t8">8 · BITS remote GPU lab</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>Expectations, announcements &amp; microphone policy</h2><span class="time">[00:03 – 02:25]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Check Takshila announcements. Mics stay muted for now. Ask in chat.</h3>
+    <ul>
+      <li>Feedback is welcome at any time, by e-mail. A formal feedback round happens at the end of the course.</li>
+      <li>Announcements on <b>Takshila</b> (the BITS course site) are permanent. E-mail copies go to the WLP e-mail ID, which students often miss.</li>
+      <li>Mic is unmuted only in the <b>last 10 minutes</b> of today's session. From about the 3rd or 4th session the mic stays open.</li>
+    </ul>
+    <div class="goal">Goal: you get used to the teaching style first, then discussion becomes open.</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Takshila announcements are like the <b>notice board in a hostel corridor</b>. The WhatsApp or e-mail ping is a courtesy. The board is the source of truth and it never loses a notice.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>E-mail is an interrupt that can be missed. Takshila is the status register you can always poll.</p></div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"We don't spam announcements. They are very important for assignments, webinars and such things."</li>
+      <li>Announcements will not be re-sent by e-mail to students who register late, so check the site.</li>
+      <li>From the next class, join only with your <b>WLP e-mail ID</b>. Unverified IDs will not be admitted.</li>
+    </ul>
+    <span class="fix">"cheque announcements" → <b>check</b>. "Takshila" is kept as spoken (BITS learning site).</span>
+  </div>
+  <div class="takeaway">Takshila is the single source of truth for all announcements and deadlines.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>Course page, handout (v1.1), lecture slides &amp; NLP glossary</h2><span class="time">[02:25 – 04:53]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <ul>
+      <li>The handout is on the course page under <b>Course handout</b>. Version <b>1.1</b>, same file as in the drive (slide: "AIML ZG536 LLM for GenAI_v1.1").</li>
+      <li>Lecture slides are uploaded <b>one day before</b> the class. Every section follows the same slides.</li>
+      <li>New for this batch: a small <b>glossary of NLP jargon</b>, for students who did not take an NLP course.</li>
+    </ul>
+    <div class="goal">Part A of the handout is the modular content. Part B is the session-wise learning plan.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Session 1 covers the foundations of language models: probabilistic language models, tokenization strategies, token embeddings, positional encoding and the language modelling head. It ends with the LLM architecture landscape.</li>
+    </ul>
+    <span class="fix">"Language modelling ahead" → <b>language modelling head</b> (slide).</span>
+  </div>
+  <div class="takeaway">Read the slides the day before, and use the glossary if NLP terms are new.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Module map: what each module covers and why this order</h2><span class="time">[04:53 – 09:03]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <table>
+      <tr><th>#</th><th>Module</th><th>Topics (from handout)</th><th>Time</th></tr>
+      <tr><td>1</td><td>Foundations of LLMs</td><td>Probabilistic LMs, building blocks (tokenization, token embeddings and positional encoding, LM head), LLM landscape</td><td>session 1</td></tr>
+      <tr><td>2</td><td>LLM pre-training and fine-tuning</td><td>Pre-training, data, scaling laws, domain adaptation, frontier-model details, types of fine-tuning, SFT, PEFT</td><td>~3 h</td></tr>
+      <tr><td>3</td><td>LLM architecture</td><td>Review of classical attention and Transformer, normalization, positional-encoding advances, current frontier architecture components</td><td>~3 h</td></tr>
+      <tr><td>4</td><td>LLM inference fundamentals</td><td>How to use an LLM; two-phase inference</td><td><span class="badge verify"></span></td></tr>
+      <tr><td>5</td><td>LLM optimisation</td><td>Inference bottlenecks, KV-cache, speculative decoding, PagedAttention, FlashAttention, GQA/MQA/MLA, quantization</td><td>~4 h</td></tr>
+      <tr><td>6</td><td>Preference alignment</td><td>Preference tuning, reward models, Bradley–Terry, RLHF, PPO, DPO</td><td><span class="badge verify"></span></td></tr>
+      <tr><td>7</td><td>Prompt engineering and reasoning</td><td>Structured and iterative reasoning, prompt as system design, structured data, test-time compute scaling, context engineering</td><td>~4 h</td></tr>
+    </table>
+    <div class="remember"><b>Mid-semester syllabus = modules 1 to 5.</b> From module 6 onwards it is end-semester only.</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>The course is like <b>learning to run a restaurant</b>. First how food is made (modules 1–3), then how to serve it fast and cheaply (4–5), then training the taste of the chef (6), then writing a good order slip (7). Building the kitchen from scratch needs huge resources, so most of the course is about <b>using LLMs effectively</b>.</p>
+  </div>
+  <div class="card why">
+    <span class="label">Justification: why pre-training and fine-tuning are in module 2</span>
+    <ul class="pros">
+      <li>Assignment 1 is based on <b>continued pre-training and fine-tuning</b>. The webinars and labs also depend on module 2, so it is taught early.</li>
+      <li>Module 3 asks you to review attention and the Transformer from the first-semester <b>DNN</b> course <i>before</i> the session starts, so that class time goes to doubts.</li>
+      <li>Inference comes before optimisation because you first need to see how an LLM is used, then where it is slow.</li>
+    </ul>
+    <ul class="cons"><li>Not everyone can build an LLM from scratch (massive resources), so training-side content is limited to what you can do on a modest GPU budget.</li></ul>
+    <div class="balance">depth on architecture versus time for hands-on work: the labs and webinars carry the hands-on part.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Please review attention and Transformer from your DNN class by the time we start the third session."</li>
+      <li>Module 3 will show how current LLM architecture (2024–2026 frontier models) has changed from the <b>vanilla Transformer</b>.</li>
+      <li>Module 6 will cover RLHF techniques such as <b>PPO and DPO</b> in detail.</li>
+    </ul>
+    <span class="fix">"RL HF" → <b>RLHF</b>. "BPO" → <b>DPO</b> (Direct Preference Optimization, as in the handout). "Dnn" → <b>DNN</b>.</span>
+  </div>
+  <div class="takeaway">Modules 1–5 (foundations, training, architecture, inference, optimisation) form the mid-sem syllabus. Review attention and Transformer before module 3.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>Modules 8–11 and how overlap with the Conversational AI course is avoided</h2><span class="time">[07:30 – 10:13]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <table>
+      <tr><th>#</th><th>Module</th><th>Topics</th><th>Time</th></tr>
+      <tr><td>8</td><td>Retrieval-augmented language models</td><td>Limits of long-context models, RAG pipeline overview and context compression, Self-RAG, verification and self-correction, self-correcting RAG in the application layer</td><td>2 h</td></tr>
+      <tr><td>9</td><td>LLM as agents</td><td>Two mental models of an agent, anatomy, how LLMs become agents, agent memory types, context wall, architectural solutions, text-to-SQL agent</td><td>2 h</td></tr>
+      <tr><td>10</td><td>Evaluation</td><td>Model evaluation vs system evaluation (system = GenAI application), scoring metrics</td><td>2 h</td></tr>
+      <tr><td>11</td><td>LLM safety and security</td><td>Attacks, defences, LLM safety</td><td>2 h</td></tr>
+    </table>
+    <div class="goal">Modules 8 and 9 were reshaped to avoid duplicating another course. The focus is the <b>LLM design perspective</b>, not the application pipeline.</div>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>What is, and is not, taught in module 8 (RAG)</h3>
+    <div class="grid-2">
+      <div class="mini"><h4>Will be taught</h4><p>RAG pipeline overview so you can build one; how LLM design changes for RAG; Self-RAG; how industry implements self-correcting RAG in the application layer.</p></div>
+      <div class="mini"><h4>Will NOT be taught in detail</h4><p>Chunking strategies; dense and sparse retrieval mechanisms. These are covered in the other course.</p></div>
+    </div>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>"You will learn something from every course you take." No repeated content across courses.</li></ul>
+    <div class="balance">The same applies to agents: module 9 gives the introduction, then focuses on <b>agent memory</b>, the context/memory problem and how LLM architectures evolved to meet agentic requirements.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Evaluation: classical metrics are known from ML and DL, so the lecture adds the model vs system distinction.</li>
+      <li>Safety and security: popular attacks, defence mechanisms and safety aspects.</li>
+      <li>Application demos will be shown in the agent module.</li>
+    </ul>
+    <span class="fix">"JANU AI" → <b>GenAI</b>. "self-reg" → <b>Self-RAG</b>. "Llms Agents" → <b>LLM as Agents</b> (handout title).</span>
+  </div>
+  <div class="takeaway">Modules 8–11 are two-hour modules on RAG (LLM view), agents, evaluation and safety, with RAG basics left to the other course.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t5">
+  <div class="topic-title"><span class="num">5</span><h2>Part B session-wise plan and the two open sessions</h2><span class="time">[09:31 – 11:11]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <ul>
+      <li><b>Session 8</b> has no topics: it is for revision or any topics left over from session 7.</li>
+      <li><b>Session 16</b> has no topics either: spill-over, revision or advanced topics you request.</li>
+      <li>Handout excerpt (slide): session 1 Foundations (tokenization: BPE, byte-level BPE; references T1 Ch 2, 7, 8; T2 Ch 1, 2, 3; R1 Ch 1, 2). Sessions 6–7 LLM optimisations (KV-caching, inference bottleneck, speculative decoding, PagedAttention, FlashAttention, GQA, MQA, MLA, quantization). Session 9 preference alignment.</li>
+    </ul>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>The course runs in <b>5 sections</b> and "every faculty has a different speed", so a buffer session keeps all sections aligned.</li></ul>
+    <div class="balance">an open session is free time. Either catch up on slow topics or pick a topic you want explained.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul><li>The open session is "more like a discussion". You may ask any professor for a topic and she can prepare it.</li></ul>
+    <span class="fix">"Sachin Session is open session" is garbled in the audio (likely "16th session") <span class="badge verify"></span>.</span>
+  </div>
+  <div class="takeaway">Sessions 8 and 16 are buffers and open sessions. Plan to use them for doubts and revision.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t6">
+  <div class="topic-title"><span class="num">6</span><h2>Lab list and webinars</h2><span class="time">[11:11 – 12:29]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>The first half of the course is architecture-heavy, not math-heavy. Class has little time for hands-on, so webinars act as lab sessions.</h3>
+    <table>
+      <tr><th>Lab</th><th>Objective (slide)</th><th>Modules</th></tr>
+      <tr><td>1</td><td>Tokenization, data prep, pre-training loop and generation, domain-adaptive continued pre-training</td><td>M1, M2</td></tr>
+      <tr><td>2</td><td>PEFT using LoRA and QLoRA</td><td><span class="badge verify"></span> (hidden by pop-up)</td></tr>
+      <tr><td>3</td><td>Preference alignment</td><td><span class="badge verify"></span> (hidden by pop-up)</td></tr>
+      <tr><td>4</td><td>Decoding strategies and sampling: top-p, top-k, temperature, speculative decoding</td><td>M4, M5</td></tr>
+      <tr><td>5</td><td>Prompt engineering techniques and prompt as system design</td><td>M7</td></tr>
+      <tr><td>6</td><td>Constrained decoding and test-time compute</td><td>M7</td></tr>
+      <tr><td>7</td><td>Handling structured data using LLM</td><td>M7, M9</td></tr>
+      <tr><td>8</td><td>RAG pipeline</td><td>M8</td></tr>
+      <tr><td>9</td><td>Build a ReAct-style agent</td><td>M9</td></tr>
+      <tr><td>10</td><td>Evaluating LLM-generated answers</td><td>M10</td></tr>
+      <tr><td>11</td><td>Implement LLM safety guardrails</td><td>M11</td></tr>
+    </table>
+    <div class="remember">Environment per handout: online / open-source / Google Colab / virtual lab.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Please do attend" webinar 1 and webinar 2. They cover the labs needed for <b>Assignment 1</b>.</li>
+      <li>Webinar 1 is on the 1st lab and webinar 2 on a later lab (transcript says "2nd lab and the 4th lab") <span class="badge verify"></span>.</li>
+      <li>The lab facilitators are "very well trained" on this.</li>
+    </ul>
+    <span class="fix">"LoRA and QLoRA" from the handout slide, not named aloud. Webinar-to-lab mapping is garbled in the audio.</span>
+  </div>
+  <div class="takeaway">Eleven labs run alongside the 11 modules. Webinars 1 and 2 are the ones that prepare you for Assignment 1.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t7">
+  <div class="topic-title"><span class="num">7</span><h2>Evaluation scheme and assignments</h2><span class="time">[12:29 – 15:00]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>No quizzes. Two group assignments, a closed-book mid-sem, an open-book end-sem.</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 560 120" role="img" aria-label="Evaluation weightage bar: assignments 35, mid-sem 30, end-sem 35">
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="10" y="20" width="196" height="50" fill="#ecf3fd" stroke="#3a7bd5"/><text x="108" y="42" font-weight="700">Assignments 35 %</text><text x="108" y="58">15 + 20 marks</text>
+          <rect x="206" y="20" width="168" height="50" fill="#fff4ea" stroke="#e8833a"/><text x="290" y="42" font-weight="700">Mid-sem 30 %</text><text x="290" y="58">closed book</text>
+          <rect x="374" y="20" width="176" height="50" fill="#ecf8f0" stroke="#2f9e5b"/><text x="462" y="42" font-weight="700">End-sem 35 %</text><text x="462" y="58">open book</text>
+          <text x="280" y="100" font-style="italic">total = 100 %</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <div class="card formula">
+    <span class="label">Marks arithmetic</span>
+    <div class="formula-box"><i>Total</i> = <i>A</i><sub>1</sub> + <i>A</i><sub>2</sub> + <i>Mid</i> + <i>End</i></div>
+    <ul class="where">
+      <li><b>A<sub>1</sub></b> Assignment 1 marks = 15 (continued pre-training / fine-tuning theme)</li>
+      <li><b>A<sub>2</sub></b> Assignment 2 marks = 20</li>
+      <li><b>Mid</b> mid-semester exam = 30 %, closed book</li>
+      <li><b>End</b> end-semester exam = 35 %, open book</li>
+    </ul>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Assignment total. <span class="calc">15 + 20 = 35</span></div></div>
+    <div class="step"><span class="n">2</span><div>Add the exams. <span class="calc">35 + 30 + 35 = 100</span></div></div>
+    <div class="step"><span class="n">3</span><div>Share of coursework vs exams. <span class="calc">assignments 35 % ; exams 30 + 35 = 65 %</span></div></div>
+    <span class="pill">Total = 100 %</span><span class="hint">65 % of the grade comes from the two exams</span>
+  </div>
+  <div class="card scenario">
+    <span class="label">Assignment rules</span>
+    <table class="given">
+      <tr><th>Item</th><th>Rule</th></tr>
+      <tr><td>Format</td><td>Group assignment, group size 4 (standard)</td></tr>
+      <tr><td>Topics</td><td>2 problem statements for A1 and 2 for A2, 4 in total. Choose via Google Form on Takshila</td></tr>
+      <tr><td>No choice given</td><td>Random assignment, balanced across groups</td></tr>
+      <tr><td>Data</td><td>One training corpus / dataset is cleaned in A1 and may be carried into A2</td></tr>
+      <tr><td>Quizzes</td><td>None (written on the board)</td></tr>
+      <tr><td>Dates</td><td>Posted in announcements after about one week, when registrations close</td></tr>
+    </table>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Assignments are "like a mini project". Taking them seriously gives hands-on experience and good marks.</li>
+      <li>Dates are announced after registrations close so late registrants do not miss e-mails.</li>
+    </ul>
+    <div class="balance">more freedom (choose a topic matching your work) against the need to balance load, so unchosen topics are assigned randomly.</div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Treating the open-book end-sem as easy. Open book rewards understanding, not lookup.</li>
+      <li>Waiting for an e-mail about deadlines. Check Takshila announcements.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Think early about whom you want in your group of four, since "by now you know your colleagues well".</li>
+      <li>The lead facilitator will share the group Google Form <b>together with</b> the problem statements.</li>
+      <li>Webinar schedule and assignment deadlines come as a centralised calendar in announcements.</li>
+    </ul>
+    <span class="fix">"Ass-1 ⇒ 15, Ass-2 ⇒ 20" on the board. "my lead LF" → lead lab facilitator <span class="badge verify"></span>.</span>
+  </div>
+  <div class="takeaway">35 % assignments (15 + 20, groups of 4, no quizzes) + 30 % closed-book mid-sem + 35 % open-book end-sem = 100 %.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t8">
+  <div class="topic-title"><span class="num">8</span><h2>BITS remote GPU lab (Prayogshala + Kubeflow)</h2><span class="time">[15:00 – 18:15]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>A remote lab on BITS hardware. Front end: <b>Prayogshala</b>. Back end: <b>Kubeflow</b>. You pick the GPU when you create a notebook server or pod.</h3>
+    <table>
+      <tr><th>GPU</th><th>VRAM (board)</th></tr>
+      <tr><td>NVIDIA L40S</td><td class="num">40 GB</td></tr>
+      <tr><td>NVIDIA A100</td><td class="num">80 GB</td></tr>
+      <tr><td>RTX 6000</td><td class="num">96 GB</td></tr>
+    </table>
+    <div class="remember">23 GPU cards in total, installed at the Hyderabad campus. Other courses use AWS or RunPod back ends, this one does not.</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>It is a <b>shared university workshop</b>: powerful machines are there, but everyone must book a slot. If the whole batch turns up on the last three days before the deadline, there is a queue.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Like a shared lab bench with a few oscilloscopes. Book early, release when done.</p></div>
+  </div>
+  <div class="card steps">
+    <span class="label">What fits? A quick sizing check <span class="badge beyond">beyond lecture</span></span>
+    <div class="step"><span class="n">1</span><div>Weights of a 7 B-parameter model in 16-bit (2 bytes each). <span class="calc">7×10<sup>9</sup> × 2 B = 14×10<sup>9</sup> B ≈ 14 GB</span></div></div>
+    <div class="step"><span class="n">2</span><div>Compare with the smallest card. <span class="calc">14 GB &lt; 40 GB (L40S)</span></div></div>
+    <div class="step"><span class="n">3</span><div>Training needs extra memory for gradients, optimizer state and activations, so plan for several times the weight size. <span class="badge verify"></span></div></div>
+    <span class="pill">7 B model weights ≈ 14 GB</span><span class="hint">illustrative, not stated in the lecture</span>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Starting GPU work in the last three days. Everyone competes for the same cards.</li>
+      <li>Skipping the manual. "If you follow thoroughly those steps you will not find any issues."</li>
+      <li>Leaving a GPU session running when idle, which blocks other students.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>A detailed access manual will be shared. Setup is "a one-time effort of half an hour".</li>
+      <li>Webinar 1 demonstrates the lab from the start.</li>
+      <li>You will experiment with <b>open-source models</b> that fit these GPUs.</li>
+      <li>"Use this responsibly" so that others can use it too.</li>
+    </ul>
+    <span class="fix">"Prayog Shala" → <b>Prayogshala</b>. "key flow" → <b>Kubeflow</b>. "800" → <b>A100</b> (board). "L40s. Six" → <b>L40S</b>. "RTS 6000" → <b>RTX 6000</b>. "I guess" figures for VRAM are as written on the board.</span>
+  </div>
+  <div class="takeaway">Use the BITS remote GPU lab through Prayogshala (Kubeflow back end), start early and release resources when done.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. Which modules form the mid-semester syllabus?</summary>
+    <div class="ans">Modules 1 to 5: foundations, pre-training and fine-tuning, architecture, inference, optimisation. Module 6 onwards is end-semester.</div></details>
+  <details><summary>2. Why is pre-training and fine-tuning module 2 instead of later?</summary>
+    <div class="ans">Assignment 1 and the first webinars are based on continued pre-training and fine-tuning, so students need it early.</div></details>
+  <details><summary>3. Compute the total: A1 = 15, A2 = 20, mid = 30, end = 35. What share is exams?</summary>
+    <div class="ans">Total 15 + 20 + 30 + 35 = <b>100</b>. Exams = 30 + 35 = <b>65 %</b>. Assignments = 35 %.</div></details>
+  <details><summary>4. Which exam is open book and which is closed book?</summary>
+    <div class="ans">Mid-semester (30 %) is closed book. End-semester (35 %) is open book.</div></details>
+  <details><summary>5. Name the front end and back end of the BITS remote lab, and the three GPU types.</summary>
+    <div class="ans">Prayogshala (front end), Kubeflow (back end). GPUs: L40S (40 GB), A100 (80 GB), RTX 6000 (96 GB). 23 cards in total.</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>Which labs map to webinars 1 and 2 exactly? The audio is unclear.</li>
+    <li>How many hours are planned for modules 4 and 6? They were not stated clearly.</li>
+    <li>Will the glossary of NLP jargon be examinable?</li>
+    <li>Are there GPU time quotas per group for the remote lab?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[00:03 – 02:25]</span> Expectations, announcements, mic policy</li>
+    <li><span class="t">[02:25 – 04:53]</span> Course page, handout v1.1, slides, NLP glossary, session 1 scope</li>
+    <li><span class="t">[04:53 – 09:03]</span> Module map, modules 1–9, mid-sem boundary</li>
+    <li><span class="t">[07:30 – 10:13]</span> Modules 8–11, overlap policy with the Conversational AI course</li>
+    <li><span class="t">[09:31 – 11:11]</span> Session-wise plan, open sessions 8 and 16</li>
+    <li><span class="t">[11:11 – 12:29]</span> Lab list and webinars</li>
+    <li><span class="t">[12:29 – 15:00]</span> Evaluation scheme and assignment rules</li>
+    <li><span class="t">[15:00 – 18:15]</span> BITS remote GPU lab</li>
+  </ul>
+</section>
+
+<footer>Part 01 · segments 001–013 · <a href="index.html">index</a> · <a href="part_02.html">part 02 →</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>

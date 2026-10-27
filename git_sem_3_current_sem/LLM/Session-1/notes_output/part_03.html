@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 03 – Conditional Generation, Softmax, Decoding &amp; Vocabulary Building | Large Language Models for Generative AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">🎲</div>
+  <div>
+    <h1>Part 03 · Conditional Generation, Softmax over the Vocabulary, Decoding &amp; Vocabulary Building</h1>
+    <div class="sub">Large Language Models for Generative AI (S1-26_AIMLCZG536) · Session 1 · Prof. Monali Tushar Mavani</div>
+    <span class="time">[33:43 – 50:35]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: links in the "Extra reading" cards were fetched and checked on 2026-10-26. Inferred statements carry the <span class="badge verify"></span> badge.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · Conditional generation of text</a></li>
+  <li><a href="#t2">2 · How the next token is predicted</a></li>
+  <li><a href="#t3">3 · Softmax over the vocabulary</a></li>
+  <li><a href="#t4">4 · Sampling, decoding &amp; Generative AI</a></li>
+  <li><a href="#t5">5 · Chat Q&amp;A: context, vocabulary vs corpus</a></li>
+  <li><a href="#t6">6 · Building blocks: corpus → tokens → embeddings → Transformer → head</a></li>
+  <li><a href="#t7">7 · Output is one token at a time</a></li>
+  <li><a href="#t8">8 · Vocabulary building &amp; token IDs</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>Conditional generation of text: any NLP task as word prediction</h2><span class="time">[33:46 – 36:23]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Put the task in a prompt (the <b>context</b>) and let the language model predict the next word.</h3>
+    <table>
+      <tr><th>Task</th><th>Context (prompt)</th><th>What the LM outputs</th></tr>
+      <tr><td>Sentiment classification</td><td>"The sentiment of the sentence 'I like Jackie Chan' is:"</td><td><i>P</i>("positive" | context) vs <i>P</i>("negative" | context)</td></tr>
+      <tr><td>Question answering</td><td>"Q: Who wrote the book 'The Origin of Species'? A:"</td><td>the answer tokens, one at a time</td></tr>
+    </table>
+    <div class="remember"><b>Then vs now:</b> one fine-tuned model per task (e.g. BERT + classifier) → <b>one LLM, many tasks, via the prompt</b>.</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A <b>fill-in-the-blank test</b>. "The sentiment of the sentence … is: ____" has two likely fills, and the one with the higher probability is the answer. You never change the model, you only change the question sheet.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Like one generic MCU firmware that reads a config string instead of building a separate binary per product variant.</p></div>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario <span class="badge beyond">illustrative numbers</span></span>
+    <h3>Pick the sentiment of "I like Jackie Chan"</h3>
+    <table class="given">
+      <tr><th>Given</th><th class="num">Assumed value</th></tr>
+      <tr><td><i>P</i>("positive" | prompt)</td><td class="num">0.82</td></tr>
+      <tr><td><i>P</i>("negative" | prompt)</td><td class="num">0.05</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Compare the two label probabilities. <span class="calc">0.82 &gt; 0.05</span></div></div>
+    <div class="step"><span class="n">2</span><div>Share of probability on the two labels. <span class="calc">0.82 + 0.05 = 0.87</span> (the other 0.13 goes to other tokens)</div></div>
+    <div class="step"><span class="n">3</span><div>Normalise over the two labels only. <span class="calc">0.82 / 0.87 = 0.943 ≈ 94 % positive</span></div></div>
+    <span class="pill">label = positive</span><span class="hint">the higher token probability wins</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>One model, no new training for each task, just a new prompt.</li></ul>
+    <ul class="cons"><li>A big LLM may be overkill and costly for a simple sentiment task.</li></ul>
+    <div class="balance">flexibility vs cost. The designer must decide: really need an LLM, a large or small one, or a BERT-based model?</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>The Transformer is a <b>decoder-based</b> architecture here, with no encoder part. It will be reviewed in module 3.</li>
+      <li>"Almost any NLP task can be modelled as word prediction in a large language model." Board: "context" over the prompt text.</li>
+      <li>Question for every designer: do I need an LLM at all?</li>
+    </ul>
+  </div>
+  <div class="takeaway">Rewrite the task as a prompt and read off token probabilities: one LLM can replace many task-specific models.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>How the next token comes out of the Transformer</h2><span class="time">[36:27 – 37:51]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Input "So long and thanks for" goes through many Transformer layers. The final layer gives a probability for each possible next token. The best one is "all".</h3>
+    <ul>
+      <li>This is <b>inference</b> (testing), not training. Training uses <b>teacher forcing</b>.</li>
+      <li>The model is a decoder-only Transformer.</li>
+      <li>The output of the final layer is turned into probabilities by <b>softmax</b>.</li>
+    </ul>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Many <b>judges</b> (layers) read the sentence in turn and each refine an opinion. The last judge hands over a score for every word in the dictionary, and softmax converts the scores into a ranked "chance of being next".</p>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>She asked students "what is in the final layer?" and the answer was softmax. Details are coming in the next slides.</li>
+      <li>Teacher forcing in training, not used when we just use the model.</li>
+    </ul>
+    <span class="fix">"Software" in the transcript → <b>Softmax</b> (the speech-to-text error appears several times in this part).</span>
+  </div>
+  <div class="takeaway">Final layer to softmax to next-token distribution. Training uses teacher forcing, inference does not.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Softmax: the classes are the tokens of the vocabulary</h2><span class="time">[37:53 – ≈40:30]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Same as a 10-class classifier, but the classes are all vocabulary tokens (e.g. 50,000 of them).</h3>
+    <p>Softmax gives <b>one probability per vocabulary token</b>. A vocabulary is like a dictionary of all unique tokens the model knows.</p>
+    <div class="goal">Language modelling objective = assign a probability distribution over the vocabulary for the next token.</div>
+  </div>
+  <div class="card formula">
+    <span class="label">Formula / definition</span>
+    <div class="formula-box"><i>P</i>(<i>w</i><sub>i</sub> | context) = <span class="frac"><span class="num"><i>e</i><sup><i>z</i><sub>i</sub></sup></span><span class="den"><span class="bigop"><span class="lim">V</span><span class="op">Σ</span><span class="lim">j=1</span></span> <i>e</i><sup><i>z</i><sub>j</sub></sup></span></span></div>
+    <ul class="where">
+      <li><b>z<sub>i</sub></b> raw score (logit) of token <i>i</i> from the final layer, any real number</li>
+      <li><b>V</b> vocabulary size (e.g. 50,000)</li>
+      <li><b>P(w<sub>i</sub> | context)</b> probability in (0, 1). All <i>V</i> values sum to 1</li>
+    </ul>
+    <p class="hint">The formula itself is the standard softmax from ML. The professor only recapped it verbally. <span class="badge beyond">formula written here for completeness</span></p>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario <span class="badge beyond">illustrative logits chosen to match the slide</span></span>
+    <h3>Four candidate tokens after "So long and thanks for"</h3>
+    <table class="given">
+      <tr><th>Token</th><th class="num">Logit z</th></tr>
+      <tr><td>all</td><td class="num">2.0</td></tr>
+      <tr><td>the</td><td class="num">1.7</td></tr>
+      <tr><td>your</td><td class="num">0.9</td></tr>
+      <tr><td>that</td><td class="num">0.3</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Exponentiate each logit. <span class="calc">e<sup>2.0</sup> = 7.389; e<sup>1.7</sup> = 5.474; e<sup>0.9</sup> = 2.460; e<sup>0.3</sup> = 1.350</span></div></div>
+    <div class="step"><span class="n">2</span><div>Sum (denominator). <span class="calc">7.389 + 5.474 + 2.460 + 1.350 = 16.673</span></div></div>
+    <div class="step"><span class="n">3</span><div>Divide. <span class="calc">all 7.389/16.673 = 0.443; the 5.474/16.673 = 0.328; your 2.460/16.673 = 0.148; that 1.350/16.673 = 0.081</span></div></div>
+    <div class="step"><span class="n">4</span><div>Check sum. <span class="calc">0.443 + 0.328 + 0.148 + 0.081 = 1.000</span></div></div>
+    <span class="pill">all 0.44</span><span class="pill blue">the 0.33</span><span class="pill blue">your 0.15</span><span class="pill blue">that 0.08</span><span class="hint">rounded values match the slide's figure (0.44, 0.33, 0.15, 0.08)</span>
+  </div>
+  <div class="card code">
+    <span class="label">Code (NumPy)</span>
+    <pre><span class="k">import</span> numpy <span class="k">as</span> np
+z = np.array([2.0, 1.7, 0.9, 0.3])             <span class="c"># logits for: all, the, your, that</span>
+p = np.exp(z - z.max()) / np.exp(z - z.max()).sum()   <span class="c"># subtract max for stability</span>
+<span class="k">print</span>(p.round(3))                                <span class="c"># [0.443 0.328 0.148 0.081]</span></pre>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Saying "vocabulary is the corpus". The vocabulary is the set of unique tokens. The corpus is the collection of documents.</li>
+      <li>Forgetting that softmax is over <b>all</b> vocabulary tokens, not just a handful of candidates.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Classes = tokens, "RAJEEV M.V., you are correct". For now treat words as tokens.</li>
+      <li>Think of the vocabulary as a <b>dictionary</b> of unique words.</li>
+    </ul>
+    <span class="fix">"what is my context here? my entire vocabulary" is slightly loose. The <b>output</b> space is the vocabulary, the <b>context</b> is the prompt (she confirms this in the chat answers at 42:42).</span>
+  </div>
+  <div class="takeaway">Softmax turns the final-layer scores into a probability for every token in the vocabulary.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>Sampling, decoding and what makes a model "generative"</h2><span class="time">[≈40:30 – 42:39]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Instead of always taking the highest-probability token, <b>sample</b> from the distribution. That makes the same model generate varied text.</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 640 200" role="img" aria-label="Autoregressive generation loop">
+        <defs><marker id="a4" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6475"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="10" y="70" width="140" height="44" rx="8" fill="#fff" stroke="#5b6475"/><text x="80" y="90" font-weight="700">Context</text><text x="80" y="106">So long and thanks for</text>
+          <rect x="190" y="70" width="140" height="44" rx="8" fill="#ecf3fd" stroke="#3a7bd5"/><text x="260" y="90" font-weight="700">Transformer</text><text x="260" y="106">+ softmax</text>
+          <rect x="370" y="70" width="120" height="44" rx="8" fill="#fff4ea" stroke="#e8833a" stroke-width="3"/><text x="430" y="90" font-weight="700">Decoding</text><text x="430" y="106">sample a token</text>
+          <rect x="520" y="70" width="110" height="44" rx="8" fill="#ecf8f0" stroke="#2f9e5b"/><text x="575" y="90" font-weight="700">new token</text><text x="575" y="106">"all"</text>
+          <line x1="150" y1="92" x2="188" y2="92" stroke="#5b6475" stroke-width="2" marker-end="url(#a4)"/>
+          <line x1="330" y1="92" x2="368" y2="92" stroke="#5b6475" stroke-width="2" marker-end="url(#a4)"/>
+          <line x1="490" y1="92" x2="518" y2="92" stroke="#5b6475" stroke-width="2" marker-end="url(#a4)"/>
+          <path d="M575,114 Q575,170 80,170 Q80,140 80,116" fill="none" stroke="#d64545" stroke-width="2" marker-end="url(#a4)"/>
+          <text x="330" y="162" fill="#d64545" font-weight="700">append to context, repeat</text>
+        </g>
+      </svg>
+      <div class="cap">Slide figure 7.2: each generated token is added to the context as a prefix for the next token (autoregressive).</div>
+    </div>
+    <ul>
+      <li>Training is still <b>next-token prediction</b>. Generation adds a <b>decoding / sampling</b> logic at the end of the model.</li>
+      <li><b>Decoding</b> = the process of generating natural-language text with an LLM.</li>
+      <li>The slide calls this an <b>autoregressive</b> language model.</li>
+      <li>If a Transformer can generate text, the same idea extends to code, images, speech, audio and video: the area called <b>Generative AI</b>.</li>
+    </ul>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Choosing a word is like choosing a <b>dish at a restaurant with many near-synonyms on the menu</b>. A strict diner always orders the top dish (greedy). A curious diner sometimes tries the second or third. Both are reasonable, so the outputs differ.</p>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Use the part-3 distribution: all .44, the .33, your .15, that .08</h3>
+    <table class="given">
+      <tr><th>Strategy</th><th>Next token</th><th class="num">Chance</th></tr>
+      <tr><td>Greedy (highest probability)</td><td>all</td><td class="num">always</td></tr>
+      <tr><td>Sampling</td><td>"all", "the", "your" or "that"</td><td class="num">0.44 / 0.33 / 0.15 / 0.08</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step: what sampling changes</span>
+    <div class="step"><span class="n">1</span><div>Probability that sampling does <b>not</b> pick the top token. <span class="calc">1 − 0.44 = 0.56</span></div></div>
+    <div class="step"><span class="n">2</span><div>Chance of picking "the" or "your". <span class="calc">0.33 + 0.15 = 0.48</span></div></div>
+    <div class="step"><span class="n">3</span><div>Over 100 runs on average. <span class="calc">44 × "all", 33 × "the", 15 × "your", 8 × "that"</span></div></div>
+    <span class="pill">56 % of draws differ from greedy</span><span class="hint">more randomness = more variety, less predictability</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>With ~50,000 tokens, many are synonyms. Restricting to one best choice wastes valid alternatives.</li>
+      <li>Sampling lets the same prompt produce different text.</li>
+    </ul>
+    <ul class="cons"><li>A low-probability sample can derail the sentence, so sampling methods are needed to control it.</li></ul>
+    <div class="balance">diversity vs reliability. Temperature and related methods (module 4) tune this.</div>
+  </div>
+  <div class="card code">
+    <span class="label">Code: greedy vs sampling</span>
+    <pre>tokens = [<span class="s">"all"</span>, <span class="s">"the"</span>, <span class="s">"your"</span>, <span class="s">"that"</span>]
+p = [0.44, 0.33, 0.15, 0.08]
+greedy = tokens[p.index(max(p))]                     <span class="c"># always "all"</span>
+<span class="k">import</span> random
+sampled = random.choices(tokens, weights=p, k=1)[0]  <span class="c"># varies run to run</span></pre>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"We call it decoding." The sampling algorithms are part of <b>inference</b> and will be covered in module 4.</li>
+      <li>"Due to this, we call it a generative model."</li>
+      <li>Training objective unchanged. Only how we use the Transformer changes.</li>
+    </ul>
+    <span class="fix">"vocab" scribble on the slide, replacing "following words". Distribution is over the <b>vocabulary</b>, not only following words.</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://arxiv.org/abs/1904.09751">The Curious Case of Neural Text Degeneration (Holtzman et al.)</a>: shows pure likelihood decoding gives bland, repetitive text, and proposes nucleus (top-p) sampling.</li></ul>
+  </div>
+  <div class="takeaway">Same trained model + different decoding = different text. That is what makes it generative.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t5">
+  <div class="topic-title"><span class="num">5</span><h2>Chat Q&amp;A: context, vocabulary vs corpus, temperature</h2><span class="time">[42:42 – 43:17]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <ul>
+      <li>Context = the words in the <b>prompt</b> (student answer confirmed).</li>
+      <li><b>Vocabulary is not a corpus</b>. It will be explained later in this part.</li>
+      <li>"Why all vocabulary?" and "why is it required?" are deferred to the inference module.</li>
+      <li>A student mentioned <b>temperature sampling</b> and the professor confirmed.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul><li>"All of these questions will be answered subsequently."</li></ul>
+  </div>
+  <div class="takeaway">Context = prompt words. Vocabulary ≠ corpus. Temperature is a sampling tool, coming in module 4.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t6">
+  <div class="topic-title"><span class="num">6</span><h2>Building blocks of an LLM: corpus → tokens → embeddings → Transformer → LM head</h2><span class="time">[43:21 – 46:55]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <div class="diagram">
+      <svg viewBox="0 0 760 130" role="img" aria-label="LLM building blocks pipeline">
+        <defs><marker id="a6" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6475"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="11" text-anchor="middle">
+          <rect x="5" y="30" width="130" height="64" rx="8" fill="#fff" stroke="#5b6475"/><text x="70" y="55" font-weight="700">Corpus</text><text x="70" y="72">cleaned documents</text>
+          <rect x="155" y="30" width="130" height="64" rx="8" fill="#fff4ea" stroke="#e8833a"/><text x="220" y="55" font-weight="700">Tokenization</text><text x="220" y="72">BPE, byte-level BPE</text>
+          <rect x="305" y="30" width="130" height="64" rx="8" fill="#fff4ea" stroke="#e8833a"/><text x="370" y="55" font-weight="700">Token embeddings</text><text x="370" y="72">+ positional encoding</text>
+          <rect x="455" y="30" width="140" height="64" rx="8" fill="#ecf3fd" stroke="#3a7bd5"/><text x="525" y="55" font-weight="700">Transformer</text><text x="525" y="72">attention (module 3)</text>
+          <rect x="615" y="30" width="140" height="64" rx="8" fill="#f5effd" stroke="#8a4fd1"/><text x="685" y="55" font-weight="700">LM head</text><text x="685" y="72">softmax over vocab</text>
+          <line x1="135" y1="62" x2="153" y2="62" stroke="#5b6475" stroke-width="2" marker-end="url(#a6)"/>
+          <line x1="285" y1="62" x2="303" y2="62" stroke="#5b6475" stroke-width="2" marker-end="url(#a6)"/>
+          <line x1="435" y1="62" x2="453" y2="62" stroke="#5b6475" stroke-width="2" marker-end="url(#a6)"/>
+          <line x1="595" y1="62" x2="613" y2="62" stroke="#5b6475" stroke-width="2" marker-end="url(#a6)"/>
+          <text x="220" y="115" fill="#9a4a0f" font-weight="700">today</text><text x="370" y="115" fill="#9a4a0f" font-weight="700">today</text>
+        </g>
+      </svg>
+      <div class="cap">Slide "Building blocks of LLM": tokenization (BPE, byte-level BPE), token embeddings and positional encoding, attention mechanism and Transformer, language modelling head. Today covers the first two blocks.</div>
+    </div>
+    <ul>
+      <li><b>Corpus</b> = a collection of documents that have been <b>pre-processed</b> (board: text → collection of documents → pre-processed → corpus). Raw PDFs, e-mails, web pages, handwritten scans and chat logs that do not make sense cannot be used as is.</li>
+      <li><b>Tokens</b>: simplest view, tokens = words. Original idea: each word is one token, done by NLP libraries such as NLTK.</li>
+      <li>Tokens are still text. They must become numbers, so we need <b>token embeddings</b>. It is not just "simply convert into numbers".</li>
+      <li>First two steps are <b>input pre-processing</b>. Then comes the Transformer, with the LM head on top.</li>
+    </ul>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A <b>newsroom pipeline</b>: collect raw reports (documents), fact-check and clean them (corpus), cut them into words (tokens), give every word a number-based fingerprint (embedding), let the editors (Transformer) reason, and finally the headline writer (head) picks the next word.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Like sensor data: raw signal → cleaning/filtering → ADC samples → feature vector → model. Garbage in, garbage out at the cleaning step.</p></div>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Neural networks take numbers. Every text pipeline must therefore convert text to numbers before any model sees it.</li></ul>
+    <div class="balance">Word-level tokens are simple, but many tokenization algorithms evolved because of their pros and cons. Today BPE and byte-level BPE are popular.</div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Feeding raw documents to a model without pre-processing into a corpus.</li>
+      <li>Thinking tokenization already makes numbers. It only splits text into units. IDs and embeddings come after.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Corpus" is general NLP lingo. It is not tied to LLMs.</li>
+      <li>Today she covers items 1 and 2 (tokenization, embeddings with positional encoding). The Transformer comes in module 3.</li>
+    </ul>
+    <span class="fix">"Cloud" → <b>Claude</b> (as in the "ChatGPT, Claude or Gemini" line in the next topic). "Building blocks of Llms" board boxes: BPE, byte-level BPE.</span>
+  </div>
+  <div class="takeaway">Corpus → tokens → token IDs → embeddings (+ position) → Transformer → LM head: the five-stage LLM pipeline.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t7">
+  <div class="topic-title"><span class="num">7</span><h2>Output is produced one token at a time</h2><span class="time">[46:56 – 47:53]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>You type to ChatGPT, Claude or Gemini and the answer appears word by word. That is real: <b>one token at a time</b>.</h3>
+    <p>LLM = tokenizer (input) → stack of Transformer blocks → language modelling head. Architecture details come in module 3.</p>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>It is a <b>typewriter</b>, not a printing press. Each key press depends on everything already typed. Fast machines hide it, but if you look closely the text is arriving token by token.</p>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"It's very important for you to remember that output is generated one token at a time." This is the key to understanding inference later.</li>
+    </ul>
+    <span class="fix">"Cloud" → <b>Claude</b>.</span>
+  </div>
+  <div class="takeaway">Generation is sequential: one new token per forward pass.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t8">
+  <div class="topic-title"><span class="num">8</span><h2>Vocabulary building and token IDs (training a tokenizer)</h2><span class="time">[47:58 – 50:35]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Training a tokenizer: corpus → tokenize → collect unique tokens (alphabetical) → give each a token ID.</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 700 200" role="img" aria-label="Vocabulary building from the sentence The quick brown fox jumps over the lazy dog">
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="10" y="10" width="330" height="36" rx="6" fill="#fff" stroke="#5b6475"/><text x="175" y="33">"The quick brown fox jumps over the lazy dog"</text>
+          <text x="175" y="68" fill="#5b6475">tokenize → 9 tokens → 8 unique (The = the)</text>
+          <rect x="400" y="8" width="90" height="24" fill="#fff4ea" stroke="#e8833a"/><text x="445" y="25">brown → 0</text>
+          <rect x="400" y="34" width="90" height="24" fill="#fff4ea" stroke="#e8833a"/><text x="445" y="51">dog → 1</text>
+          <rect x="400" y="60" width="90" height="24" fill="#fff4ea" stroke="#e8833a"/><text x="445" y="77">fox → 2</text>
+          <rect x="400" y="86" width="90" height="24" fill="#fff4ea" stroke="#e8833a"/><text x="445" y="103">jumps → 3</text>
+          <rect x="500" y="8" width="90" height="24" fill="#fff4ea" stroke="#e8833a"/><text x="545" y="25">lazy → 4</text>
+          <rect x="500" y="34" width="90" height="24" fill="#fff4ea" stroke="#e8833a"/><text x="545" y="51">over → 5</text>
+          <rect x="500" y="60" width="90" height="24" fill="#fff4ea" stroke="#e8833a"/><text x="545" y="77">quick → 6</text>
+          <rect x="500" y="86" width="90" height="24" fill="#fff4ea" stroke="#e8833a"/><text x="545" y="103">the → 7</text>
+          <text x="495" y="135" font-weight="700">vocabulary of 8 unique tokens, IDs 0–7</text>
+          <text x="350" y="180" font-style="italic">With 50,000 tokens the IDs run from 0 to 49,999</text>
+        </g>
+      </svg>
+      <div class="cap">Slide Figure 2.6, simplified. The board says "50,000 tokens → token IDs 0–49999".</div>
+    </div>
+    <ul>
+      <li>The tokenizer is built from the <b>training corpus only</b>. Vocabulary depends on your <b>language</b> or <b>domain</b>, nothing else (Thai, Marathi, English, medical, finance).</li>
+      <li>You train your model on that vocabulary. Words outside it are <b>out-of-vocabulary</b>. Different organisations handle this differently (to be seen).</li>
+    </ul>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Encode "the lazy dog" with the vocabulary above</h3>
+    <table class="given">
+      <tr><th>Token</th><th class="num">ID</th></tr>
+      <tr><td>the</td><td class="num">7</td></tr>
+      <tr><td>lazy</td><td class="num">4</td></tr>
+      <tr><td>dog</td><td class="num">1</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Count tokens in the training sentence. <span class="calc">The, quick, brown, fox, jumps, over, the, lazy, dog = 9</span></div></div>
+    <div class="step"><span class="n">2</span><div>Lowercase and remove duplicates. <span class="calc">"the" appears twice → 9 − 1 = 8 unique tokens</span></div></div>
+    <div class="step"><span class="n">3</span><div>Sort alphabetically and number from 0. <span class="calc">brown 0, dog 1, fox 2, jumps 3, lazy 4, over 5, quick 6, the 7</span></div></div>
+    <div class="step"><span class="n">4</span><div>Look up the phrase. <span class="calc">"the lazy dog" → [7, 4, 1]</span></div></div>
+    <div class="step"><span class="n">5</span><div>Size check for a 50,000-token vocabulary. <span class="calc">IDs 0 … 49,999 → 49,999 − 0 + 1 = 50,000</span></div></div>
+    <span class="pill">[7, 4, 1]</span><span class="hint">vocabulary size = number of unique tokens = largest ID + 1</span>
+  </div>
+  <div class="card code">
+    <span class="label">Code (toy tokenizer)</span>
+    <pre>text = <span class="s">"The quick brown fox jumps over the lazy dog"</span>
+tokens = text.lower().split()                      <span class="c"># 9 tokens</span>
+vocab = {w: i <span class="k">for</span> i, w <span class="k">in</span> enumerate(sorted(set(tokens)))}
+<span class="c"># {'brown':0,'dog':1,'fox':2,'jumps':3,'lazy':4,'over':5,'quick':6,'the':7}</span>
+ids = [vocab[w] <span class="k">for</span> w <span class="k">in</span> <span class="s">"the lazy dog"</span>.split()]   <span class="c"># [7, 4, 1]</span></pre>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Unique tokens plus integer IDs give a fixed lookup table that the embedding layer can index into.</li></ul>
+    <ul class="cons"><li>Word-level vocabularies cannot represent unseen words, which is the next question: "why can't we just have words as tokens?"</li></ul>
+    <div class="balance">simple word tokens vs coverage of rare and new words, the motivation for subword tokenization (BPE).</div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Believing one vocabulary fits every domain. A medical or finance model needs its own tokenizer vocabulary.</li>
+      <li>Confusing the token <b>ID</b> (an integer index) with the token <b>embedding</b> (a vector).</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"You will first create a corpus, tokenize it with any algorithm, build the vocabulary of unique words, then give each a token ID." That is training a tokenizer.</li>
+      <li>Corpora are often public: someone prepares and publishes them for training.</li>
+      <li>Ends with the question: why can't we just use words as tokens?</li>
+    </ul>
+    <span class="fix">"Maruti language" → <b>Marathi</b>. "49,999 and 9" → <b>49,999</b>. Slide says "Complete training dataset → tokenized training dataset → vocabulary".</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky and Martin, Speech and Language Processing (3rd ed. draft)</a>: chapters on Words and Tokens, N-gram LMs and Transformers and Pretraining. Fetched and checked.</li></ul>
+  </div>
+  <div class="takeaway">Vocabulary = unique tokens from your training corpus, each mapped to an integer ID. It is specific to your language or domain.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. How do you do sentiment classification with a language model, without a classifier head?</summary>
+    <div class="ans">Write a prompt such as "The sentiment of the sentence '…' is:" and compare <i>P</i>("positive" | prompt) with <i>P</i>("negative" | prompt). The higher one is the label.</div></details>
+  <details><summary>2. In the next-token softmax, what are the "classes" and how many are there?</summary>
+    <div class="ans">Every token in the vocabulary, so <i>V</i> classes (e.g. 50,000). The probabilities sum to 1.</div></details>
+  <details><summary>3. Logits are [1, 1, 1, 1] for four tokens. What is the softmax output?</summary>
+    <div class="ans">Equal: e/(4e) = <b>0.25</b> each. Adding the same constant to all logits does not change softmax.</div></details>
+  <details><summary>4. Training objective vs generation: what is the difference?</summary>
+    <div class="ans">Training is next-token prediction. Generation adds a decoding / sampling step on top, which draws the next token from the distribution. Different sampling gives different text.</div></details>
+  <details><summary>5. Build the vocabulary for "a cat saw a dog". What are the IDs of the sentence?</summary>
+    <div class="ans">Unique sorted: a 0, cat 1, dog 2, saw 3. Sentence IDs = [0, 1, 3, 0, 2]. Vocabulary size = 4.</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>Is the vocabulary sorted alphabetically in real tokenizers, or only in this teaching example?</li>
+    <li>How does the model treat words that are out of vocabulary? (Deferred to the tokenization topic.)</li>
+    <li>Why does the softmax run over the whole vocabulary, and is any pruning done in practice?</li>
+    <li>Is the decoder-only versus encoder-decoder distinction examinable in session 1?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[33:46 – 36:23]</span> Conditional generation: sentiment and QA as word prediction</li>
+    <li><span class="t">[36:27 – 37:51]</span> How the Transformer's final layer predicts the next token</li>
+    <li><span class="t">[37:53 – ≈40:30]</span> Softmax over the vocabulary, tokens as classes</li>
+    <li><span class="t">[≈40:30 – 42:39]</span> Sampling, decoding, autoregressive generation, Generative AI</li>
+    <li><span class="t">[42:42 – 43:17]</span> Chat Q&amp;A: context, vocabulary vs corpus</li>
+    <li><span class="t">[43:21 – 46:55]</span> Building blocks: corpus, tokens, embeddings, Transformer, LM head</li>
+    <li><span class="t">[46:56 – 47:53]</span> Output is generated one token at a time</li>
+    <li><span class="t">[47:58 – 50:35]</span> Vocabulary building and token IDs</li>
+  </ul>
+</section>
+
+<footer>Part 03 · segments 021–029 · <a href="part_02.html">← part 02</a> · <a href="index.html">index</a> · <a href="part_04.html">part 04 →</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>

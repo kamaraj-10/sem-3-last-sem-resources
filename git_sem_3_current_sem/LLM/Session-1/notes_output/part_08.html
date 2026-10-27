@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 08 – Tokenizer vs Embedding Layer: Student Q&amp;A | Large Language Models for Generative AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">💬</div>
+  <div>
+    <h1>Part 08 · Tokenizer vs Embedding Layer, Contextual Embeddings &amp; Open Q&amp;A</h1>
+    <div class="sub">Large Language Models for Generative AI (S1-26_AIMLCZG536) · Session 1 · Prof. Monali Tushar Mavani</div>
+    <span class="time">[1:53:01 – 2:08:25]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: links in the "Extra reading" cards were fetched and checked on 2026-10-26. Inferred statements carry the <span class="badge verify"></span> badge. This part is almost entirely student Q&amp;A, so the slide images show only the BPE slide and the meeting window.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · What BPE gives vs what the embedding layer gives</a></li>
+  <li><a href="#t2">2 · Same tokenizer; unknown tokens still happen</a></li>
+  <li><a href="#t3">3 · Who decides how a word is split</a></li>
+  <li><a href="#t4">4 · Different corpora, different embeddings</a></li>
+  <li><a href="#t5">5 · Is BPE "adding more tokens"?</a></li>
+  <li><a href="#t6">6 · Embedding layer, OpenAI embeddings, static vs contextual</a></li>
+  <li><a href="#t7">7 · What this course will use</a></li>
+  <li><a href="#t8">8 · "Bank", causal masking and decoder-only embeddings</a></li>
+  <li><a href="#t9">9 · Misspelt words and the static vocabulary</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>What BPE produces and what the embedding layer produces</h2><span class="time">[1:53:02 – 1:54:45]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>BPE only tokenizes. Embeddings come from the embedding layer.</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 700 130" role="img" aria-label="Division of labour between tokenizer and embedding layer">
+        <defs><marker id="a81" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6475"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="5" y="15" width="250" height="100" rx="10" fill="#fff4ea" stroke="#e8833a"/>
+          <text x="130" y="38" font-weight="700">BPE tokenizer</text>
+          <text x="130" y="58">training: vocabulary + merges + IDs</text>
+          <text x="130" y="76">inference: text → tokens → IDs</text>
+          <text x="130" y="100" font-style="italic">IDs are fixed (1 → word₁, 2 → word₂ …)</text>
+          <rect x="310" y="35" width="120" height="50" rx="8" fill="#fff" stroke="#5b6475"/><text x="370" y="58" font-weight="700">token IDs</text><text x="370" y="74">[7, 0, 1]</text>
+          <rect x="480" y="15" width="215" height="100" rx="10" fill="#ecf3fd" stroke="#3a7bd5"/>
+          <text x="587" y="38" font-weight="700">Embedding layer (model)</text>
+          <text x="587" y="58">row lookup in E (learned)</text>
+          <text x="587" y="76">IDs → vectors → + position</text>
+          <text x="587" y="100" font-style="italic">goes into the Transformer</text>
+          <line x1="255" y1="65" x2="308" y2="65" stroke="#5b6475" stroke-width="2" marker-end="url(#a81)"/>
+          <line x1="430" y1="65" x2="478" y2="65" stroke="#5b6475" stroke-width="2" marker-end="url(#a81)"/>
+        </g>
+      </svg>
+    </div>
+    <ul>
+      <li>BPE has two jobs: <b>trainer</b> (builds vocabulary and token IDs) and <b>segmenter</b> (splits new text).</li>
+      <li>Token IDs are <b>fixed</b>: "fox" might be, say, the 50th entry and stays so.</li>
+      <li>Implementations <b>differ</b>: a library may wrap extra code around BPE. With Hugging Face open models you get tokenization first. With a hosted API such as OpenAI's you send text and the pipeline in between is hidden.</li>
+    </ul>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>BPE is the <b>librarian who assigns shelf numbers</b> (token IDs) to every book. The embedding layer is the <b>reader's notes</b> on each book (vectors), written while learning, not by the librarian.</p>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Asking "are token embeddings the output of BPE?" No. BPE outputs tokens and IDs only.</li>
+      <li>Mixing the library's output with the algorithm's output. A wrapper may return more than the algorithm itself.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"BPE trainer and BPE segmenter." "BPE's job is only this, because BPE is a tokenizer."</li>
+      <li>Student Powar Sagar Ganpati confirmed the final step: token embedding <b>plus positional embedding</b> goes to the Transformer. Professor: "Yes, you are correct."</li>
+    </ul>
+    <span class="fix">"BP" / "bdb" → <b>BPE</b>. "open ID" → <b>OpenAI</b>. "DP as a tokenizer" → <b>BPE</b> as a tokenizer.</span>
+  </div>
+  <div class="takeaway">BPE: text → tokens → fixed IDs. Embedding layer: IDs → vectors. They are different components.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>The same tokenizer must be used, and unknown tokens still happen</h2><span class="time">[1:55:13 – 1:55:57]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>The tokenizer used at inference must be the one used to train the embeddings. Otherwise the vector is unknown.</h3>
+    <ul>
+      <li>If a rare token is not in the vocabulary, an <b>unknown / out-of-vocabulary</b> token is still produced. This remains possible with ordinary BPE.</li>
+      <li>Byte-level BPE removes this failure (parts 04 and 05).</li>
+    </ul>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>What happens with a tokenizer mismatch?</h3>
+    <table class="given">
+      <tr><th>Case</th><th>Result</th></tr>
+      <tr><td>Same tokenizer as training</td><td>ID 7 → row 7 of E, the vector learned for "the"</td></tr>
+      <tr><td>Different tokenizer</td><td>ID 7 may mean another word, so the model sees the wrong vector</td></tr>
+      <tr><td>Unseen word, non-byte tokenizer</td><td>&lt;|unk|&gt; ID, no information about the word</td></tr>
+    </table>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul><li>"Otherwise it will generate an unknown token. If some rare token is not part of the vocabulary, an unknown or out-of-vocabulary token will still be generated."</li></ul>
+  </div>
+  <div class="takeaway">Tokenizer and embedding table are a matched pair. Mismatches or OOV words break the lookup.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Who decides whether a word splits into two or three subwords?</h2><span class="time">[1:56:00 – 1:56:37]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>You do not decide. The tokenization <b>algorithm</b> (BPE here) decides from corpus statistics.</h3>
+    <p>Different algorithms split in different ways. The lecture covers BPE only, as the popular one: "we can't cover all the algorithms".</p>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step: what determines a split <span class="badge beyond">recap from part 04</span></span>
+    <div class="step"><span class="n">1</span><div>Merge rules are learned from pair frequencies in the corpus.</div></div>
+    <div class="step"><span class="n">2</span><div>A new word is segmented by applying merges in learned order.</div></div>
+    <div class="step"><span class="n">3</span><div>Example: "hugs" → h u g s → h ug s → hug s = <span class="calc">2 subwords</span>. "bug" → b u g → b ug = <span class="calc">2 subwords</span>.</div></div>
+    <span class="pill">number of pieces = result of the merges</span>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul><li>Asked by Raj Kumar Sharma. "That is the BPE algorithm. You don't decide."</li></ul>
+  </div>
+  <div class="takeaway">The split is an output of the algorithm and its corpus, not a manual choice.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>Do all LLMs share one corpus? When are embeddings created?</h2><span class="time">[1:56:37 – 1:58:18]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <ul>
+      <li>Every LLM has a <b>different</b> corpus. Answers look similar for common questions because "a lot of corpus is the same" and common English tasks are easy for every model.</li>
+      <li>A model not trained on Hindi will not give the same answer to a Hindi query.</li>
+      <li><b>Embeddings are created while training the model, not while training the tokenizer.</b> The tokenizer only gives vocabulary and token IDs.</li>
+      <li>"The corpus is never trained. The model is trained."</li>
+    </ul>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Two students read different libraries but are both asked "what is 2 + 2". They give the same answer. Ask about a book only one of them read, and answers differ.</p>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Separating tokenizer training from model training explains why one vocabulary can be reused by several models, but each model learns its own E.</li></ul>
+    <div class="balance">shared tokenizer ≠ shared embeddings. Embeddings are specific to the trained model.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Asked by Ajay Kumar Prasad. "We will talk about more later."</li>
+      <li>OpenAI embeddings are free to use, and were already trained with their model.</li>
+    </ul>
+    <span class="fix">"MAB" → likely <b>embedding</b> <span class="badge verify"></span>. "Corpus is trained" → <b>model is trained on the corpus</b> (as she corrects).</span>
+  </div>
+  <div class="takeaway">Corpus differs per model. Embeddings are a by-product of model training, not of tokenizer training.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t5">
+  <div class="topic-title"><span class="num">5</span><h2>Is BPE just "adding more tokens"? A layman vs technical answer</h2><span class="time">[1:58:18 – 1:59:49]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Layman: "BPE adds finer-grained pieces." Technical: BPE is <b>subword</b> tokenization that reuses frequent character combinations instead of one token per word.</h3>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <table class="given">
+      <tr><th>Words</th><th class="num">Word-level entries</th><th class="num">Subword entries (shared stem)</th></tr>
+      <tr><td>apology, apologise, apologetic</td><td class="num">3</td><td class="num">1 stem + 3 suffixes = 4 <span class="badge verify"></span></td></tr>
+      <tr><td>+ modernise, modernist, modernity <span class="badge beyond">added</span></td><td class="num">6</td><td class="num">2 stems + 6 suffixes (3 old + ise, ist, ity share ise, ist) ≈ 7</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Word-level for 6 words. <span class="calc">6 entries</span></div></div>
+    <div class="step"><span class="n">2</span><div>Subword stems. <span class="calc">apolog, modern = 2</span></div></div>
+    <div class="step"><span class="n">3</span><div>Distinct suffixes. <span class="calc">y, ise, etic, ist, ity = 5 (ise and ist reused)</span></div></div>
+    <div class="step"><span class="n">4</span><div>Total subword entries. <span class="calc">2 + 5 = 7</span></div></div>
+    <span class="pill">7 vs 6 entries here</span><span class="hint">savings only appear when many words share stems and suffixes, but coverage of unseen words improves immediately</span>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Yes, in common layman's language. But try to understand from the technical point of view so that you will be able to answer in a technical way whenever required."</li>
+      <li>"We don't consider whole words, but frequently occurring combinations of characters called subwords." Apologetic, apologise and apology share the same semantic meaning, so they need not have separate tokens.</li>
+    </ul>
+    <span class="fix">Asked by Shelar Sachin Krishna. "suffer based" → <b>subword based</b>.</span>
+  </div>
+  <div class="takeaway">Say "subword tokenization using frequent character combinations", not just "more tokens".</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t6">
+  <div class="topic-title"><span class="num">6</span><h2>The embedding layer is trained with the LLM. OpenAI embeddings. Static vs contextual</h2><span class="time">[1:59:49 – 2:03:50]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>The input embedding layer is trained <b>inside</b> the LLM. Nobody uses word2vec now.</h3>
+    <table>
+      <tr><th>Approach</th><th>Static / contextual</th><th>Examples</th></tr>
+      <tr><td>Skip-gram, CBOW (word2vec)</td><td>Static</td><td>one vector per word, no context</td></tr>
+      <tr><td>Encoder-based (BERT-style)</td><td>Contextual</td><td>rich, sees left and right context</td></tr>
+      <tr><td>Decoder-based (trained LLM)</td><td>Captures context while training</td><td>OpenAI embeddings could be either, details not published</td></tr>
+    </table>
+    <ul>
+      <li>OpenAI's <b>models are not available</b>, but its <b>embeddings</b> are published for use via the API. They were created while training their model.</li>
+      <li>With such an API you give text and get a vector: the <b>intermediate steps (tokenize, lookup, Transformer) are cut down</b>.</li>
+      <li>Check the model's training corpus (English only? Thai, Hindi, Marathi, German?) before relying on its embeddings.</li>
+    </ul>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Student: "Are there two kinds of embeddings: the input embedding layer, and the output embeddings after the Transformer layers?"</h3>
+    <table class="given">
+      <tr><th>Stage</th><th>What you get</th></tr>
+      <tr><td>Embedding layer (input)</td><td>Token vectors from lookup, same for the same token</td></tr>
+      <tr><td>After Transformer layers</td><td>Context-aware vectors for each position</td></tr>
+    </table>
+    <p class="hint">Professor: "I have to talk about it, that's what the remaining slides consist of." So this is deferred to module 3.</p>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Learning E inside the LLM tunes the vectors to the exact task (next-token prediction) and the exact tokenizer.</li></ul>
+    <ul class="cons"><li>Static word2vec vectors cannot separate senses of one word and are not trained jointly with the model.</li></ul>
+    <div class="balance">the professor's practical rule: when you build an application with a model you must follow the same input pre-processing as in training (text → tokens → token embeddings). Hosted embedding APIs hide those steps.</div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Treating an embedding API's vector as the "embedding layer" of the model. It is typically a <b>pooled output</b> of an embedding model <span class="badge verify"></span>.</li>
+      <li>Mixing static (skip-gram, CBOW) and contextual (BERT-style) embeddings.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Devashish Verma asked about word2vec and skip-gram. "Nobody uses word2vec now."</li>
+      <li>"Skip-gram and those are static algorithms. BERT-based, encoder-based algorithms are contextual embeddings."</li>
+      <li>OpenAI has "not published the way they trained it, but it is a contextual embedding, you can think about it".</li>
+      <li>Harmanpreet Singh's point: when you call an API like GPT-5, the API does the tokenization and embedding behind the scenes, so you never see these steps. Professor agrees.</li>
+    </ul>
+    <span class="fix">"word to work" → <b>word2vec</b>. "what to back" → <b>word2vec</b>. "Germany embeddings" → <b>German</b> embeddings. "Maruti" → <b>Marathi</b>. "decoding" in "train the decoding" → <b>decoder</b>.</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul>
+      <li><a href="https://arxiv.org/abs/1301.3781">word2vec (Mikolov et al., 2013)</a>: static word vectors with CBOW and skip-gram architectures. Fetched and checked.</li>
+      <li><a href="https://arxiv.org/abs/1810.04805">BERT (Devlin et al., 2018)</a>: deep bidirectional, contextual representations. Fetched and checked.</li>
+    </ul>
+  </div>
+  <div class="takeaway">Input embeddings are learned with the LLM. Static methods are legacy. Hosted embedding APIs hide the whole pipeline.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t7">
+  <div class="topic-title"><span class="num">7</span><h2>What this course uses: open-source models, continued pre-training</h2><span class="time">[2:03:43 – 2:04:21]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>You will use <b>open-source models</b> and see the steps. You will not train from scratch.</h3>
+    <ul>
+      <li>OpenAI models are not used in this course.</li>
+      <li>"We will not do training from scratch, which we can't do."</li>
+      <li>One assignment is on <b>continued pre-training</b>: take open weights (e.g. Llama) and continue training. Full pre-training is out of reach.</li>
+    </ul>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Open weights let you inspect tokenizer, embeddings and layers, which a hosted API hides.</li></ul>
+    <ul class="cons"><li>Continued pre-training starts from a trained model, so it cannot change the tokenizer or vocabulary without extra work <span class="badge verify"></span>.</li></ul>
+    <div class="balance">realistic compute budget (a few remote GPUs) vs seeing everything. Open weights meet both.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul><li>"Where you'll be doing everything step by step." This connects to the webinars and the remote GPU lab from part 01.</li></ul>
+    <span class="fix">"Lama" → <b>Llama</b>. "continuous pre-training" → <b>continued (continual) pre-training</b>.</span>
+  </div>
+  <div class="takeaway">Course path: open weights, visible pipeline, continued pre-training instead of training from scratch.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t8">
+  <div class="topic-title"><span class="num">8</span><h2>"Bank" again: contextual embeddings and causal masking</h2><span class="time">[2:04:25 – 2:06:34]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Encoder-only models see the <b>whole sentence</b> (left and right). Decoder-only models see only the <b>left</b> (causal mask). So encoders give richer contextual embeddings.</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 560 190" role="img" aria-label="Causal mask versus full attention for 4 tokens">
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <text x="130" y="18" font-weight="700">Decoder-only (causal)</text>
+          <g stroke="#5b6475">
+            <rect x="50" y="30" width="30" height="30" fill="#ecf8f0"/><rect x="80" y="30" width="30" height="30" fill="#eee"/><rect x="110" y="30" width="30" height="30" fill="#eee"/><rect x="140" y="30" width="30" height="30" fill="#eee"/>
+            <rect x="50" y="60" width="30" height="30" fill="#ecf8f0"/><rect x="80" y="60" width="30" height="30" fill="#ecf8f0"/><rect x="110" y="60" width="30" height="30" fill="#eee"/><rect x="140" y="60" width="30" height="30" fill="#eee"/>
+            <rect x="50" y="90" width="30" height="30" fill="#ecf8f0"/><rect x="80" y="90" width="30" height="30" fill="#ecf8f0"/><rect x="110" y="90" width="30" height="30" fill="#ecf8f0"/><rect x="140" y="90" width="30" height="30" fill="#eee"/>
+            <rect x="50" y="120" width="30" height="30" fill="#ecf8f0"/><rect x="80" y="120" width="30" height="30" fill="#ecf8f0"/><rect x="110" y="120" width="30" height="30" fill="#ecf8f0"/><rect x="140" y="120" width="30" height="30" fill="#ecf8f0"/>
+          </g>
+          <text x="130" y="175" font-style="italic">green = can attend, grey = hidden (future)</text>
+          <text x="420" y="18" font-weight="700">Encoder-only (full)</text>
+          <g stroke="#5b6475" fill="#ecf8f0">
+            <rect x="340" y="30" width="30" height="30"/><rect x="370" y="30" width="30" height="30"/><rect x="400" y="30" width="30" height="30"/><rect x="430" y="30" width="30" height="30"/>
+            <rect x="340" y="60" width="30" height="30"/><rect x="370" y="60" width="30" height="30"/><rect x="400" y="60" width="30" height="30"/><rect x="430" y="60" width="30" height="30"/>
+            <rect x="340" y="90" width="30" height="30"/><rect x="370" y="90" width="30" height="30"/><rect x="400" y="90" width="30" height="30"/><rect x="430" y="90" width="30" height="30"/>
+            <rect x="340" y="120" width="30" height="30"/><rect x="370" y="120" width="30" height="30"/><rect x="400" y="120" width="30" height="30"/><rect x="430" y="120" width="30" height="30"/>
+          </g>
+          <text x="400" y="175" font-style="italic">every token sees every token</text>
+        </g>
+      </svg>
+      <div class="cap">Illustration of the idea the professor describes verbally (rows = query token, columns = visible token).</div>
+    </div>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation <span class="badge beyond">illustrative, 4-token sentence</span></span>
+    <div class="step"><span class="n">1</span><div>Decoder token <i>t</i> can see tokens 1…<i>t</i>. <span class="calc">1 + 2 + 3 + 4 = 10 visible cells</span></div></div>
+    <div class="step"><span class="n">2</span><div>Encoder token sees all <i>n</i> tokens. <span class="calc">4 × 4 = 16 cells</span></div></div>
+    <div class="step"><span class="n">3</span><div>Ratio. <span class="calc">10 / 16 = 0.625 = 62.5 %</span></div></div>
+    <div class="step"><span class="n">4</span><div>For "bank" at position 2 in "the bank was closed", decoder context = {the, bank}. Encoder context = all 4 words.</div></div>
+    <span class="pill">62.5 % of context visible</span><span class="hint">the first token in a decoder sees only itself</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>For generation the future must stay hidden, since the model is predicting it.</li></ul>
+    <ul class="cons"><li>A decoder-only embedding for "bank" cannot use words that come <b>after</b> it, which are often the clue ("bank was flooded" vs "bank approved the loan").</li></ul>
+    <div class="balance">causal mask enables next-token generation, bidirectional attention enables richer understanding.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Student Ghanshyam Desai asked whether "bank" always keeps one token embedding and only the contextual embedding differs. She said he was "mixing so many concepts together".</li>
+      <li>"Theoretically you get contextual embeddings when you use encoder-based models. Decoder models can capture the context while training itself, but there are some limitations."</li>
+      <li>"I have also not gone through that detail of every model." Details of how each vendor builds embeddings are often not published. For practical work, assume the libraries give good embeddings.</li>
+    </ul>
+    <span class="fix">"word bank" → "the word <b>bank</b>" (river bank vs financial bank). "Steve", "Yes, Steve" is the student acknowledging. "Lama, Quen" → <b>Llama, Qwen</b>.</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://arxiv.org/abs/1810.04805">BERT</a>: designed for deep bidirectional representations conditioning on left and right context in all layers. Fetched and checked.</li></ul>
+  </div>
+  <div class="takeaway">Encoder-only models see both sides. Decoder-only models see only the past, so their contextual embeddings are weaker but usable.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t9">
+  <div class="topic-title"><span class="num">9</span><h2>Misspelt words and the static vocabulary</h2><span class="time">[2:06:34 – 2:08:25]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>The vocabulary is <b>static</b>, created in advance. Nothing in it is "wrong". It is just a set of subword units.</h3>
+    <ul>
+      <li>If a misspelt word like "laern" got split into pieces, the pieces are not "wrong words". They are subwords.</li>
+      <li>If "tasty" (or a variant) became a vocabulary entry because it was frequent in the corpus, future inputs containing it are understood as that entry.</li>
+      <li>No correction happens inside the tokenizer. The model interprets the pieces using what it learned.</li>
+    </ul>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Ghanshyam: "If the vocabulary contains wrong words, how does it understand the correct one?"</h3>
+    <table class="given">
+      <tr><th>Input</th><th>Tokenization</th></tr>
+      <tr><td>learn</td><td>learn (1 token)</td></tr>
+      <tr><td>laern</td><td>la | ern (2 tokens, from part 04 slide)</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Token count for the correct word. <span class="calc">1</span></div></div>
+    <div class="step"><span class="n">2</span><div>Token count for the typo. <span class="calc">2</span></div></div>
+    <div class="step"><span class="n">3</span><div>Extra cost of the typo. <span class="calc">2 − 1 = 1 extra token (+100 %)</span></div></div>
+    <span class="pill">typo = more tokens, not an error</span><span class="hint">the model's training lets it still guess the meaning</span>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Nothing vocabulary is vocabulary. It's a static vocabulary created."</li>
+      <li>"I will not say wrong word. A subword structure is being followed. Simple."</li>
+      <li>The answer continues past this part's end (2:08:25), into the final part.</li>
+    </ul>
+    <span class="fix">"Miss, yeah" is the student's filler. "supportwilpbits" is garbled audio <span class="badge verify"></span>.</span>
+  </div>
+  <div class="takeaway">The vocabulary is fixed in advance. Typos become extra subword tokens, not vocabulary errors.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. Does BPE output embeddings?</summary>
+    <div class="ans">No. BPE outputs tokens and fixed token IDs. The embedding layer in the model turns IDs into vectors.</div></details>
+  <details><summary>2. When are embeddings created, and when is the tokenizer trained?</summary>
+    <div class="ans">The tokenizer is trained first on the corpus (vocabulary + IDs). Embeddings are learned later while training the model.</div></details>
+  <details><summary>3. Why are decoder-only embeddings less contextual than encoder-only ones?</summary>
+    <div class="ans">The causal mask hides future tokens during training and use, while an encoder sees all tokens left and right.</div></details>
+  <details><summary>4. For a 5-token sentence, how many token pairs are visible with a causal mask vs full attention?</summary>
+    <div class="ans">Causal: 1 + 2 + 3 + 4 + 5 = 15. Full: 5 × 5 = 25. Ratio 15/25 = 60 %.</div></details>
+  <details><summary>5. What will the continued pre-training assignment start from?</summary>
+    <div class="ans">An open-weights model (e.g. Llama) whose training you continue. Training from scratch is not possible with course resources.</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>Which parts of the Q&amp;A (tokenizer vs embeddings, contextual vs static) will be formally reviewed in module 3?</li>
+    <li>What exactly do OpenAI-style embedding APIs return: input embedding layer or a pooled output of an embedding model?</li>
+    <li>Can the tokenizer be extended during continued pre-training, and what happens to E when new tokens are added?</li>
+    <li>When will the PPT for this lecture be uploaded? (Asked in chat by B. Haripriya.)</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[1:53:02 – 1:54:45]</span> BPE output vs embedding-layer output</li>
+    <li><span class="t">[1:55:13 – 1:55:57]</span> Same tokenizer needed; unknown tokens still possible</li>
+    <li><span class="t">[1:56:00 – 1:56:37]</span> Who decides subword splits</li>
+    <li><span class="t">[1:56:37 – 1:58:18]</span> Different corpora; embeddings come from model training</li>
+    <li><span class="t">[1:58:18 – 1:59:49]</span> Layman vs technical description of BPE</li>
+    <li><span class="t">[1:59:49 – 2:03:50]</span> Embedding layer trained with LLM; OpenAI embeddings; static vs contextual</li>
+    <li><span class="t">[2:03:43 – 2:04:21]</span> Course will use open models and continued pre-training</li>
+    <li><span class="t">[2:04:25 – 2:06:34]</span> Contextual embeddings, causal mask vs encoder</li>
+    <li><span class="t">[2:06:34 – 2:08:25]</span> Misspelt words and the static vocabulary</li>
+  </ul>
+</section>
+
+<footer>Part 08 · segments 070–077 · <a href="part_07.html">← part 07</a> · <a href="index.html">index</a> · <a href="part_09.html">part 09 →</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>

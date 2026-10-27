@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 09 – Unknown Tokens in Practice, Reading List &amp; Wrap-up | Large Language Models for Generative AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">📚</div>
+  <div>
+    <h1>Part 09 · Unknown Tokens in the Real World, Reading List &amp; Wrap-up</h1>
+    <div class="sub">Large Language Models for Generative AI (S1-26_AIMLCZG536) · Session 1 · Prof. Monali Tushar Mavani</div>
+    <span class="time">[2:08:25 – 2:14:14]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: links in the "Extra reading" cards were fetched and checked on 2026-10-26. Inferred statements carry the <span class="badge verify"></span> badge. Slides for this part show only the meeting window.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · Exam material</a></li>
+  <li><a href="#t2">2 · Unknown tokens in real applications</a></li>
+  <li><a href="#t3">3 · Textbooks &amp; how to keep up</a></li>
+  <li><a href="#t4">4 · Class logistics: pointer, breaks, closing</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>What counts for the exam: the slides on Takshila</h2><span class="time">[2:08:28 – 2:08:41]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>"Whatever is on Takshila, that only will get in your exam."</h3>
+    <p>The PPT for this lecture is already uploaded. For the open-book end-sem exam, the Takshila slides are the reference material.</p>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>This answers a chat request ("when will we get the PPT?") from the end of part 08.</li>
+      <li>The exam is open book, so keep the slides at hand and understand them.</li>
+    </ul>
+    <span class="fix">"Takshina" → <b>Takshila</b>. The part-01 note says the mid-sem is closed book and the end-sem is open book, so "open book exam" here refers to the end-semester.</span>
+  </div>
+  <div class="takeaway">Study from the Takshila slides. Use the textbooks for depth.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>Unknown words in a real application: what happens, and how big vocabularies help</h2><span class="time">[2:08:41 – 2:10:03]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Student: "In the real world a rare word may not be in the vocabulary because of the min-frequency hyperparameter. How do we include it?" Answer: it becomes the unknown token.</h3>
+    <ul>
+      <li>The unknown token ([UNK]) is represented differently in each model. "Maybe OOV is one token, unknown is one token."</li>
+      <li>If unknown tokens appear often, <b>"you won't get the correct output"</b>. "That will be a problem."</li>
+      <li>Frontier models avoid this with a <b>very large vocabulary</b>. That is "the reason they are massive models" (partly, the embedding table is large too). They also use byte-level fallback (part 05).</li>
+      <li><b>Exercise:</b> search the 2026 models and find their published vocabulary sizes.</li>
+    </ul>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A <b>translator with a small dictionary</b> writes "[unknown word]" whenever a word is missing. If that happens in every sentence, the translation is nonsense. A bigger dictionary, or the ability to spell words out letter by letter, fixes it.</p>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario <span class="badge beyond">illustrative numbers</span></span>
+    <h3>How often does [UNK] hurt? A 40-token sentence</h3>
+    <table class="given">
+      <tr><th>Given</th><th class="num">Value</th></tr>
+      <tr><td>Tokens per sentence</td><td class="num">40</td></tr>
+      <tr><td>Word-level vocabulary, [UNK] rate per token</td><td class="num">3 %</td></tr>
+      <tr><td>Byte-level BPE, [UNK] rate per token</td><td class="num">0 %</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Expected [UNK] tokens per sentence, word-level. <span class="calc">40 × 0.03 = 1.2</span></div></div>
+    <div class="step"><span class="n">2</span><div>Probability a sentence has no [UNK] (independent tokens). <span class="calc">0.97<sup>40</sup> = e<sup>40 ln 0.97</sup> = e<sup>−1.218</sup> ≈ 0.296</span></div></div>
+    <div class="step"><span class="n">3</span><div>So the share of sentences with at least one [UNK]. <span class="calc">1 − 0.296 = 0.704 ≈ 70 %</span></div></div>
+    <div class="step"><span class="n">4</span><div>Byte-level BPE. <span class="calc">0 % per token → 0 % of sentences</span></div></div>
+    <span class="pill">≈ 70 % of sentences hit [UNK]</span><span class="hint">a small per-token rate becomes a large per-sentence rate</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>A large vocabulary captures more words as single tokens, so fewer [UNK] and fewer tokens per sentence.</li>
+      <li>"Nowadays we don't see that gibberish, otherwise they would start hallucinating."</li>
+    </ul>
+    <ul class="cons"><li>A bigger vocabulary enlarges the embedding table and the output softmax layer (|V| × d each; part 06).</li></ul>
+    <div class="balance">coverage and shorter sequences vs larger embedding and output layers.</div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Assuming a rare word is silently handled. With a non-byte tokenizer it becomes [UNK] and information is lost.</li>
+      <li>Thinking min_frequency changes the base alphabet. It only controls which merges are made.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"That's an exercise for you: search the 2026 models and their vocabulary size, if published."</li>
+      <li>"They are very large because their vocabulary size is also very large."</li>
+    </ul>
+    <span class="fix">"work app" / "word app" → <b>vocab</b>. "real world" is the student's phrase for real-world text. "vocability" → <b>vocabulary</b>. "decrypt" → <b>decode / handle</b> <span class="badge verify"></span>.</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://huggingface.co/docs/transformers/tokenizer_summary">Hugging Face: Tokenization algorithms</a>: GPT-2 vocabulary (50,257) and why byte-level BPE avoids the unknown token. Fetched and checked.</li></ul>
+  </div>
+  <div class="takeaway">Unknown tokens hurt output quality. Large vocabularies and byte-level BPE keep them rare. Look up current model vocabulary sizes as homework.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Which books to follow, and how to keep up with a fast-moving field</h2><span class="time">[2:10:06 – 2:13:05]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <table>
+      <tr><th>Resource</th><th>Author</th><th>Professor's remark</th></tr>
+      <tr><td><b>Hands-On Large Language Models</b></td><td>Jay Alammar (with Maarten Grootendorst)</td><td>First textbook in the new handout <span class="badge verify"></span></td></tr>
+      <tr><td><b>Speech and Language Processing</b> (3rd ed., online)</td><td>Dan Jurafsky and James H. Martin</td><td>"Classical book." A Stanford professor. Online only, new versions each year, sometimes two a year (Jan 2026 and Aug 2026 drafts, maybe 2027 next)</td></tr>
+      <tr><td><b>Build a Large Language Model (From Scratch)</b></td><td>Sebastian Raschka</td><td>"If you want to understand from scratch." She does not teach at that level because training a model is not possible here</td></tr>
+      <tr><td>Blogs, Substack, research papers</td><td>Raschka's magazine, Alammar's newsletter, Jurafsky and Martin's website</td><td>Latest architecture summaries. Otherwise you would have to read the papers</td></tr>
+    </table>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>This field moves like <b>smartphone software</b>: the printed manual is outdated when it arrives. Read the book for foundations, and follow the changelog (blogs, papers, newsletters) for the present.</p>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Online books and blogs update quickly. "Things are changing so fast."</li>
+      <li>Authors keep releasing notebooks and new versions.</li>
+    </ul>
+    <ul class="cons"><li>"Hard copy is not a good idea." Printed editions are static, and one student confirmed a hard copy of SLP is not available because it is only online.</li></ul>
+    <div class="balance">depth of a fixed textbook vs freshness of online material. Use both.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"I have added the question in the new handout" and the first two books are the ones to follow. She later pointed to the handout's reference section.</li>
+      <li>She follows Raschka's blog and magazine because he summarises current architectures. "Then Substack is a good place."</li>
+      <li>Hopefully next time more content can be completed. Anything left over will not be covered in the mid-semester: "no hard and fast rule".</li>
+    </ul>
+    <span class="fix">"Alamar" → <b>Alammar</b>. "Juraski-Martin" → <b>Jurafsky and Martin</b>. "Rajka" → <b>Raschka</b>. "Building Large Language Models" → <b>Build a Large Language Model (From Scratch)</b>. "Jira Sk" → <b>Jurafsky</b>. "Jan 2026" refers to a draft version of the Jurafsky and Martin book.</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul>
+      <li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky and Martin, Speech and Language Processing, 3rd ed. draft</a>: free online. Its latest release at the time of checking is dated August 19, 2026. Fetched and checked.</li>
+      <li><a href="https://jalammar.github.io/">Jay Alammar's blog</a>: points to the book Hands-On Large Language Models and his Substack. Fetched and checked.</li>
+      <li><a href="https://sebastianraschka.com/">Sebastian Raschka</a>: author of Build a Large Language Model (From Scratch) and the Ahead of AI magazine. Fetched and checked.</li>
+    </ul>
+  </div>
+  <div class="takeaway">Foundations from the three textbooks, freshness from authors' blogs, newsletters and papers. Skip hard copies.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>Class logistics: use a pointer, add breaks, closing</h2><span class="time">[2:13:06 – 2:14:14]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <ul>
+      <li><b>Pointer feedback:</b> pen-scribbling on the slides lags on the shared screen and is hard to follow. The professor will use a (larger) <b>pointer</b> instead.</li>
+      <li><b>Breaks:</b> a student asked for a 2–3 minute break after every hour. "You remind me for breaks. I'll be in my zone."</li>
+      <li>The recording ended at about 2:14.</li>
+    </ul>
+  </div>
+  <div class="card steps">
+    <span class="label">Session timeline <span class="badge beyond">computed from timestamps</span></span>
+    <div class="step"><span class="n">1</span><div>Teaching content started at about 22:03 (after logistics). <span class="calc">0:22:03</span></div></div>
+    <div class="step"><span class="n">2</span><div>Mics opened for Q&amp;A at 1:42:37. Content teaching therefore ran from 22:03 to 1:41:35. <span class="calc">1:41:35 − 0:22:03 = 1:19:32 ≈ 80 min</span></div></div>
+    <div class="step"><span class="n">3</span><div>Q&amp;A and wrap-up. <span class="calc">2:14:14 − 1:42:37 = 0:31:37 ≈ 32 min</span></div></div>
+    <div class="step"><span class="n">4</span><div>Total recording. <span class="calc">2:14:14 ≈ 134 min</span></div></div>
+    <span class="pill">80 min teaching</span><span class="pill blue">32 min Q&amp;A</span><span class="hint">no break was taken in a 2 h 14 min session, hence the request</span>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"I have to change [to a] pointer. Rather than scribbling on the slides." Raised by Powar Sagar Ganpati.</li>
+      <li>She asks students to <b>remind her</b> about breaks (Raghavendra V).</li>
+    </ul>
+    <span class="fix">"Lipton" / "LED pointer" → <b>laser/LED pointer</b>, "pointer" in the chat sense <span class="badge verify"></span>.</span>
+  </div>
+  <div class="takeaway">Pointer instead of pen, breaks on request. The session ended at 2:14:14.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. What is produced when a word is not in a non-byte tokenizer's vocabulary, and what is the consequence?</summary>
+    <div class="ans">An unknown token ([UNK] / OOV). The information about the word is lost, so output quality can drop ("you won't get correct output").</div></details>
+  <details><summary>2. Why do frontier models have such big vocabularies?</summary>
+    <div class="ans">Fewer unknown tokens, shorter sequences and better coverage of words and languages. The cost is a bigger embedding and output matrix.</div></details>
+  <details><summary>3. A tokenizer gives [UNK] for 2 % of tokens. What fraction of 50-token sentences has no [UNK]?</summary>
+    <div class="ans">0.98<sup>50</sup> = e<sup>50 × (−0.0202)</sup> = e<sup>−1.01</sup> ≈ <b>0.364</b>. So about 64 % of sentences contain at least one [UNK].</div></details>
+  <details><summary>4. Name the three textbooks recommended and why not hard copies.</summary>
+    <div class="ans">Hands-On Large Language Models (Alammar), Speech and Language Processing (Jurafsky and Martin, online), Build a Large Language Model (From Scratch) (Raschka). The field changes fast and online versions update often.</div></details>
+  <details><summary>5. What material is in scope for the exam?</summary>
+    <div class="ans">What is on Takshila (the lecture slides and handout).</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>Is the vocabulary-size exercise (2026 model sizes) going to be discussed in the next session or in the webinar?</li>
+    <li>Which edition and chapters of the textbooks map to each module of the handout?</li>
+    <li>Does "open book" allow printed or digital copies of the textbooks, or only the Takshila slides?</li>
+    <li>Will webinar 1 cover tokenizer training with Hugging Face tokenizers and tiktoken?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[2:08:28 – 2:08:41]</span> Exam material: Takshila slides</li>
+    <li><span class="t">[2:08:41 – 2:10:03]</span> Unknown tokens in the real world; large vocabularies</li>
+    <li><span class="t">[2:10:06 – 2:13:05]</span> Textbooks, blogs, Substack, no hard copies</li>
+    <li><span class="t">[2:13:06 – 2:14:14]</span> Pointer feedback, breaks, close</li>
+  </ul>
+</section>
+
+<footer>Part 09 · segments 078–084 · <a href="part_08.html">← part 08</a> · <a href="index.html">index</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>

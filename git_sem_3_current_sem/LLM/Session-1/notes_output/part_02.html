@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 02 – Language AI, Probabilistic Language Models &amp; What Makes an LLM "Large" | Large Language Models for Generative AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">🔤</div>
+  <div>
+    <h1>Part 02 · Language AI, Probabilistic Language Models &amp; "Large"</h1>
+    <div class="sub">Large Language Models for Generative AI (S1-26_AIMLCZG536) · Session 1 · Prof. Monali Tushar Mavani</div>
+    <span class="time">[18:15 – 33:43]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: links in the "Extra reading" cards were fetched and checked on 2026-10-26. Inferred statements carry the <span class="badge verify"></span> badge.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · Syllabus Q&amp;A, no-quiz rationale</a></li>
+  <li><a href="#t2">2 · Language AI: text in, three kinds of output</a></li>
+  <li><a href="#t3">3 · Classical vs today; choose the right tool</a></li>
+  <li><a href="#t4">4 · Probabilistic language model &amp; chain rule</a></li>
+  <li><a href="#t5">5 · How language models evolved</a></li>
+  <li><a href="#t6">6 · Why Transformers won</a></li>
+  <li><a href="#t7">7 · What makes an LLM "large"</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>Syllabus questions: RAG/Agents overlap, Colab, tokens, no quiz</h2><span class="time">[18:18 – 22:03]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Only the RAG and Agents modules were changed. A poll may decide whether to revert.</h3>
+    <ul>
+      <li>About <b>787 students</b> are registered. Students who have not taken Conversational AI can ask to go back to the earlier content (including chunking strategies).</li>
+      <li>RAG and agentic content is <b>not removed</b>, only the perspective changed. The change was made to reduce overlap.</li>
+      <li>These are post-mid-sem topics, so a later batch can be adjusted from "NLP 3" onwards <span class="badge verify"></span>.</li>
+    </ul>
+  </div>
+  <div class="card why">
+    <span class="label">Justification: why no quiz</span>
+    <ul class="pros">
+      <li>BITS exam directives do <b>not</b> make quizzes compulsory.</li>
+      <li>Two assignments give a "mini-project experience". She does not want to cut that to only 20 marks.</li>
+      <li>All hands-on needed for the assignments is covered in webinars or classes.</li>
+    </ul>
+    <div class="balance">fewer small tests against a deeper project. Hands-on is taught, then graded in the assignment.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Please try to avoid using Google Colab." Once you use the remote lab you will see why.</li>
+      <li>Free tokens or API credits cannot be given. No course offers that.</li>
+      <li>If many students have not taken Conversational AI, she will change the syllabus back for RAG and Agentic AI. "I need a number."</li>
+      <li>An extra class can be taken if needed.</li>
+    </ul>
+    <span class="fix">"Nsp 3" is unclear in the audio <span class="badge verify"></span>. "BIDS exam directives" → likely <b>BITS</b> exam directives. "rationally" → <b>rationale</b>.</span>
+  </div>
+  <div class="takeaway">Content is about the same, with RAG/Agents taught from the LLM angle. No quiz by design.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>Language AI: text as input, three kinds of output</h2><span class="time">[22:03 – 23:45]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Text goes in. Language AI gives text out (generative), vectors out (embeddings), or labels out (classification).</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 560 230" role="img" aria-label="Language AI with three outputs">
+        <defs><marker id="a2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6475"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="180" y="8" width="200" height="40" rx="8" fill="#ecf8f0" stroke="#2f9e5b"/><text x="280" y="33" font-weight="700">Text input (unstructured)</text>
+          <rect x="180" y="80" width="200" height="40" rx="8" fill="#ecf3fd" stroke="#3a7bd5"/><text x="280" y="105" font-weight="700">Language AI</text>
+          <line x1="280" y1="48" x2="280" y2="78" stroke="#5b6475" stroke-width="2" marker-end="url(#a2)"/>
+          <line x1="240" y1="120" x2="100" y2="160" stroke="#5b6475" stroke-width="2" marker-end="url(#a2)"/>
+          <line x1="280" y1="120" x2="280" y2="160" stroke="#5b6475" stroke-width="2" marker-end="url(#a2)"/>
+          <line x1="320" y1="120" x2="460" y2="160" stroke="#5b6475" stroke-width="2" marker-end="url(#a2)"/>
+          <rect x="20" y="162" width="160" height="56" rx="8" fill="#fff4ea" stroke="#e8833a" stroke-width="3"/><text x="100" y="185" font-weight="700">Text output</text><text x="100" y="203">generative ✓ (focus)</text>
+          <rect x="200" y="162" width="160" height="56" rx="8" fill="#f5effd" stroke="#8a4fd1" stroke-width="2"/><text x="280" y="185" font-weight="700">Embeddings</text><text x="280" y="203">numeric vector ✓</text>
+          <rect x="380" y="162" width="160" height="56" rx="8" fill="#fdeeee" stroke="#d64545"/><text x="460" y="185" font-weight="700">Classification</text><text x="460" y="203">identify targets</text>
+        </g>
+      </svg>
+      <div class="cap">Figure 1-2 on the slide. Ticks on the board mark generative modelling and embeddings.</div>
+    </div>
+    <div class="goal">This course takes <b>text</b> only. Audio, video and multimodal use the same fundamentals.</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>One reader, three jobs. <b>Writer</b>: continues the story (generation). <b>Librarian</b>: files the book at a spot on a map of meanings (embedding). <b>Sorter</b>: stamps it "spam" or "not spam" (classification).</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Embedding is like an ADC: it turns messy analogue input (text) into a fixed-length vector of numbers that later code can compare with a distance.</p></div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Thinking "LLM" means only chat. Embeddings and classifiers are also Language AI.</li>
+      <li>Mixing structured and unstructured data. Classic ML classifies <b>structured</b> rows. Here the input is <b>unstructured</b> text.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>The course focuses mostly on <b>generative modelling</b> (text in, text out).</li>
+      <li>She asked students to write in chat what an embedding is. It was already introduced in the DNN course.</li>
+    </ul>
+  </div>
+  <div class="takeaway">Language AI = text in, then text, vector or label out. This course is mainly text-to-text.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Classical Language AI vs today: do not use an LLM for everything</h2><span class="time">[23:45 – 26:09]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <table>
+      <tr><th>Output type</th><th>Classical (≈2019–2021)</th><th>Still useful today?</th></tr>
+      <tr><td>Text output</td><td>GPT family</td><td>Yes. LLMs do it all by changing the prompt.</td></tr>
+      <tr><td>Embeddings</td><td><b>BERT</b> and variants (first model to give embeddings)</td><td>Yes. Many embedding models now, e.g. OpenAI embeddings.</td></tr>
+      <tr><td>Classification</td><td><b>BERT + classification head</b></td><td>Yes. Very lightweight. Encoder-only models.</td></tr>
+    </table>
+    <div class="remember">Today <b>all NLP tasks</b> can be done with an LLM just by changing the prompt. That does not mean you must.</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy (professor's own)</span>
+    <p>Early ML hype: people wanted ML "even to calculate 2 + 2". Later they saw that simple heuristics are equally good. GenAI now has the same fever: <b>"every GenAI app must use an LLM"</b>. A sledgehammer for a thumbtack.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>You would not run Linux on a Cortex-M0 to blink an LED. Pick the smallest tool that meets the spec.</p></div>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>A designer chooses by <b>budget</b>, <b>infrastructure</b> and <b>objective</b>. "Ultimately everything is tied to cost."</li>
+      <li>BERT + classification head is lightweight and cheap to serve.</li>
+    </ul>
+    <ul class="cons"><li>A big LLM costs more per request, even when it can do the task.</li></ul>
+    <div class="balance">flexibility of one LLM for every task against the cost and latency of running it.</div>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://arxiv.org/abs/1810.04805">BERT (Devlin et al., 2018)</a>: bidirectional encoder, fine-tuned with one extra output layer for many tasks. Fetched and checked.</li></ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"You are a designer. You are going to learn how to decide which component is required."</li>
+      <li>She assumes the class knows encoder-only models, otherwise they will come back to it. Speaking pace: students said it was fine.</li>
+    </ul>
+    <span class="fix">"bot" → <b>BERT</b>. "JANU application" → <b>GenAI</b> application. "Llms" → LLMs. Board notes: "classical language AI", "GPTs", "BERT", "BERT + classification head", circled "2 + 2 = ? ML".</span>
+  </div>
+  <div class="takeaway">Choose the cheapest component that does the job. BERT-class encoders still beat an LLM on cost for embeddings and classification.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>Probabilistic language model and the chain rule</h2><span class="time">[26:09 – ≈29:30]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>A language model assigns probabilities to sequences of tokens. Good sentences get high probability, scrambled ones get low probability.</h3>
+    <div class="grid-2">
+      <div class="mini"><h4>1 · Probability of a sentence</h4><p><i>P</i>(<i>W</i>) = <i>P</i>(<i>w</i><sub>1</sub>, <i>w</i><sub>2</sub>, …, <i>w</i><sub>n</sub>), where <i>W</i> = sentence.</p></div>
+      <div class="mini"><h4>2 · Probability of the next token</h4><p><i>P</i>(<i>w</i><sub>n</sub> | <i>w</i><sub>1</sub>, …, <i>w</i><sub>n−1</sub>). The conditioning words are the <b>context</b>.</p></div>
+    </div>
+    <div class="goal">Predict the next token well and you can score any sentence.</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Phone keyboard autocomplete. Type "I am teaching" and it suggests "LLMs". Words are written left to right, so each new word is guessed from <b>all the words before it</b>.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Like a state machine whose next-state probabilities depend on the whole history so far, not only on the last state.</p></div>
+  </div>
+  <div class="card formula">
+    <span class="label">Formula / definition: chain rule</span>
+    <div class="formula-box"><i>P</i>(<i>w</i><sub>1</sub>, …, <i>w</i><sub>n</sub>) = <span class="bigop"><span class="lim">n</span><span class="op">Π</span><span class="lim">i=1</span></span> <i>P</i>(<i>w</i><sub>i</sub> | <i>w</i><sub>1</sub>, …, <i>w</i><sub>i−1</sub>)</div>
+    <ul class="where">
+      <li><b>w<sub>i</sub></b> the <i>i</i>-th token of the sequence</li>
+      <li><b>n</b> number of tokens (integer ≥ 1)</li>
+      <li><b>P(·)</b> a probability, between 0 and 1</li>
+      <li><b>w<sub>1</sub>…w<sub>i−1</sub></b> the context seen so far (empty for <i>i</i> = 1)</li>
+    </ul>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario <span class="badge beyond">illustrative numbers</span></span>
+    <h3>Score "I am teaching LLMs" (the professor's board example)</h3>
+    <table class="given">
+      <tr><th>Factor</th><th class="num">Assumed value</th></tr>
+      <tr><td><i>P</i>(I)</td><td class="num">0.05</td></tr>
+      <tr><td><i>P</i>(am | I)</td><td class="num">0.2</td></tr>
+      <tr><td><i>P</i>(teaching | I am)</td><td class="num">0.01</td></tr>
+      <tr><td><i>P</i>(LLMs | I am teaching)</td><td class="num">0.1</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>First two factors. <span class="calc">0.05 × 0.2 = 0.01</span></div></div>
+    <div class="step"><span class="n">2</span><div>Multiply the third. <span class="calc">0.01 × 0.01 = 0.0001 = 10<sup>−4</sup></span></div></div>
+    <div class="step"><span class="n">3</span><div>Multiply the fourth. <span class="calc">10<sup>−4</sup> × 0.1 = 10<sup>−5</sup></span></div></div>
+    <div class="step"><span class="n">4</span><div>Same result in log space (avoids underflow on long text). <span class="calc">ln 0.05 + ln 0.2 + ln 0.01 + ln 0.1 = −2.996 − 1.609 − 4.605 − 2.303 = −11.513 = ln 10<sup>−5</sup></span></div></div>
+    <span class="pill">P(sentence) = 10<sup>−5</sup></span><span class="hint">higher probability = more plausible sentence. Compare only sentences of similar length.</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification: the slide's example</span>
+    <ul class="pros"><li><i>P</i>("all of a sudden I noticed three guys standing on the sidewalk") is <b>high</b>.</li></ul>
+    <ul class="cons"><li><i>P</i>("on guys all I of notice sidewalk three a sudden standing the") is <b>low</b>. Same words, wrong order. Order matters.</li></ul>
+    <div class="balance">the model does not know grammar rules. It learns that some orders of tokens are far more likely than others.</div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Treating the sentence as a <b>bag of words</b>. Same words in another order get a different probability.</li>
+      <li>Multiplying many small probabilities directly. They underflow, so real code sums logs.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>She says "words" first, then "tokens". Tokens will be defined later. For now treat them as words.</li>
+      <li>"Pure chain rule." The two views (sentence probability and next-word probability) are equivalent.</li>
+    </ul>
+    <span class="fix">"West is a sentence" → <b>W is a sentence</b> (board: "W = sent."). "D. previous word" → <b>all of the previous words</b>.</span>
+  </div>
+  <div class="takeaway">∏ P(wᵢ | context) turns next-token prediction into sentence scoring.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t5">
+  <div class="topic-title"><span class="num">5</span><h2>How language models evolved: n-gram → neural → RNN/LSTM → Transformer → hybrid</h2><span class="time">[≈29:30 – 31:31]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <div class="diagram">
+      <svg viewBox="0 0 760 120" role="img" aria-label="Evolution of language models">
+        <defs><marker id="a5" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6475"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="11" text-anchor="middle">
+          <rect x="5" y="30" width="130" height="60" rx="8" fill="#fff" stroke="#5b6475"/><text x="70" y="55" font-weight="700">n-gram</text><text x="70" y="72">count last n−1 words</text>
+          <rect x="155" y="30" width="130" height="60" rx="8" fill="#fff" stroke="#5b6475"/><text x="220" y="55" font-weight="700">Neural LM</text><text x="220" y="72">learned embeddings</text>
+          <rect x="305" y="30" width="130" height="60" rx="8" fill="#fff" stroke="#5b6475"/><text x="370" y="55" font-weight="700">RNN / LSTM</text><text x="370" y="72">sequential memory</text>
+          <rect x="455" y="30" width="140" height="60" rx="8" fill="#ecf8f0" stroke="#2f9e5b" stroke-width="3"/><text x="525" y="55" font-weight="700">Transformer</text><text x="525" y="72">attention: GPT, Llama, Qwen</text>
+          <rect x="615" y="30" width="140" height="60" rx="8" fill="#f5effd" stroke="#8a4fd1"/><text x="685" y="55" font-weight="700">Hybrid</text><text x="685" y="72">attention + Mamba (Jamba)</text>
+          <line x1="135" y1="60" x2="153" y2="60" stroke="#5b6475" stroke-width="2" marker-end="url(#a5)"/>
+          <line x1="285" y1="60" x2="303" y2="60" stroke="#5b6475" stroke-width="2" marker-end="url(#a5)"/>
+          <line x1="435" y1="60" x2="453" y2="60" stroke="#5b6475" stroke-width="2" marker-end="url(#a5)"/>
+          <line x1="595" y1="60" x2="613" y2="60" stroke="#5b6475" stroke-width="2" marker-end="url(#a5)"/>
+        </g>
+      </svg>
+      <div class="cap">Slide: "How LMs evolved". Board marks "LLM" over Transformer and "state space model" over the hybrid box.</div>
+    </div>
+    <ul>
+      <li><b>n-gram</b>: proposed first as the way to get language modelling.</li>
+      <li><b>Neural LM</b> (feed-forward network): introduced <b>learned embeddings</b>.</li>
+      <li><b>RNN / LSTM</b>: sequential memory.</li>
+      <li><b>Transformer</b>: today's LLMs use it.</li>
+      <li><b>Hybrid</b> (attention + Mamba): appearing in the agentic era. Mamba is based on a <b>state space model (SSM)</b> and has no attention. Its mechanism is "quite similar to RNN".</li>
+    </ul>
+  </div>
+  <div class="card why">
+    <span class="label">Justification: why hybrids now</span>
+    <ul class="pros"><li>Agents need <b>memory</b>, and plain Transformers have drawbacks there. Hybrids combine attention with SSM layers.</li></ul>
+    <div class="balance">attention gives strong recall of any token, SSM gives cheaper long sequences. Mixing keeps both.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Any architecture can meet the language-modelling objective. Today the Transformer is used.</li>
+      <li>Mamba may be discussed "if we get time". A pointer only. The hybrid architecture is introduced in the agent section to reduce overlap.</li>
+    </ul>
+    <span class="fix">"Mamba" is correct. "SSM" = state space model. Jamba = hybrid Transformer-Mamba model (slide).</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul>
+      <li><a href="https://jmlr.org/papers/v3/bengio03a.html">Bengio et al. 2003, A Neural Probabilistic Language Model</a>: learned distributed word representations beat n-grams. Fetched and checked.</li>
+      <li><a href="https://arxiv.org/abs/2312.00752">Mamba (Gu and Dao, 2023)</a>: selective state spaces, linear scaling in sequence length.</li>
+      <li><a href="https://arxiv.org/abs/2403.19887">Jamba</a>: interleaves Transformer and Mamba layers, up to 256K context.</li>
+    </ul>
+  </div>
+  <div class="takeaway">Every generation attacks the same task (predict the next token) with a different architecture. Hybrids are the newest.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t6">
+  <div class="topic-title"><span class="num">6</span><h2>Why did the Transformer become so popular?</h2><span class="time">[31:31 – 32:01]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Self-attention lets many tokens be processed <b>in parallel</b>.</h3>
+    <p>Students answered "self-attention", then "parallelization", "speed", "memory usage". The professor said <b>parallelization</b> is the most relevant answer.</p>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>An RNN reads a book <b>one page at a time, in a queue</b>. A Transformer hands every page to a separate reader and lets them all work at once, then they compare notes.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Like moving from a single-threaded loop to one that can be vectorised on a GPU (SIMD): the loop-carried dependency is removed.</p></div>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Parallel processing makes training on huge data feasible on GPUs.</li></ul>
+    <ul class="cons"><li>Attention memory grows with sequence length, hence the later interest in hybrids.</li></ul>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a>: "more parallelizable and requiring significantly less time to train". Fetched and checked.</li></ul>
+  </div>
+  <div class="takeaway">Parallelisable self-attention is why Transformers scale.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t7">
+  <div class="topic-title"><span class="num">7</span><h2>What is a Large Language Model, and what does "large" mean?</h2><span class="time">[32:01 – 33:43]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>A deep neural network (Transformer) trained with self-supervised next-token prediction on massive filtered text.</h3>
+    <table>
+      <tr><th>"Large" means</th><th>Slide example</th></tr>
+      <tr><td><b>Parameters</b>: billions</td><td>Llama 3: 8B – 405B. DeepSeek-V3: 671B total, ~37B active per token</td></tr>
+      <tr><td><b>Training data</b>: trillions of tokens</td><td>~15T tokens for Llama 3, ~36T for Qwen3</td></tr>
+      <tr><td><b>Context window</b> (often implied)</td><td>2K tokens (GPT-3) to 128K+ (Llama 3.1, Qwen3)</td></tr>
+    </table>
+    <div class="remember">Text data is counted in <b>tokens</b>, not documents: tabular ML counts rows, vision counts images.</div>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Slide figure 7.1: next-token distribution after "So long and thanks for ?"</h3>
+    <table class="given">
+      <tr><th>Candidate</th><th class="num">p(w | context)</th></tr>
+      <tr><td>all</td><td class="num">0.44</td></tr>
+      <tr><td>the</td><td class="num">0.33</td></tr>
+      <tr><td>your</td><td class="num">0.15</td></tr>
+      <tr><td>that</td><td class="num">0.08</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Check the shown probabilities add up. <span class="calc">0.44 + 0.33 + 0.15 + 0.08 = 1.00</span></div></div>
+    <div class="step"><span class="n">2</span><div>Pick the most likely next token (greedy). <span class="calc">max = 0.44 → "all"</span></div></div>
+    <div class="step"><span class="n">3</span><div>Fraction of DeepSeek-V3 parameters active per token. <span class="calc">37 / 671 = 0.0551 ≈ 5.5 %</span></div></div>
+    <div class="step"><span class="n">4</span><div>Context growth, GPT-3 to 128K models. <span class="calc">128K / 2K = 64×</span></div></div>
+    <span class="pill">next token = "all"</span><span class="pill blue">5.5 % active</span><span class="pill blue">64× context</span><span class="hint">in step 1 the "..." tail must carry ≈ 0, which is a simplification in the figure <span class="badge verify"></span></span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>If it only used a Transformer it could be called a "transformer-based language model" or an "RNN-based language model". "Large" comes from size: parameters, tokens and context.</li></ul>
+    <div class="balance">more parameters, data and context raise capability and cost together.</div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Saying "trillion documents". Training data is given as trillions of <b>tokens</b>.</li>
+      <li>Thinking "671B" means all weights run for each token. In a mixture-of-experts model only ~37B are active (slide).</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Large" = parameters, training data (tokens) and, "also implied", the context window.</li>
+      <li>The context window is the input the model can process together, and it keeps growing "in 25, 26".</li>
+      <li>Next: classical NLP tasks.</li>
+    </ul>
+    <span class="fix">"25, 26" → years 2025 and 2026. Board: "self-supervised next-token prediction" underlined and a bracket on the three "large" bullets.</span>
+  </div>
+  <div class="takeaway">LLM = Transformer + self-supervised next-token prediction + billions of parameters + trillions of tokens + long context.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. Name the three output types of Language AI and one classical model for each.</summary>
+    <div class="ans">Text output (GPT), embeddings (BERT), classification (BERT + classification head).</div></details>
+  <details><summary>2. Write the chain rule for a sentence, then compute P for factors 0.1, 0.5, 0.2.</summary>
+    <div class="ans"><i>P</i>(<i>w</i><sub>1..n</sub>) = ∏ <i>P</i>(<i>w</i><sub>i</sub> | <i>w</i><sub>&lt;i</sub>). Product: 0.1 × 0.5 × 0.2 = <b>0.01</b>.</div></details>
+  <details><summary>3. Why do two sentences with the same words get different probabilities?</summary>
+    <div class="ans">Word order matters. The model scores each token given the previous ones, so scrambled order has low probability.</div></details>
+  <details><summary>4. Why did the Transformer replace RNNs/LSTMs?</summary>
+    <div class="ans">Self-attention lets many tokens be processed in parallel, so it trains faster and scales.</div></details>
+  <details><summary>5. What three things does "large" refer to, and what unit is training data counted in?</summary>
+    <div class="ans">Parameters (billions), training data (trillions of <b>tokens</b>) and context window (2K → 128K+).</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>What will the poll about Conversational AI overlap decide, and when?</li>
+    <li>Is Mamba / SSM in scope for the mid-semester or only a pointer?</li>
+    <li>Are n-gram smoothing methods needed for the exam, or only the idea of counting?</li>
+    <li>Is perplexity part of the language-model evaluation covered here, or in module 10?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[18:18 – 22:03]</span> Syllabus overlap questions, no-quiz rationale, Colab and tokens</li>
+    <li><span class="t">[22:03 – 23:45]</span> Language AI: text input, three output types</li>
+    <li><span class="t">[23:45 – 26:09]</span> Classical vs today, BERT, choosing the right tool</li>
+    <li><span class="t">[26:09 – ≈29:30]</span> Probabilistic LM, chain rule, example sentences</li>
+    <li><span class="t">[≈29:30 – 31:31]</span> Evolution of LMs, Mamba and hybrids</li>
+    <li><span class="t">[31:31 – 32:01]</span> Why Transformers: parallelization</li>
+    <li><span class="t">[32:01 – 33:43]</span> What "large" means, tokens, context window</li>
+  </ul>
+</section>
+
+<footer>Part 02 · segments 014–020 · <a href="part_01.html">← part 01</a> · <a href="index.html">index</a> · <a href="part_03.html">part 03 →</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>

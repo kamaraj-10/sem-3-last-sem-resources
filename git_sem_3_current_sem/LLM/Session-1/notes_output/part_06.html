@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 06 – Tokenizer Frameworks, Token IDs, Special Tokens &amp; the Embedding Layer | Large Language Models for Generative AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">🧮</div>
+  <div>
+    <h1>Part 06 · Tokenizer Frameworks, Token IDs, Special Tokens &amp; Token Embeddings</h1>
+    <div class="sub">Large Language Models for Generative AI (S1-26_AIMLCZG536) · Session 1 · Prof. Monali Tushar Mavani</div>
+    <span class="time">[1:21:17 – 1:37:37]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: links in the "Extra reading" cards were fetched and checked on 2026-10-26. Inferred statements carry the <span class="badge verify"></span> badge.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · Training a BPE tokenizer in code</a></li>
+  <li><a href="#t2">2 · Which tokenizer framework?</a></li>
+  <li><a href="#t3">3 · Tokens to token IDs at inference</a></li>
+  <li><a href="#t4">4 · Special context tokens</a></li>
+  <li><a href="#t5">5 · What an embedding is</a></li>
+  <li><a href="#t6">6 · Embedding layer and matrix size</a></li>
+  <li><a href="#t7">7 · Embedding lookup, worked example</a></li>
+  <li><a href="#t8">8 · Q&amp;A: IDs, context in embeddings, dimension</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>Training a BPE tokenizer with the Hugging Face library</h2><span class="time">[1:21:20 – 1:22:29]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>The course uses PyTorch and the Hugging Face implementation. BPE is already available, so you just create a tokenizer object and pass a BPE model and a BPE trainer.</h3>
+    <p>Slide code (shown on screen): <code>from tokenizers import Tokenizer</code>, <code>from tokenizers.models import BPE</code>, then a BPE trainer.</p>
+  </div>
+  <div class="card code">
+    <span class="label">Code (minimal tokenizer training)</span>
+    <pre><span class="k">from</span> tokenizers <span class="k">import</span> Tokenizer
+<span class="k">from</span> tokenizers.models <span class="k">import</span> BPE
+<span class="k">from</span> tokenizers.trainers <span class="k">import</span> BpeTrainer
+<span class="k">from</span> tokenizers.pre_tokenizers <span class="k">import</span> Whitespace
+
+tok = Tokenizer(BPE(unk_token=<span class="s">"[UNK]"</span>))
+tok.pre_tokenizer = Whitespace()                           <span class="c"># step 1 of BPE: split into words</span>
+trainer = BpeTrainer(vocab_size=50_000, min_frequency=2,   <span class="c"># the two hyperparameters from part 05</span>
+                     special_tokens=[<span class="s">"[UNK]"</span>])
+tok.train([<span class="s">"corpus.txt"</span>], trainer)                          <span class="c"># tokenizer training, done once</span></pre>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"We will be extensively using the Hugging Face library. Most open-source models are published on this platform."</li>
+      <li>How to use it will be shown in <b>webinar 1</b>.</li>
+    </ul>
+    <span class="fix">"from tokenizer import tokenizer" → <b>from tokenizers import Tokenizer</b>. "Hugging Phase" → <b>Hugging Face</b>. The code block above is a typical pattern, not copied from the slide <span class="badge beyond">beyond lecture</span>.</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://huggingface.co/docs/tokenizers/index">Hugging Face Tokenizers</a>: train new vocabularies and tokenize with the Rust implementation. Fetched and checked.</li></ul>
+  </div>
+  <div class="takeaway">You do not implement BPE yourself. A trainer object takes max vocab size and min frequency.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>Which tokenizer framework should I use?</h2><span class="time">[1:22:30 – 1:24:05]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>It depends on what you are trying to do.</h3>
+    <table>
+      <tr><th>Goal</th><th>Use</th><th>What you get</th></tr>
+      <tr><td>Train a new tokenizer (or extend one)</td><td><b>Hugging Face tokenizers</b></td><td>Custom BPE / Unigram training, normalisation and pre-tokenization rules, you choose the vocabulary size</td></tr>
+      <tr><td>Build an open-source model pipeline</td><td><b>Hugging Face tokenizers</b> via the Transformers library</td><td>Loads any Hub model's own tokenizer, chat templates, special tokens. Llama 3, Qwen3, DeepSeek, gpt-oss, Gemma</td></tr>
+      <tr><td>Work with OpenAI API models</td><td><b>OpenAI tiktoken</b></td><td>Fast, exact token counting and API cost estimation. Encode/decode only, <b>cannot train</b></td></tr>
+      <tr><td>Claude or Gemini</td><td>Vendor API</td><td>No full local library, so count tokens through their API</td></tr>
+    </table>
+    <div class="remember"><b>HF:</b> you tokenize, then the model runs locally. <b>API:</b> the server tokenizes, and you use tiktoken only to count and trim.</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Cooking at home vs ordering food. With open-source models you <b>own the kitchen</b>: you choose your own knife (tokenizer). With a hosted API you only see the bill, so tiktoken is just a <b>calculator for the bill</b>.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>HF is like having the vendor's SDK and source. API models are a closed binary where you can only read the byte count.</p></div>
+  </div>
+  <div class="card steps">
+    <span class="label">Quick cost sketch <span class="badge beyond">beyond lecture, assumed numbers</span></span>
+    <div class="step"><span class="n">1</span><div>A prompt has 1,200 tokens and the reply 300 tokens (tiktoken counts the first). <span class="calc">1,200 + 300 = 1,500 tokens</span></div></div>
+    <div class="step"><span class="n">2</span><div>Assume a price of $2 per 1M tokens. <span class="calc">1,500 / 1,000,000 × $2 = $0.003 per call</span></div></div>
+    <div class="step"><span class="n">3</span><div>10,000 calls a day. <span class="calc">10,000 × $0.003 = $30 per day</span></div></div>
+    <span class="pill">$0.003 / call</span><span class="hint">illustrative price, not from the lecture</span>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Using tiktoken to train or extend a tokenizer. It can only encode and decode.</li>
+      <li>Using a tokenizer from model A to feed model B. Always use the model's own tokenizer.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>OpenAI models are hosted. tiktoken is open source and is for <b>token counting</b> because you pay per token on the API.</li>
+      <li>Claude and Gemini are proprietary: you cannot download them or extend their tokenizers.</li>
+      <li>"This is just a landscape of tokenizer frameworks."</li>
+    </ul>
+    <span class="fix">"TikToken / Big Token" → <b>tiktoken</b>. "Cloud and Gemini" → <b>Claude</b> and Gemini. "Open AI uses the open models" → likely "OpenAI is a hosted service" <span class="badge verify"></span>.</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://github.com/openai/tiktoken">openai/tiktoken</a>: fast BPE tokeniser for OpenAI models. Fetched and checked. The README notes about 4 bytes per token on average.</li></ul>
+  </div>
+  <div class="takeaway">Open-source models: Hugging Face tokenizers. OpenAI API: tiktoken for counting. Claude and Gemini: count via their APIs.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Tokens to token IDs at inference time</h2><span class="time">[1:24:06 – 1:25:29]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>At inference the same tokenizer maps text to IDs using the <b>fixed</b> vocabulary built earlier.</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 700 140" role="img" aria-label="Sample text to token IDs">
+        <defs><marker id="a63" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6475"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="10" y="45" width="150" height="44" rx="8" fill="#fff" stroke="#5b6475"/><text x="85" y="72">"The brown dog …"</text>
+          <rect x="210" y="45" width="170" height="44" rx="8" fill="#fff4ea" stroke="#e8833a"/><text x="295" y="62" font-weight="700">tokenizer</text><text x="295" y="78">existing vocabulary</text>
+          <rect x="430" y="35" width="40" height="30" fill="#ecf3fd" stroke="#3a7bd5"/><text x="450" y="55" font-weight="700">7</text><text x="450" y="80">The</text>
+          <rect x="480" y="35" width="40" height="30" fill="#ecf3fd" stroke="#3a7bd5"/><text x="500" y="55" font-weight="700">0</text><text x="500" y="80">brown</text>
+          <rect x="530" y="35" width="40" height="30" fill="#ecf3fd" stroke="#3a7bd5"/><text x="550" y="55" font-weight="700">1</text><text x="550" y="80">dog</text>
+          <line x1="160" y1="67" x2="208" y2="67" stroke="#5b6475" stroke-width="2" marker-end="url(#a63)"/>
+          <line x1="380" y1="67" x2="428" y2="67" stroke="#5b6475" stroke-width="2" marker-end="url(#a63)"/>
+          <text x="500" y="115" font-style="italic">fixed IDs, same every time</text>
+        </g>
+      </svg>
+      <div class="cap">Slide "Tokens to token IDs": "The brown dog" → [7, 0, 1]. Vocabulary from part 03: the = 7, brown = 0, dog = 1.</div>
+    </div>
+    <ul>
+      <li>Each vocabulary word gets a <b>fixed</b> token ID.</li>
+      <li>IDs are <b>not</b> passed to the Transformer as they are. They are turned into <b>token embeddings</b> first.</li>
+    </ul>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Encode "the brown dog" with the part-03 vocabulary</h3>
+    <table class="given">
+      <tr><th>Token</th><th class="num">ID</th></tr>
+      <tr><td>brown</td><td class="num">0</td></tr>
+      <tr><td>dog</td><td class="num">1</td></tr>
+      <tr><td>the</td><td class="num">7</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Lowercase and split. <span class="calc">["the", "brown", "dog"]</span></div></div>
+    <div class="step"><span class="n">2</span><div>Look up each token. <span class="calc">the → 7, brown → 0, dog → 1</span></div></div>
+    <div class="step"><span class="n">3</span><div>Result in order. <span class="calc">[7, 0, 1]</span></div></div>
+    <span class="pill">[7, 0, 1]</span><span class="hint">IDs are arbitrary labels, so a larger ID is not "more important"</span>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul><li>Treating token IDs as numeric features. They are just indexes. Meaning only appears after the embedding step.</li></ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Remember, each word in my vocabulary will get a token ID and they are fixed."</li>
+      <li>"We are not passing token IDs as is" to the Transformer.</li>
+    </ul>
+  </div>
+  <div class="takeaway">Text → fixed token IDs → (next step) embeddings. IDs alone carry no meaning.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>Adding special context tokens: [UNK] and end-of-text</h2><span class="time">[1:25:31 – 1:26:43]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Besides domain words, the vocabulary gets extra <b>helper tokens</b>: an unknown token and an end-of-text token.</h3>
+    <table>
+      <tr><th>Special token</th><th>Purpose (slide)</th><th>Example ID on slide</th></tr>
+      <tr><td><code>&lt;|unk|&gt;</code></td><td>New and unknown words that were not part of the training data, and so not in the vocabulary</td><td class="num">783</td></tr>
+      <tr><td><code>&lt;|endoftext|&gt;</code></td><td>Separates two unrelated text sources. Prepended to each subsequent source, marking its start or end</td><td class="num">784</td></tr>
+    </table>
+    <div class="remember"><b>Every model uses its own set.</b> Llama style differs from Mistral and others, so always use the model with <b>its own vocabulary and tokenizer</b>.</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p><b>Punctuation of the model's world.</b> A book has chapter breaks. When many unrelated documents are glued into one training stream, <code>&lt;|endoftext|&gt;</code> is the chapter break that tells the model "forget the last story, a new one starts".</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Like a frame delimiter or sentinel byte in a serial protocol: it frames the payload so the receiver does not mix messages.</p></div>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>"The brown dog playfully chased the swift fox" with an unknown word</h3>
+    <table class="given">
+      <tr><th>Token</th><th class="num">ID</th></tr>
+      <tr><td>the</td><td class="num">7</td></tr>
+      <tr><td>brown</td><td class="num">0</td></tr>
+      <tr><td>dog</td><td class="num">1</td></tr>
+      <tr><td>playfully (not in vocabulary)</td><td class="num">783 (&lt;|unk|&gt;)</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Known words map normally. <span class="calc">the → 7, brown → 0, dog → 1</span></div></div>
+    <div class="step"><span class="n">2</span><div>"playfully" is OOV, so it becomes the unknown token. <span class="calc">→ 783</span></div></div>
+    <div class="step"><span class="n">3</span><div>Joining two documents with the end-of-text token. <span class="calc">doc A + [784] + doc B</span></div></div>
+    <span class="pill">[7, 0, 1, 783, …]</span><span class="hint">IDs of special tokens come after the last regular token</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Special tokens give the model explicit markers for unknown words and for document boundaries.</li></ul>
+    <ul class="cons"><li>With byte-level BPE the unknown token is rarely needed. End-of-text and chat markers remain.</li></ul>
+    <div class="balance">more control for the designer vs more model-specific details to get right.</div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul><li>Mixing tokenizers across models. Another model's special-token IDs differ, so the wrong ID can mean something else.</li></ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"It's very important that you use your model with its own vocabulary and its own tokenizer, because they have added their own helper tokens."</li>
+      <li>Complete flow: input text → same tokenizer the model was trained on → token IDs → token embeddings.</li>
+    </ul>
+    <span class="fix">"a known token" → <b>unknown token</b>. "Lama" → <b>Llama</b>. Board: "|unk|" and "|end of text|".</span>
+  </div>
+  <div class="takeaway">Vocabulary = domain tokens + helper tokens, and the helper set is model-specific.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t5">
+  <div class="topic-title"><span class="num">5</span><h2>What is an embedding? Static vs contextual</h2><span class="time">[1:26:46 – 1:30:07]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>An embedding is a <b>vector of numbers that captures the meaning</b> of a token. The numbers are not arbitrary.</h3>
+    <table>
+      <tr><th>Dimension (property)</th><th>cats</th><th>puppy</th><th>houses</th><th>apple</th><th>baby</th></tr>
+      <tr><td>animal</td><td class="num">0.91</td><td class="num">0.93</td><td class="num">−0.56</td><td class="num">−0.67</td><td class="num">0.01</td></tr>
+      <tr><td>newborn</td><td class="num">−0.11</td><td class="num">0.71</td><td class="num">−0.32</td><td class="num">−0.1</td><td class="num">0.90</td></tr>
+      <tr><td>human</td><td class="num">0.19</td><td class="num">0.36</td><td class="num">0.31</td><td class="num">0.29</td><td class="num">0.87</td></tr>
+      <tr><td>plural</td><td class="num">0.94</td><td class="num">−0.82</td><td class="num">0.94</td><td class="num">−0.51</td><td class="num">−0.11</td></tr>
+      <tr><td>fruit</td><td class="num">−0.51</td><td class="num">−0.91</td><td class="num">−0.5</td><td class="num">0.89</td><td class="num">−0.51</td></tr>
+    </table>
+    <div class="diagram">
+      <svg viewBox="0 0 520 220" role="img" aria-label="2D embedding space with clusters">
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="10" y="10" width="500" height="200" fill="#fafafa" stroke="#bbb"/>
+          <ellipse cx="130" cy="70" rx="85" ry="40" fill="none" stroke="#d64545" stroke-width="2"/>
+          <circle cx="95" cy="60" r="6" fill="#d64545"/><text x="95" y="48">cat</text>
+          <circle cx="135" cy="55" r="6" fill="#999"/><text x="140" y="43">dog</text>
+          <circle cx="150" cy="88" r="6" fill="#3a7bd5"/><text x="170" y="104">puppy</text>
+          <ellipse cx="385" cy="65" rx="60" ry="35" fill="none" stroke="#d64545" stroke-width="2"/>
+          <circle cx="365" cy="55" r="6" fill="#8a4fd1"/><text x="365" y="43">apple</text>
+          <circle cx="400" cy="75" r="6" fill="#999"/><text x="405" y="95">banana</text>
+          <circle cx="120" cy="170" r="6" fill="#999"/><text x="120" y="158">building</text>
+          <circle cx="150" cy="185" r="6" fill="#e8833a"/><text x="150" y="203">houses</text>
+          <text x="260" y="130" font-style="italic" fill="#5b6475">similar meaning = close together</text>
+        </g>
+      </svg>
+      <div class="cap">Slide Figure 1-9, redrawn: a 2-D embedding space (x, y). Similar words cluster together.</div>
+    </div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy (professor's own)</span>
+    <p>Rate every word on <b>quality scores</b> such as "animal", "newborn", "human", "plural", "fruit". "Cat" scores high on animal, "house" scores low. A word becomes its list of scores. Words with similar scores sit near each other on a map.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Think of a feature vector from a sensor: instead of one raw reading, you describe the object by many measurements, so similar objects end up near each other.</p></div>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation <span class="badge beyond">beyond lecture</span></span>
+    <div class="step"><span class="n">1</span><div>Dot product of "cats" with "puppy" using the 5 listed dimensions. <span class="calc">0.91×0.93 + (−0.11)×0.71 + 0.19×0.36 + 0.94×(−0.82) + (−0.51)×(−0.91)</span></div></div>
+    <div class="step"><span class="n">2</span><div>Evaluate each term. <span class="calc">0.8463 − 0.0781 + 0.0684 − 0.7708 + 0.4641</span></div></div>
+    <div class="step"><span class="n">3</span><div>Sum. <span class="calc">0.8463 − 0.0781 = 0.7682; + 0.0684 = 0.8366; − 0.7708 = 0.0658; + 0.4641 = 0.5299</span></div></div>
+    <div class="step"><span class="n">4</span><div>Same for "cats" with "apple". <span class="calc">0.91×(−0.67) + (−0.11)×(−0.1) + 0.19×0.29 + 0.94×(−0.51) + (−0.51)×0.89 = −0.6097 + 0.011 + 0.0551 − 0.4794 − 0.4539 = −1.4769</span></div></div>
+    <span class="pill">cats·puppy = 0.53</span><span class="pill blue">cats·apple = −1.48</span><span class="hint">higher dot product = more similar (here only 5 of the many dimensions)</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification: static vs contextual (board)</span>
+    <ul class="pros"><li><b>Static embedding</b>: one fixed vector per word, so "bank" gets the same vector whether it is a financial bank or a river bank.</li></ul>
+    <ul class="cons"><li>One vector cannot separate senses. A <b>contextual embedding</b> changes with the sentence: bank (finance) differs from bank (river).</li></ul>
+    <div class="balance">static is cheap and simple, contextual handles word senses but needs the whole model.</div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Believing each dimension has a human-readable name. The slide says "we may oversimplify by imagining that dimensions represent concepts (they don't)".</li>
+      <li>Assuming the input embedding layer is contextual. See topic 8 for the precise statement.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Board: "Embedding ⇒ vector of numbers". These are "not just arbitrary random numbers. They capture the meaning of those words".</li>
+      <li>"We don't have a separate encoder model that generates the contextual embeddings" at the input of an LLM. Instead there is an <b>embedding layer</b>.</li>
+      <li>Board: "contextual embedding: bank ⇒ finance, bank ⇒ river bank".</li>
+    </ul>
+    <span class="fix">"cat, dog, puppy" cluster is on the slide (cats, dog, puppy). "Is A contextual Embedding" → <b>"A contextual embedding"</b>. "Pural" → <b>plural</b>.</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://arxiv.org/abs/1301.3781">word2vec (Mikolov et al., 2013)</a>: learns continuous word vectors and measures similarity. Fetched and checked.</li></ul>
+  </div>
+  <div class="takeaway">An embedding is a meaningful vector: similar tokens are close, and contextual versions depend on the sentence.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t6">
+  <div class="topic-title"><span class="num">6</span><h2>The embedding layer and the embedding matrix <i>E</i> (|V| × d)</h2><span class="time">[1:30:11 – 1:31:37]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Tokenizer → token IDs → <b>embedding layer</b> → embeddings. The layer is a table with one row per vocabulary token.</h3>
+    <div class="goal">Board: tokenizer ⇒ token IDs; token IDs ⇒ embedding layer ⇒ embeddings; E = |V| × d.</div>
+  </div>
+  <div class="card formula">
+    <span class="label">Formula / definition</span>
+    <div class="formula-box"><i>E</i> ∈ ℝ<sup>|<i>V</i>| × <i>d</i></sup> &nbsp;&nbsp;·&nbsp;&nbsp; <i>X</i> ∈ ℝ<sup><i>n</i> × <i>d</i></sup> &nbsp;&nbsp;·&nbsp;&nbsp; #params(<i>E</i>) = |<i>V</i>| × <i>d</i></div>
+    <ul class="where">
+      <li><b>|V|</b> vocabulary size (e.g. 6 in the toy example, 50,000 in practice)</li>
+      <li><b>d</b> embedding dimension, "very important number", published by each model. Slide: BERT original = 768. Board: GPT-2 "512" (see fix note below)</li>
+      <li><b>n</b> number of tokens in the input sequence</li>
+      <li><b>X</b> the stacked rows chosen for the input tokens, which goes to the Transformer</li>
+    </ul>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Real-scale sizes of <i>E</i></h3>
+    <table class="given">
+      <tr><th>Model</th><th class="num">|V|</th><th class="num">d</th></tr>
+      <tr><td>Llama 3 8B (slide)</td><td class="num">128,256</td><td class="num">4,096</td></tr>
+      <tr><td>GPT-2 small <span class="badge beyond">beyond lecture</span></td><td class="num">50,257</td><td class="num">768</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Llama 3 8B parameters in <i>E</i>. <span class="calc">128,256 × 4,096 = 525,336,576</span></div></div>
+    <div class="step"><span class="n">2</span><div>Round. <span class="calc">≈ 525 M parameters (slide: "≈ 525M")</span></div></div>
+    <div class="step"><span class="n">3</span><div>Share of an 8 B model. <span class="calc">525.3 M / 8,000 M = 0.0657 ≈ 6.6 %</span></div></div>
+    <div class="step"><span class="n">4</span><div>Memory in 16-bit (2 bytes per value). <span class="calc">525,336,576 × 2 B ≈ 1.05 GB</span></div></div>
+    <div class="step"><span class="n">5</span><div>GPT-2 small, for comparison. <span class="calc">50,257 × 768 = 38,597,376 ≈ 38.6 M</span></div></div>
+    <span class="pill">Llama 3 8B: |E| ≈ 525 M</span><span class="pill blue">≈ 6.6 % of the model</span><span class="hint">bigger vocabulary and bigger d both grow E linearly</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification: why vocabulary size matters</span>
+    <ul class="pros"><li>Bigger vocabulary means fewer tokens per sentence (shorter sequences).</li></ul>
+    <ul class="cons"><li>Every extra token adds <i>d</i> parameters to <i>E</i> and more memory (from part 04: word-level vocabularies blow up this matrix).</li></ul>
+    <div class="balance">sequence length vs embedding-table size.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"The size of the embedding matrix is vocabulary size × embedding dimensions. Every model has its own embedding dimensions."</li>
+      <li>"Every model will publish its embedding dimension. That is D, a very important number. And V is the vocabulary size."</li>
+    </ul>
+    <span class="fix">She says GPT-2 is "five and two" (512) and the board says "GPT-2 ⇒ 512 dim embed", while BERT = 768. Published GPT-2 small uses <b>768</b>. 512 is the d<sub>model</sub> of the original Transformer base model <span class="badge verify"></span>. Check the model card.</span>
+  </div>
+  <div class="takeaway">E has |V| rows and d columns. Its size is a major, model-specific memory cost.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t7">
+  <div class="topic-title"><span class="num">7</span><h2>Embedding lookup: pick rows of <i>E</i> to build <i>X</i></h2><span class="time">[1:31:42 – 1:35:13]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>The embedding layer is just a <b>row lookup</b> in <i>E</i>. <i>E</i> starts random and is trained along with the Transformer.</h3>
+    <ul>
+      <li>Same token → same vector, wherever it appears. Position is added separately (positional encoding, next topic of the course).</li>
+      <li>After training, <i>E</i> holds meaningful embedding vectors, so at inference the lookup returns correct numbers.</li>
+    </ul>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A <b>hotel key rack</b>. The token ID is the room number, the embedding is the key on that hook. You just pick the key from hook number <i>ID</i>. Training slowly cuts better keys.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>It is an array of structs indexed by ID: <code>float E[V][d]; row = E[id];</code> with the array contents learned instead of hard-coded.</p></div>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Toy example: |V| = 6, d = 3, input "fox jumps over dog" → IDs [2, 3, 5, 1]</h3>
+    <table class="given">
+      <tr><th>ID</th><th>token</th><th class="num">dim 1</th><th class="num">dim 2</th><th class="num">dim 3</th></tr>
+      <tr><td>0</td><td>brown</td><td class="num">0.34</td><td class="num">−0.18</td><td class="num">−0.17</td></tr>
+      <tr><td>1</td><td>dog</td><td class="num">0.92</td><td class="num">1.58</td><td class="num">1.30</td></tr>
+      <tr><td>2</td><td>fox</td><td class="num">1.28</td><td class="num">−0.20</td><td class="num">−0.16</td></tr>
+      <tr><td>3</td><td>jumps</td><td class="num">−0.40</td><td class="num">0.97</td><td class="num">−1.15</td></tr>
+      <tr><td>4</td><td>lazy</td><td class="num">−1.16</td><td class="num">0.33</td><td class="num">−0.63</td></tr>
+      <tr><td>5</td><td>over</td><td class="num">−2.84</td><td class="num">−0.78</td><td class="num">−1.41</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Tokenize and look up IDs. <span class="calc">fox, jumps, over, dog → [2, 3, 5, 1]</span></div></div>
+    <div class="step"><span class="n">2</span><div>Row 2 of <i>E</i>. <span class="calc">[1.28, −0.20, −0.16]</span></div></div>
+    <div class="step"><span class="n">3</span><div>Row 3. <span class="calc">[−0.40, 0.97, −1.15]</span></div></div>
+    <div class="step"><span class="n">4</span><div>Row 5 and row 1. <span class="calc">[−2.84, −0.78, −1.41] and [0.92, 1.58, 1.30]</span></div></div>
+    <div class="step"><span class="n">5</span><div>Stack rows in input order. <span class="calc">X has n = 4 rows, d = 3 columns → X is 4 × 3</span></div></div>
+    <div class="step"><span class="n">6</span><div>Count parameters in <i>E</i>. <span class="calc">6 × 3 = 18</span></div></div>
+    <div class="step"><span class="n">7</span><div>Equivalent matrix form with a one-hot row for "fox" (ID 2). <span class="calc">[0,0,1,0,0,0] · E = row 2 = [1.28, −0.20, −0.16]</span></div></div>
+    <span class="pill">X = 4 × 3</span><span class="pill blue">E = 6 × 3 = 18 parameters</span><span class="hint">in reality both n and d are large</span>
+  </div>
+  <div class="card code">
+    <span class="label">Code (PyTorch)</span>
+    <pre><span class="k">import</span> torch, torch.nn <span class="k">as</span> nn
+emb = nn.Embedding(num_embeddings=6, embedding_dim=3)   <span class="c"># E: 6 x 3, random init, trainable</span>
+ids = torch.tensor([2, 3, 5, 1])                        <span class="c"># fox jumps over dog</span>
+X = emb(ids)                                            <span class="c"># row lookup</span>
+<span class="k">print</span>(X.shape)                                        <span class="c"># torch.Size([4, 3])</span></pre>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>A lookup is far cheaper than a real matrix multiplication with a one-hot vector. The results are identical.</li>
+      <li>Because <i>E</i> is a trainable parameter, the model learns the best vectors for next-token prediction.</li>
+    </ul>
+    <div class="balance">the table is large (|V| × d) but each lookup is O(d).</div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Thinking you must multiply token IDs by <i>E</i>. The professor first says "multiply" then corrects herself: "I'm not multiplying X into E, I am generating X". IDs are used as <b>row indices</b>.</li>
+      <li>Forgetting that <i>E</i> starts <b>randomly initialised</b>. Meaning comes only from training.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"In today's LLM, the embedding layer is nothing but a lookup in an embedding matrix."</li>
+      <li>"This embedding matrix is a trainable parameter, and at the end of the training we get the correct meaningful embedding vector for every word."</li>
+      <li>Board: "X = 4 × 3 matrix → Transformer".</li>
+    </ul>
+    <span class="fix">"vocability" → <b>vocabulary</b>. "East" → <b>E</b>. "4 by 3 metrics" → <b>4 × 3 matrix</b>.</span>
+  </div>
+  <div class="takeaway">Embedding layer = pick rows of a learned |V| × d table, giving an n × d matrix for the Transformer.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t8">
+  <div class="topic-title"><span class="num">8</span><h2>Q&amp;A: token IDs, "bank" in context, dimension, other embedding types</h2><span class="time">[1:35:29 – 1:37:37]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <ul>
+      <li><b>Token IDs</b> belong to the tokenizer itself.</li>
+      <li><b>"Vector + meaning = embedding?"</b> Embeddings are vectors, nothing else. The numbers inside have somehow captured meaning.</li>
+      <li><b>How does 1-to-1 token → vector hold "bank" in a river vs finance?</b> During training every parameter, including <i>E</i>, is updated, so a bit of context gets baked in. The professor says it is "not as good as encoder-only architectures", but decoders can also create contextual embeddings this way.</li>
+      <li><b>General dimension?</b> Varies by model. BERT = 768. Check the model card.</li>
+      <li>"There are different types of embeddings. We can have document embeddings, …" (continues in part 07).</li>
+    </ul>
+  </div>
+  <div class="card why">
+    <span class="label">Justification: a precise way to say it</span>
+    <ul class="pros"><li>The input lookup gives the <b>same</b> vector for "bank" everywhere. The <b>context-dependent</b> vector appears after the attention layers mix information from neighbouring tokens <span class="badge verify"></span>.</li></ul>
+    <div class="balance">the professor's answer (training updates E) explains why the base vector is a good compromise across senses. The Transformer layers do the disambiguation. Module 3 shows this.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Students asked: "Same token, same embedding: does it get converted to a context embedding later?" and "What is the general dimension?" She answers both.</li>
+      <li>Do not confuse embeddings with token IDs: IDs are part of the tokenizer, embeddings of the model.</li>
+    </ul>
+    <span class="fix">"768 / 76, 768" → <b>768</b>. "decoder training" in the answer refers to training a decoder-only LLM.</span>
+  </div>
+  <div class="takeaway">Embeddings are just vectors. Dimension is model-specific. Full contextualisation comes from the Transformer layers.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. Which library for (a) training a tokenizer, (b) counting tokens for OpenAI API calls?</summary>
+    <div class="ans">(a) Hugging Face tokenizers. (b) OpenAI tiktoken (encode/decode only, cannot train). For Claude and Gemini use their APIs.</div></details>
+  <details><summary>2. Why are special tokens like &lt;|endoftext|&gt; model-specific?</summary>
+    <div class="ans">Each model designer adds their own helper tokens and IDs (Llama style differs from Mistral). Use the model with its own tokenizer and vocabulary.</div></details>
+  <details><summary>3. Compute the parameters in E for |V| = 32,000 and d = 4,096.</summary>
+    <div class="ans">32,000 × 4,096 = <b>131,072,000</b> ≈ 131 M parameters.</div></details>
+  <details><summary>4. From the toy E, what is X for input IDs [1, 0]?</summary>
+    <div class="ans">Rows 1 and 0: X = [[0.92, 1.58, 1.30], [0.34, −0.18, −0.17]], shape 2 × 3.</div></details>
+  <details><summary>5. Static vs contextual embedding, using "bank".</summary>
+    <div class="ans">Static: one vector for "bank" always. Contextual: different vectors for bank (finance) and bank (river), depending on the sentence.</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>Is GPT-2's embedding dimension 512 (board) or 768 (published for GPT-2 small)?</li>
+    <li>Is the input embedding layer contextual, or does context only emerge after attention layers?</li>
+    <li>Will tying input embeddings with the output (LM head) matrix be discussed in module 3?</li>
+    <li>Which special tokens appear in Llama 3, Qwen3 and Gemma tokenizers, and where do we see them in the webinar?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[1:21:20 – 1:22:29]</span> Training a BPE tokenizer with Hugging Face tokenizers</li>
+    <li><span class="t">[1:22:30 – 1:24:05]</span> Tokenizer framework landscape: HF, tiktoken, vendor APIs</li>
+    <li><span class="t">[1:24:06 – 1:25:29]</span> Tokens to token IDs at inference</li>
+    <li><span class="t">[1:25:31 – 1:26:43]</span> Special context tokens: unknown and end-of-text</li>
+    <li><span class="t">[1:26:46 – 1:30:07]</span> What embeddings are; static vs contextual; 2-D space</li>
+    <li><span class="t">[1:30:11 – 1:31:37]</span> Embedding layer, matrix E = |V| × d, BERT 768</li>
+    <li><span class="t">[1:31:42 – 1:35:13]</span> Embedding lookup worked example, X = n × d</li>
+    <li><span class="t">[1:35:29 – 1:37:37]</span> Q&amp;A on IDs, context in embeddings, dimension</li>
+  </ul>
+</section>
+
+<footer>Part 06 · segments 051–059 · <a href="part_05.html">← part 05</a> · <a href="index.html">index</a> · <a href="part_07.html">part 07 →</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>

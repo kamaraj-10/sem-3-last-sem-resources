@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formula Sheet – Large Language Models for Generative AI, Session 1</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">∑</div>
+  <div>
+    <h1>Formula Sheet · Session 1</h1>
+    <div class="sub">Large Language Models for Generative AI (S1-26_AIMLCZG536) · Prof. Monali Tushar Mavani</div>
+    <span class="time">12 formulas</span>
+  </div>
+</header>
+
+<div class="notice ok">12 formulas in total: <b>6 taught in lecture (L)</b> and <b>6 beyond the lecture (B)</b>. Beyond-lecture formulas are restatements, derived helpers or recaps, and are marked as such in their source part.</div>
+
+<!-- ============================================================ -->
+<div class="card formula">
+  <span class="label">F1 · Chain rule for a sentence · <a href="part_02.html#t4">part 02</a> · <b>L</b></span>
+  <div class="formula-box"><i>P</i>(<i>w</i><sub>1</sub>, …, <i>w</i><sub>n</sub>) = <span class="bigop"><span class="lim">n</span><span class="op">Π</span><span class="lim">i=1</span></span> <i>P</i>(<i>w</i><sub>i</sub> | <i>w</i><sub>1</sub>, …, <i>w</i><sub>i−1</sub>)</div>
+  <ul class="where">
+    <li><b>w<sub>i</sub></b> i-th token</li>
+    <li><b>n</b> number of tokens (integer ≥ 1)</li>
+    <li><b>P</b> probability in [0, 1]. Context is empty for i = 1</li>
+  </ul>
+  <div class="remember">Check: 0.05 × 0.2 × 0.01 × 0.1 = 0.01 × 0.01 × 0.1 = <b>10<sup>−5</sup></b> (log form: −11.513).</div>
+</div>
+
+<div class="card formula">
+  <span class="label">F2 · Softmax over the vocabulary · <a href="part_03.html#t3">part 03</a> · <b>L</b></span>
+  <div class="formula-box"><i>P</i>(<i>w</i><sub>i</sub> | context) = <span class="frac"><span class="num"><i>e</i><sup><i>z</i><sub>i</sub></sup></span><span class="den"><span class="bigop"><span class="lim">V</span><span class="op">Σ</span><span class="lim">j=1</span></span> <i>e</i><sup><i>z</i><sub>j</sub></sup></span></span></div>
+  <ul class="where">
+    <li><b>z<sub>i</sub></b> logit of token i, any real number</li>
+    <li><b>V</b> vocabulary size (e.g. 50,000)</li>
+    <li>Outputs lie in (0, 1) and sum to 1</li>
+  </ul>
+  <div class="remember">Check: logits [2.0, 1.7, 0.9, 0.3] → e<sup>z</sup> = [7.389, 5.474, 2.460, 1.350], sum 16.673, first = 7.389/16.673 = <b>0.443</b>.</div>
+</div>
+
+<div class="card formula">
+  <span class="label">F3 · Vocabulary size of a BPE tokenizer · <a href="part_04.html#t6">part 04</a> · <b>L</b></span>
+  <div class="formula-box">|<i>V</i>| = <i>base symbols</i> + <i>merges</i> (+ <i>special tokens</i>)</div>
+  <ul class="where">
+    <li><b>base symbols</b> unique characters (BPE) or 256 bytes (byte-level BPE)</li>
+    <li><b>merges</b> number of merge rules learned (stop at the max vocab size)</li>
+    <li><b>special tokens</b> e.g. &lt;|unk|&gt;, &lt;|endoftext|&gt;</li>
+  </ul>
+  <div class="remember">Check: toy corpus, 7 characters + 3 merges (ug, un, hug) = <b>10</b> tokens. GPT-2: 256 + 50,000 + 1 = 50,257.</div>
+</div>
+
+<div class="card formula">
+  <span class="label">F4 · BPE pair count · <a href="part_04.html#t5">part 04</a> · <b>B</b></span>
+  <div class="formula-box"><i>count</i>(<i>a</i>, <i>b</i>) = <span class="bigop"><span class="lim">words</span><span class="op">Σ</span><span class="lim">w</span></span> <i>freq</i>(<i>w</i>) × <i>occurrences of (a, b) in w</i></div>
+  <ul class="where">
+    <li><b>(a, b)</b> adjacent symbols in the current segmentation</li>
+    <li><b>freq(w)</b> corpus count of word w</li>
+    <li>Merge the highest count, provided it is at least <b>min_freq</b></li>
+  </ul>
+  <div class="remember">Check: words hug 10, pug 5, hugs 5 contain (u, g): 10 + 5 + 5 = <b>20</b>. (p,u) = 17, (u,n) = 16, (h,u) = 15.</div>
+</div>
+
+<div class="card formula">
+  <span class="label">F5 · Embedding matrix size · <a href="part_06.html#t6">part 06</a> · <b>L</b></span>
+  <div class="formula-box"><i>E</i> ∈ ℝ<sup>|<i>V</i>| × <i>d</i></sup> &nbsp;·&nbsp; #params(<i>E</i>) = |<i>V</i>| × <i>d</i> &nbsp;·&nbsp; <i>X</i> ∈ ℝ<sup><i>n</i> × <i>d</i></sup></div>
+  <ul class="where">
+    <li><b>|V|</b> vocabulary size</li>
+    <li><b>d</b> embedding dimension (BERT 768, Llama 3 8B 4,096)</li>
+    <li><b>n</b> input length in tokens. X holds the n selected rows</li>
+  </ul>
+  <div class="remember">Check: Llama 3 8B, 128,256 × 4,096 = <b>525,336,576</b> ≈ 525 M. Toy E: 6 × 3 = 18 values, X for 4 tokens = 4 × 3.</div>
+</div>
+
+<div class="card formula">
+  <span class="label">F6 · Embedding lookup as a one-hot product · <a href="part_06.html#t7">part 06</a> · <b>B</b></span>
+  <div class="formula-box"><i>x</i> = <i>e</i><sub>id</sub> · <i>E</i> = <i>E</i>[id]</div>
+  <ul class="where">
+    <li><b>e<sub>id</sub></b> one-hot row vector of length |V| with a 1 at the token ID</li>
+    <li><b>E[id]</b> row id of the embedding matrix, a vector of length d</li>
+  </ul>
+  <div class="remember">Check: id = 2, e = [0,0,1,0,0,0], E[2] = <b>[1.28, −0.20, −0.16]</b> (fox).</div>
+</div>
+
+<div class="card formula">
+  <span class="label">F7 · Sinusoidal positional encoding · <a href="part_07.html#t2">part 07</a> · <b>B</b></span>
+  <div class="formula-box"><i>PE</i>(<i>pos</i>, 2<i>i</i>) = sin <span class="frac"><span class="num"><i>pos</i></span><span class="den">10000<sup>2<i>i</i>/<i>d</i></sup></span></span> &nbsp;·&nbsp; <i>PE</i>(<i>pos</i>, 2<i>i</i>+1) = cos <span class="frac"><span class="num"><i>pos</i></span><span class="den">10000<sup>2<i>i</i>/<i>d</i></sup></span></span></div>
+  <ul class="where">
+    <li><b>pos</b> position (0, 1, 2, …)</li>
+    <li><b>i</b> sin/cos pair index, 0 … d/2 − 1</li>
+    <li>Values in [−1, 1]</li>
+  </ul>
+  <div class="remember">Check: d = 4, pos = 1 → [sin 1, cos 1, sin 0.01, cos 0.01] = <b>[0.8415, 0.5403, 0.0100, 1.0000]</b>.</div>
+</div>
+
+<div class="card formula">
+  <span class="label">F8 · Input embedding (learned / sinusoidal position) · <a href="part_07.html#t3">part 07</a> · <b>L</b></span>
+  <div class="formula-box"><i>x</i><sub>t</sub> = <i>E</i>[<i>id</i><sub>t</sub>] + <i>P</i>[<i>t</i>]</div>
+  <ul class="where">
+    <li><b>E[id<sub>t</sub>]</b> token embedding at position t</li>
+    <li><b>P[t]</b> positional embedding (same size d)</li>
+    <li>With RoPE, position is not added here but applied to Q and K in each attention layer</li>
+  </ul>
+  <div class="remember">Check: token [0.5, −0.2, 0.1, 0.3] + PE(1) = <b>[1.3415, 0.3403, 0.1100, 1.3000]</b>.</div>
+</div>
+
+<div class="card formula">
+  <span class="label">F9 · Course marks · <a href="part_01.html#t7">part 01</a> · <b>L</b></span>
+  <div class="formula-box"><i>Total</i> = <i>A</i><sub>1</sub> + <i>A</i><sub>2</sub> + <i>Mid</i> + <i>End</i></div>
+  <ul class="where">
+    <li><b>A<sub>1</sub></b> = 15, <b>A<sub>2</sub></b> = 20 (group assignments)</li>
+    <li><b>Mid</b> = 30 (closed book), <b>End</b> = 35 (open book)</li>
+  </ul>
+  <div class="remember">Check: 15 + 20 + 30 + 35 = <b>100</b>. Exams = 65 %, assignments = 35 %.</div>
+</div>
+
+<div class="card formula">
+  <span class="label">F10 · Weight memory of a model · <a href="part_01.html#t8">part 01</a> · <b>B</b></span>
+  <div class="formula-box"><i>Memory</i> ≈ <i>N</i><sub>params</sub> × <i>bytes per parameter</i></div>
+  <ul class="where">
+    <li><b>N<sub>params</sub></b> number of parameters</li>
+    <li><b>bytes per parameter</b> 2 for 16-bit, 4 for 32-bit</li>
+    <li>Weights only. Training needs extra for gradients, optimizer state and activations</li>
+  </ul>
+  <div class="remember">Check: 7 × 10<sup>9</sup> × 2 B = 14 × 10<sup>9</sup> B = <b>14 GB</b>, which fits in a 40 GB L40S.</div>
+</div>
+
+<div class="card formula">
+  <span class="label">F11 · Chance a sentence has no [UNK] · <a href="part_09.html#t2">part 09</a> · <b>B</b></span>
+  <div class="formula-box"><i>P</i>(no [UNK]) = (1 − <i>p</i>)<sup><i>n</i></sup></div>
+  <ul class="where">
+    <li><b>p</b> probability a token is unknown, assumed independent</li>
+    <li><b>n</b> tokens per sentence</li>
+  </ul>
+  <div class="remember">Check: p = 0.03, n = 40 → 0.97<sup>40</sup> = e<sup>−1.218</sup> = <b>0.296</b>, so about 70 % of sentences contain [UNK].</div>
+</div>
+
+<div class="card formula">
+  <span class="label">F12 · Visible attention cells: causal vs full · <a href="part_08.html#t8">part 08</a> · <b>B</b></span>
+  <div class="formula-box"><i>cells</i><sub>causal</sub> = <span class="frac"><span class="num"><i>n</i>(<i>n</i> + 1)</span><span class="den">2</span></span> &nbsp;·&nbsp; <i>cells</i><sub>full</sub> = <i>n</i><sup>2</sup></div>
+  <ul class="where">
+    <li><b>n</b> number of tokens</li>
+    <li>Decoder-only models use the causal count, encoder-only models use the full count</li>
+  </ul>
+  <div class="remember">Check: n = 4 → 4 × 5 / 2 = <b>10</b> vs 16, which is 62.5 %.</div>
+</div>
+
+<footer><a href="index.html">← index</a> · <a href="cheatsheet.html">cheatsheet →</a></footer>
+</div>
+</body>
+</html>

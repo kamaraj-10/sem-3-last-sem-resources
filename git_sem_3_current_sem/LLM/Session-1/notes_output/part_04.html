@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 04 – Subword Tokenization &amp; Byte Pair Encoding | Large Language Models for Generative AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">✂️</div>
+  <div>
+    <h1>Part 04 · Token Types, Subword Tokenization &amp; Byte Pair Encoding</h1>
+    <div class="sub">Large Language Models for Generative AI (S1-26_AIMLCZG536) · Session 1 · Prof. Monali Tushar Mavani</div>
+    <span class="time">[50:35 – 1:05:43]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: links in the "Extra reading" cards were fetched and checked on 2026-10-26. Inferred statements carry the <span class="badge verify"></span> badge.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · Word structure &amp; subword models</a></li>
+  <li><a href="#t2">2 · Types of tokens: word, subword, character, byte</a></li>
+  <li><a href="#t3">3 · Subword algorithms &amp; the two-part tokenizer</a></li>
+  <li><a href="#t4">4 · Q&amp;A: vocabulary size and model cards</a></li>
+  <li><a href="#t5">5 · The BPE algorithm</a></li>
+  <li><a href="#t6">6 · BPE worked example, segmenter and the "mug" problem</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>Word structure and subword models: why word tokens fail</h2><span class="time">[50:41 – 52:51]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Common words get their own token. Rare, misspelt or new words are split into smaller pieces.</h3>
+    <table>
+      <tr><th>Word type</th><th>Word</th><th>Vocabulary mapping (slide)</th><th>Tokens</th></tr>
+      <tr><td>Common</td><td>hat</td><td>hat</td><td class="num">1</td></tr>
+      <tr><td>Common</td><td>learn</td><td>learn</td><td class="num">1</td></tr>
+      <tr><td>Variation</td><td>taaaaasty</td><td>taa## aaa## sty</td><td class="num">3</td></tr>
+      <tr><td>Misspelling</td><td>laern</td><td>la## ern##</td><td class="num">2</td></tr>
+      <tr><td>Novel item</td><td>Transformerify</td><td>Transformer## ify</td><td class="num">2</td></tr>
+    </table>
+    <div class="remember"><b>Worst case:</b> a word splits into as many tokens as it has characters (or bytes). Each token gets its own ID and its own embedding.</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p><b>Lego bricks vs pre-built models.</b> Word-level tokens are pre-built models: you must stock a model for every word, and a new word has none. Subwords are bricks: any new word is assembled from bricks you already own.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Like building a lookup table with an "unknown" slot versus building values from bit-fields. Subwords are the bit-fields.</p></div>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>"taaaaasty" is not a legitimate English word, yet its <b>meaning is still tasty</b>. Subwords keep that meaning visible.</li>
+      <li>A misspelling in word-level tokenization becomes a <b>new vocabulary entry</b>. In subword tokenization it is just split into small pieces.</li>
+    </ul>
+    <div class="balance">more tokens per word (longer sequences) vs a smaller, more robust vocabulary.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>We care about the <b>semantic meaning</b> of tokens, so each token needs its own embedding.</li>
+      <li>You should pre-process and correct spellings in the corpus anyway, but residual errors will remain.</li>
+    </ul>
+    <span class="fix">Slide notation note: <b>##</b> marks a continuation in WordPiece (BERT). Byte-level BPE (GPT, Llama, Qwen) marks a <b>leading space</b> instead, e.g. "Ġtasty". "Ohh. Individual entry" = <b>an individual entry</b>. "Transformerify" is an invented word used as an example.</span>
+  </div>
+  <div class="takeaway">Subword tokenization breaks unfamiliar words into known pieces, so no word is ever unrepresentable.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>Types of tokens: word, subword, character, byte</h2><span class="time">[52:54 – 56:41]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Same text, four ways to cut it: "unhappiness!"</h3>
+    <table>
+      <tr><th>Type</th><th>Tokens for "unhappiness!"</th><th>Count</th><th>Vocabulary size</th></tr>
+      <tr><td>Word</td><td>unhappiness | !</td><td class="num">2</td><td>huge (every word form)</td></tr>
+      <tr><td>Subword</td><td>un | happi | ness | !</td><td class="num">4</td><td>moderate (30k–100k+) <span class="badge verify"></span></td></tr>
+      <tr><td>Character</td><td>u n h a p p i n e s s !</td><td class="num">12</td><td>small, not popular</td></tr>
+      <tr><td>Byte</td><td>UTF-8 bytes</td><td class="num">12 (ASCII)</td><td class="num">256</td></tr>
+    </table>
+    <div class="grid-2">
+      <div class="mini"><h4>Word tokens (e.g. word2vec)</h4><p>Cannot handle words unseen in training (<b>OOV</b>). Near-duplicates (apology, apologize, apologist) waste vocabulary.</p></div>
+      <div class="mini"><h4>Subword tokens</h4><p>New words split into known pieces. <b>Used by every modern LLM.</b></p></div>
+      <div class="mini"><h4>Byte tokens</h4><p>Vocabulary = 256 UTF-8 bytes, so nothing is ever OOV, but sequences become much longer. Byte-level model: ByT5. CANINE is character-level.</p></div>
+      <div class="mini"><h4>Byte-level BPE</h4><p>Subword merges built <b>on top of bytes</b>. Used by Llama, Qwen, DeepSeek, gpt-oss.</p></div>
+    </div>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Bytes in practice (slide and board)</h3>
+    <table class="given">
+      <tr><th>Text</th><th>UTF-8 bytes</th><th class="num">Tokens</th></tr>
+      <tr><td>"Apple"</td><td>65 112 112 108 101</td><td class="num">5</td></tr>
+      <tr><td>1 Hindi character</td><td>224 164 149</td><td class="num">3</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Map each letter of "Apple" to its byte. <span class="calc">A = 65, p = 112, p = 112, l = 108, e = 101</span></div></div>
+    <div class="step"><span class="n">2</span><div>One token per byte. <span class="calc">5 letters → 5 tokens</span></div></div>
+    <div class="step"><span class="n">3</span><div>Hindi letters need 3 bytes in UTF-8. <span class="calc">224, 164, 149 → 3 tokens for <b>one</b> character</span></div></div>
+    <div class="step"><span class="n">4</span><div>Size of the byte vocabulary. <span class="calc">2<sup>8</sup> = 256 values (0 to 255)</span></div></div>
+    <span class="pill">vocab = 256</span><span class="pill blue">"Apple" = 5 tokens</span><span class="hint">small vocabulary but long sequences</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Small vocabulary means a smaller embedding matrix and no OOV problem (byte level).</li></ul>
+    <ul class="cons">
+      <li>Word-level: more token IDs, more embeddings, a bigger input matrix, more memory and weaker generalisation, because apology/apologize/apologist share one meaning but have separate tokens.</li>
+      <li>Byte-level: sequences are much longer, so attention costs more.</li>
+    </ul>
+    <div class="balance">vocabulary size vs sequence length. Subword sits in the middle, which is why it won.</div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Assuming one character = one byte. True for English (ASCII) only. Hindi and many scripts need 3 bytes.</li>
+      <li>Saying byte-level tokenization has 256 tokens per word. The <b>vocabulary</b> has 256 entries, and a word is a <i>sequence</i> of them.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>If an OOV word appears at inference time, "your application will fail" to produce a proper answer.</li>
+      <li>Word-based tokenization is how classical static embeddings (word2vec) worked, and is "not popular" now.</li>
+      <li>Character-based tokens are "used in some research models".</li>
+    </ul>
+    <span class="fix">She says "Unicode, 0 to 255 bytes". The slide says <b>UTF-8</b> bytes, which is the encoding actually used. "word to work" → <b>word2vec</b>. Board: "out of vocab", "Unicode", "0–255 bytes", "3 bytes, 3 tokens".</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://huggingface.co/docs/transformers/tokenizer_summary">Hugging Face: Tokenization algorithms</a>: word-level, character-level, BPE, byte-level BPE, Unigram, WordPiece and SentencePiece compared. Fetched and checked.</li></ul>
+  </div>
+  <div class="takeaway">Word tokens have OOV problems, byte tokens make long sequences, subword tokens balance both.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Subword algorithms and the two-part tokenizer (learner + segmenter)</h2><span class="time">[56:42 – 59:25]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <table>
+      <tr><th>Algorithm</th><th>Reference (slide)</th><th>Note</th></tr>
+      <tr><td><b>Byte-Pair Encoding (BPE)</b></td><td>Sennrich et al., 2016</td><td>Most models today use BPE or a variant</td></tr>
+      <tr><td>Unigram language-model tokenization</td><td>Kudo, 2018</td><td>Also used</td></tr>
+      <tr><td>WordPiece</td><td>Schuster and Nakajima, 2012</td><td>Used earlier, by BERT</td></tr>
+    </table>
+    <h3>Every tokenizer has two parts</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 720 190" role="img" aria-label="Tokenizer training and inference">
+        <defs><marker id="a43" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6475"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="5" y="15" width="150" height="56" rx="8" fill="#ecf3fd" stroke="#3a7bd5"/><text x="80" y="38" font-weight="700">Training corpus</text><text x="80" y="55">hug pug pun bun hugs</text>
+          <rect x="200" y="15" width="150" height="56" rx="8" fill="#1f3a5f" stroke="#1f3a5f"/><text x="275" y="38" fill="#fff" font-weight="700">Token learner</text><text x="275" y="55" fill="#fff">runs BPE</text>
+          <rect x="395" y="15" width="170" height="56" rx="8" fill="#fff4ea" stroke="#e8833a"/><text x="480" y="38" font-weight="700">Vocabulary + merge rules</text><text x="480" y="55">fixed after training</text>
+          <text x="640" y="43" font-style="italic">once, at training time</text>
+          <rect x="5" y="115" width="150" height="56" rx="8" fill="#ecf3fd" stroke="#3a7bd5"/><text x="80" y="138" font-weight="700">New text</text><text x="80" y="155">hugs</text>
+          <rect x="200" y="115" width="150" height="56" rx="8" fill="#1f3a5f" stroke="#1f3a5f"/><text x="275" y="138" fill="#fff" font-weight="700">Token segmenter</text><text x="275" y="155" fill="#fff">applies the rules</text>
+          <rect x="395" y="115" width="170" height="56" rx="8" fill="#ecf8f0" stroke="#2f9e5b"/><text x="480" y="138" font-weight="700">Tokens → IDs</text><text x="480" y="155">[hug, s] → [12, 5]</text>
+          <text x="640" y="143" font-style="italic">on every input, at inference</text>
+          <line x1="155" y1="43" x2="198" y2="43" stroke="#5b6475" stroke-width="2" marker-end="url(#a43)"/>
+          <line x1="350" y1="43" x2="393" y2="43" stroke="#5b6475" stroke-width="2" marker-end="url(#a43)"/>
+          <line x1="155" y1="143" x2="198" y2="143" stroke="#5b6475" stroke-width="2" marker-end="url(#a43)"/>
+          <line x1="350" y1="143" x2="393" y2="143" stroke="#5b6475" stroke-width="2" marker-end="url(#a43)"/>
+          <path d="M480,71 L480,113" stroke="#e8833a" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a43)"/>
+          <text x="530" y="98" fill="#9a4a0f">rules reused</text>
+        </g>
+      </svg>
+      <div class="cap">Slide "Subword tokenization". IDs [12, 5] are illustrative values on the slide.</div>
+    </div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>Compiling vs running. <b>Training the tokenizer</b> is like compiling a dictionary of abbreviations from a big library. <b>Using it</b> is a clerk applying that dictionary to every new letter. The clerk must use the <i>same</i> dictionary every time.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Learner is the build step that produces a lookup table and rules into flash. Segmenter is the run-time code that only reads them.</p></div>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Frequent words get their own tokens, rare words split into subwords: the vocabulary is "built dynamically" from data.</li>
+      <li>Training runs <b>once</b>. Inference only applies the saved rules.</li>
+    </ul>
+    <div class="balance">the model is trained with one particular tokenizer, so at inference you <b>must</b> use that same tokenizer. A mismatch gives wrong IDs and nonsense.</div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Using a different tokenizer for inference than the one used for training or for the model you downloaded.</li>
+      <li>Thinking the tokenizer learns during inference. Vocabulary and merge rules are fixed after tokenizer training.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>Every model publisher trains <b>their own tokenizer</b>, tokenizes their corpus, and then trains the Transformer. Tokenizer training is a separate step.</li>
+      <li>A vocabulary may have 50,000 or even a million entries (she says "1 million" loosely) <span class="badge verify"></span>.</li>
+      <li>BPE will be explained in detail next.</li>
+    </ul>
+    <span class="fix">"Unigram Language Modelling" = Unigram LM tokenization (Kudo). "become popular using BERT" is unclear. The slide notation note says WordPiece is BERT's tokenizer <span class="badge verify"></span>. "by pair algorithm" → <b>byte pair</b> algorithm. "BP algorithm" → <b>BPE</b>.</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://arxiv.org/abs/1508.07909">Sennrich, Haddow and Birch (2016): Neural Machine Translation of Rare Words with Subword Units</a>: introduces BPE for open-vocabulary NMT. Fetched and checked.</li></ul>
+  </div>
+  <div class="takeaway">Tokenizer = learner (trains vocab and merge rules once) + segmenter (applies them to every input). Always reuse the training tokenizer.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>Q&amp;A: vocabulary size changes between models; read the model card</h2><span class="time">[59:29 – 1:00:29]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Vocabulary size is not fixed. Each model's <b>model card</b> states its tokenizer and vocabulary size.</h3>
+    <p>Answer to a student (Vipin) asking about GPT: "now it keeps on changing". Original GPT versions used BPE, newer ones changed.</p>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario <span class="badge beyond">beyond lecture</span></span>
+    <h3>Vocabulary sizes quoted in the Hugging Face tokenizer summary</h3>
+    <table class="given">
+      <tr><th>Model</th><th class="num">Vocabulary</th><th>Composition</th></tr>
+      <tr><td>GPT (original)</td><td class="num">40,478</td><td>478 base + 40,000 merges</td></tr>
+      <tr><td>GPT-2 (byte-level BPE)</td><td class="num">50,257</td><td>256 bytes + 50,000 merges + 1 special token</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation <span class="badge beyond">beyond lecture</span></span>
+    <div class="step"><span class="n">1</span><div>Vocabulary = base symbols + number of merges (+ special tokens). <span class="calc">256 + 50,000 + 1 = 50,257</span></div></div>
+    <div class="step"><span class="n">2</span><div>Same rule for the original GPT. <span class="calc">478 + 40,000 = 40,478</span></div></div>
+    <span class="pill">size = base + merges + special</span>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"You have to read their model card. Very interesting to read it for every model." The vocabulary size keeps varying.</li>
+      <li>She promised to show <b>how and where to read a model card</b> at the end of the session.</li>
+      <li>Token IDs will be revisited after BPE.</li>
+    </ul>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://huggingface.co/docs/transformers/tokenizer_summary">Hugging Face: Tokenization algorithms</a>: source of the vocabulary-size figures above. Fetched and checked.</li></ul>
+  </div>
+  <div class="takeaway">Look up the tokenizer and vocabulary size in each model's model card. They change from model to model.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t5">
+  <div class="topic-title"><span class="num">5</span><h2>The Byte Pair Encoding (BPE) algorithm</h2><span class="time">[1:00:31 – 1:03:01]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Start from characters. Repeatedly merge the most frequent adjacent pair into a new token, until you reach the target vocabulary size.</h3>
+    <ol>
+      <li><b>Pre-tokenize</b>: split the corpus into words with a rule-based splitter (board: "whitespace", or a regular expression).</li>
+      <li><b>Word dictionary with frequency counts</b>: ("hug", 10), ("pug", 5), ("pun", 12), ("bun", 4), ("hugs", 5).</li>
+      <li><b>Start from single characters</b>: the initial vocabulary is all unique characters. Count adjacent pairs.</li>
+      <li><b>Merge</b> the most frequent pair into a new token.</li>
+      <li><b>Repeat</b> steps 3–4 until the target vocabulary size.</li>
+    </ol>
+    <div class="goal">Initial vocabulary here = 7 unique characters: b, g, h, n, p, s, u.</div>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p><b>Text-message shorthand.</b> If "u" and "g" keep appearing side by side, people invent a single shorthand "ug". Then "hug" is easier to write as h+ug. Shorthands that save the most typing are adopted first.</p>
+    <div class="mini"><h4>Embedded-dev lens</h4><p>Same idea as dictionary compression (LZ-style, or Huffman by frequency): common patterns get short codes first.</p></div>
+  </div>
+  <div class="card formula">
+    <span class="label">Pair score (BPE)</span>
+    <div class="formula-box"><i>count</i>(<i>a</i>, <i>b</i>) = <span class="bigop"><span class="lim">words</span><span class="op">Σ</span><span class="lim">w</span></span> <i>freq</i>(<i>w</i>) × <i>occurrences of the pair (a, b) in w</i></div>
+    <ul class="where">
+      <li><b>(a, b)</b> two adjacent symbols in the current segmentation</li>
+      <li><b>freq(w)</b> number of times the word appears in the corpus</li>
+      <li>The pair with the highest <b>count</b> is merged. Ties need a fixed rule <span class="badge verify"></span></li>
+    </ul>
+    <p class="hint">Formula is a restatement of the professor's "weighted by word frequency" rule. <span class="badge beyond">notation added</span></p>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Round 1 on the slide's toy corpus</h3>
+    <table class="given">
+      <tr><th>Word</th><th class="num">Frequency</th><th>Characters</th></tr>
+      <tr><td>hug</td><td class="num">10</td><td>h u g</td></tr>
+      <tr><td>pug</td><td class="num">5</td><td>p u g</td></tr>
+      <tr><td>pun</td><td class="num">12</td><td>p u n</td></tr>
+      <tr><td>bun</td><td class="num">4</td><td>b u n</td></tr>
+      <tr><td>hugs</td><td class="num">5</td><td>h u g s</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Pair (u, g): in hug, pug and hugs. <span class="calc">10 + 5 + 5 = 20</span></div></div>
+    <div class="step"><span class="n">2</span><div>Pair (p, u): in pug and pun. <span class="calc">5 + 12 = 17</span></div></div>
+    <div class="step"><span class="n">3</span><div>Pair (u, n): in pun and bun. <span class="calc">12 + 4 = 16</span></div></div>
+    <div class="step"><span class="n">4</span><div>Pair (h, u): in hug and hugs. <span class="calc">10 + 5 = 15</span></div></div>
+    <div class="step"><span class="n">5</span><div>Highest is (u, g). Merge into a new token "ug". <span class="calc">vocabulary: 7 + 1 = 8 tokens</span></div></div>
+    <span class="pill">merge (u, g) → "ug" · count 20</span><span class="hint">higher count merges first</span>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Counting pairs per <i>distinct word</i> and forgetting to multiply by the word frequency.</li>
+      <li>Merging pairs that span a word boundary. Pre-tokenization keeps pairs <b>inside</b> words.</li>
+      <li>Forgetting to recount pairs after every merge, since the segmentation changed.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>The vocabulary size is chosen by the tokenizer trainer, e.g. 30,000 or 50,000. Training stops when it is reached.</li>
+      <li>The toy example is shown for four iterations.</li>
+    </ul>
+    <span class="fix">"BGH Nsp" → <b>b, g, h, n, p, s, u</b>. "U&amp;G" → <b>(u, g)</b>. Board: "1 2 3 4 5 6 7" counts the 7 initial characters, "initial vocab = unique characters".</span>
+  </div>
+  <div class="takeaway">BPE: count adjacent pairs weighted by word frequency, merge the winner, repeat until the vocabulary is the size you want.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t6">
+  <div class="topic-title"><span class="num">6</span><h2>BPE worked iterations, the segmenter, and the "mug" problem</h2><span class="time">[1:03:06 – 1:05:43]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <table>
+      <tr><th>Iter</th><th>Current vocabulary</th><th>Words after the merge</th></tr>
+      <tr><td>1</td><td>b g h n p s u</td><td>(h u g, 10), (p u g, 5), (p u n, 12), (b u n, 4), (h u g s, 5)</td></tr>
+      <tr><td>2</td><td>… + <b>ug</b></td><td>(h ug, 10), (p ug, 5), (p u n, 12), (b u n, 4), (h ug s, 5)</td></tr>
+      <tr><td>3</td><td>… + <b>un</b></td><td>(h ug, 10), (p ug, 5), (p un, 12), (b un, 4), (h ug s, 5)</td></tr>
+      <tr><td>4</td><td>… + <b>hug</b> (10 tokens)</td><td>(hug, 10), (p ug, 5), (p un, 12), (b un, 4), (hug s, 5)</td></tr>
+    </table>
+    <div class="remember"><b>Segmenter:</b> apply the merges in the <i>learned order</i>. bug → b u g → b ug. hugs → h u g s → h ug s → hug s.</div>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>What is merged in rounds 2, 3 and 4?</h3>
+    <table class="given">
+      <tr><th>After merge</th><th>Pair counts that matter</th></tr>
+      <tr><td>Round 2 (after "ug")</td><td>(u, n) = 12 + 4; (p, u) = 12; (h, ug) = 15; (ug, s) = 5; (p, ug) = 5; (b, u) = 4</td></tr>
+      <tr><td>Round 3 (after "un")</td><td>(h, ug) = 10 + 5; (p, un) = 12; (b, un) = 4; (p, ug) = 5; (ug, s) = 5</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Round 2 winner. (u, n) = 12 + 4 = 16, which beats (h, ug) = 15 and (p, u) = 12. <span class="calc">merge → "un"</span></div></div>
+    <div class="step"><span class="n">2</span><div>Round 3 winner. (h, ug) = 10 (hug) + 5 (hugs) = 15, which beats (p, un) = 12. <span class="calc">merge → "hug"</span></div></div>
+    <div class="step"><span class="n">3</span><div>Count the vocabulary. <span class="calc">7 base + 3 merges (ug, un, hug) = 10 tokens</span></div></div>
+    <div class="step"><span class="n">4</span><div>Segment "bug". <span class="calc">b u g → apply ug → b ug (no un, no hug)</span></div></div>
+    <div class="step"><span class="n">5</span><div>Segment "hugs". <span class="calc">h u g s → h ug s → hug s = 2 tokens</span></div></div>
+    <span class="pill">10 tokens in vocabulary</span><span class="pill blue">hugs → [hug, s]</span><span class="hint">vocabulary size = base characters + number of merges</span>
+  </div>
+  <div class="card code">
+    <span class="label">Code (toy BPE learner and segmenter)</span>
+    <pre><span class="k">from</span> collections <span class="k">import</span> Counter
+words = {(<span class="s">"h"</span>,<span class="s">"u"</span>,<span class="s">"g"</span>):10, (<span class="s">"p"</span>,<span class="s">"u"</span>,<span class="s">"g"</span>):5, (<span class="s">"p"</span>,<span class="s">"u"</span>,<span class="s">"n"</span>):12,
+         (<span class="s">"b"</span>,<span class="s">"u"</span>,<span class="s">"n"</span>):4,  (<span class="s">"h"</span>,<span class="s">"u"</span>,<span class="s">"g"</span>,<span class="s">"s"</span>):5}
+merges = []
+<span class="k">for</span> _ <span class="k">in</span> range(3):
+    pairs = Counter()
+    <span class="k">for</span> w, f <span class="k">in</span> words.items():
+        <span class="k">for</span> a, b <span class="k">in</span> zip(w, w[1:]): pairs[(a, b)] += f   <span class="c"># weighted by word frequency</span>
+    best = max(pairs, key=pairs.get); merges.append(best)
+    new = {}
+    <span class="k">for</span> w, f <span class="k">in</span> words.items():
+        out, i = [], 0
+        <span class="k">while</span> i &lt; len(w):
+            <span class="k">if</span> i &lt; len(w)-1 <span class="k">and</span> (w[i], w[i+1]) == best: out.append(w[i]+w[i+1]); i += 2
+            <span class="k">else</span>: out.append(w[i]); i += 1
+        new[tuple(out)] = f
+    words = new
+<span class="k">print</span>(merges)   <span class="c"># [('u','g'), ('u','n'), ('h','ug')]</span></pre>
+  </div>
+  <div class="card why">
+    <span class="label">Justification: the "mug" problem</span>
+    <ul class="pros"><li>Frequent pieces (hug, un, ug) become single tokens, so common words are short sequences.</li></ul>
+    <ul class="cons"><li><b>"mug" fails</b>: the corpus never had "m", so "m" is not in the vocabulary and the segmenter outputs <b>[UNK]</b>.</li></ul>
+    <div class="balance"><b>Fix (slide): start from the 256 bytes, not characters → byte-level BPE.</b> Every string is then representable with no OOV. This is the continuation in the next part.</div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Thinking BPE vocabulary only contains whole words. It mixes characters, subwords and whole words.</li>
+      <li>Believing character-level BPE solves OOV. It only works if the character was seen in the corpus. "m" was not.</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"UG has come 20 times, 10 plus 5 plus 5."</li>
+      <li>Training continues until the vocabulary hits the size you set (e.g. 50,000). "That's how every model designer and publisher builds their vocabularies."</li>
+      <li>Board: "hug = 15", "10 tokens in vocab". She raises the example "mug" at the end, which continues in part 05.</li>
+    </ul>
+    <span class="fix">"UN, 12 plus 14, 16 times" → <b>12 + 4 = 16</b> (slip of the tongue). "Hug, hug five times" refers to hugs (5).</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://huggingface.co/docs/transformers/tokenizer_summary">Hugging Face: Byte pair encoding</a> works the same hug/pug/pun/bun/hugs example and explains byte-level BPE with a 256-byte base. Fetched and checked.</li></ul>
+  </div>
+  <div class="takeaway">Merging ug, un, hug gives 7 + 3 = 10 tokens. Unseen characters (like "m") produce [UNK], so modern tokenizers start from bytes.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. Why do modern LLMs use subword tokens instead of word tokens?</summary>
+    <div class="ans">Word tokens cannot handle unseen words (OOV) and waste vocabulary on near-duplicates (apology, apologize). Subwords build any new word from known pieces and keep a manageable vocabulary.</div></details>
+  <details><summary>2. How many tokens does the word "Apple" give at byte level, and what is the byte vocabulary size?</summary>
+    <div class="ans">5 tokens (65 112 112 108 101). Vocabulary = 256. A Hindi character takes 3 bytes, so 3 tokens.</div></details>
+  <details><summary>3. Corpus: ("low", 5), ("lot", 3), ("lows", 2). Which pair merges first?</summary>
+    <div class="ans">(l, o): 5 + 3 + 2 = <b>10</b>. (o, w): 5 + 2 = 7. (o, t): 3. (w, s): 2. Merge (l, o) → "lo".</div></details>
+  <details><summary>4. A BPE tokenizer starts with 7 base characters and performs 3 merges. What is the vocabulary size?</summary>
+    <div class="ans"><b>10</b> tokens (7 + 3). Real GPT-2: 256 + 50,000 + 1 special = 50,257.</div></details>
+  <details><summary>5. Why must the inference tokenizer match the training tokenizer, and how does byte-level BPE avoid [UNK]?</summary>
+    <div class="ans">The model learned embeddings for specific token IDs, so a different tokenizer gives wrong IDs. Byte-level BPE starts from all 256 bytes, so every string can be encoded and no character is out of vocabulary.</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>How are ties between equally frequent pairs broken in real BPE implementations?</li>
+    <li>What is the exact difference between BPE and WordPiece merge criteria, and which one does BERT use?</li>
+    <li>How is the target vocabulary size chosen in practice (cost vs coverage)?</li>
+    <li>Will tokenization for non-English languages (Hindi taking 3 bytes) be discussed, including its cost impact?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[50:41 – 52:51]</span> Word structure and subword models; hat, learn, taaaaasty, laern, Transformerify</li>
+    <li><span class="t">[52:54 – 56:41]</span> Types of tokens: word, subword, character, byte; OOV; UTF-8 bytes</li>
+    <li><span class="t">[56:42 – 59:25]</span> BPE, Unigram, WordPiece; tokenizer learner and segmenter</li>
+    <li><span class="t">[59:29 – 1:00:29]</span> Vocabulary sizes vary; reading model cards</li>
+    <li><span class="t">[1:00:31 – 1:03:01]</span> BPE algorithm steps and first pair counts</li>
+    <li><span class="t">[1:03:06 – 1:05:43]</span> BPE iterations (ug, un, hug), segmenter, the "mug" OOV problem</li>
+  </ul>
+</section>
+
+<footer>Part 04 · segments 030–035 · <a href="part_03.html">← part 03</a> · <a href="index.html">index</a> · <a href="part_05.html">part 05 →</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>

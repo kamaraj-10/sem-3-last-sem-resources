@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 05 – BPE Hyperparameters, Byte-level BPE &amp; SentencePiece | Large Language Models for Generative AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <div class="icon">🧱</div>
+  <div>
+    <h1>Part 05 · BPE Hyperparameters, Byte-level BPE, Pros &amp; Cons, SentencePiece</h1>
+    <div class="sub">Large Language Models for Generative AI (S1-26_AIMLCZG536) · Session 1 · Prof. Monali Tushar Mavani</div>
+    <span class="time">[1:05:43 – 1:21:17]</span>
+  </div>
+</header>
+
+<div class="notice ok">Web access used: links in the "Extra reading" cards were fetched and checked on 2026-10-26. Inferred statements carry the <span class="badge verify"></span> badge.</div>
+
+<ul class="toc">
+  <li><a href="#t1">1 · [UNK] and why byte-level BPE</a></li>
+  <li><a href="#t2">2 · Q&amp;A: minimum frequency, why "pu" is missing</a></li>
+  <li><a href="#t3">3 · Q&amp;A: pair order, pruning, exam example</a></li>
+  <li><a href="#t4">4 · BPE recap with two hyperparameters</a></li>
+  <li><a href="#t5">5 · Byte-level BPE</a></li>
+  <li><a href="#t6">6 · BPE advantages and limitations</a></li>
+  <li><a href="#t7">7 · SentencePiece &amp; whitespace handling</a></li>
+  <li><a href="#t8">8 · Hugging Face tokenizers, rare words, bytes Q&amp;A</a></li>
+  <li><a href="#recall">Quick recall</a></li>
+</ul>
+
+<!-- ============================================================ -->
+<section class="topic" id="t1">
+  <div class="topic-title"><span class="num">1</span><h2>Why "mug" breaks character-level BPE, and where byte-level BPE comes in</h2><span class="time">[1:05:48 – 1:07:05]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>"m" is not in the 7-character vocabulary, so "mug" cannot be encoded. A real tokenizer would give an unknown token.</h3>
+    <ul>
+      <li>This is only because the toy corpus and 10-token vocabulary are tiny.</li>
+      <li>BPE solves <b>most</b> OOV issues, but not all: new languages or new domains may contain characters absent from the English corpus.</li>
+      <li>Hence "a lot of today's models are going towards <b>byte-level BPE</b>".</li>
+    </ul>
+  </div>
+  <div class="card analogy">
+    <span class="label">Intuition + layman analogy</span>
+    <p>A keyboard with only the letters b, g, h, n, p, s, u cannot type "mug". A keyboard with <b>all 256 raw key codes</b> can type anything, even if it has to type it slowly, one code at a time.</p>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul><li>Assuming BPE can never fail. It fails when a base <i>character</i> was never seen in the training corpus.</li></ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"A non-token [UNK] will be assigned to this word. But that does not happen in practice because here the example is a very small corpus."</li>
+      <li>The fix is explained after the Q&amp;A on BPE.</li>
+    </ul>
+    <span class="fix">"Non token" → <b>[UNK]</b> (unknown token), as on the slide.</span>
+  </div>
+  <div class="takeaway">Character-level BPE can still produce [UNK]. Byte-level BPE removes that failure.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t2">
+  <div class="topic-title"><span class="num">2</span><h2>Q&amp;A: why is "un" in the vocabulary but "pu" is not? Minimum frequency</h2><span class="time">[1:07:07 – 1:09:05]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>You do not just merge until you run out. You set a <b>minimum frequency</b> and a <b>maximum vocabulary size</b>.</h3>
+    <ul>
+      <li>A pair is merged only if its count is at least the minimum frequency (e.g. 2, 3 or 5). This is a <b>hyperparameter</b>.</li>
+      <li>Merges are built on the previous iteration. A pair can only be merged if it exists in the current segmentation.</li>
+      <li>A student pointed out that "pu" (count 12) could be added. The professor agreed: with minimum frequency 5, "pu" qualifies. The slide is just an example of the <b>mechanism</b>.</li>
+    </ul>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Which counts pass a minimum-frequency filter?</h3>
+    <table class="given">
+      <tr><th>Candidate</th><th class="num">Count</th><th class="num">min_freq = 5</th><th class="num">min_freq = 15</th></tr>
+      <tr><td>ug</td><td class="num">20</td><td class="num">merge</td><td class="num">merge</td></tr>
+      <tr><td>un</td><td class="num">16</td><td class="num">merge</td><td class="num">merge</td></tr>
+      <tr><td>hug</td><td class="num">15</td><td class="num">merge</td><td class="num">merge</td></tr>
+      <tr><td>pu (as discussed)</td><td class="num">12</td><td class="num">merge</td><td class="num">skip</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Compare each count with the threshold 5. <span class="calc">20, 16, 15, 12 are all ≥ 5 → all four allowed</span></div></div>
+    <div class="step"><span class="n">2</span><div>Raise the threshold to 15. <span class="calc">12 &lt; 15 → "pu" is excluded; 20, 16, 15 ≥ 15 stay</span></div></div>
+    <span class="pill">min_freq = 5 → 4 merges</span><span class="pill blue">min_freq = 15 → 3 merges</span><span class="hint">a higher threshold gives a smaller vocabulary</span>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"It's not like you always have to pick the maximum frequency pair." There is a rule, a minimum frequency hyperparameter.</li>
+      <li>"You can only merge if those two characters come together in my corpus minimum two, three, five times."</li>
+    </ul>
+    <span class="fix">Check the slide mechanics <span class="badge verify"></span>: once "un" is merged, the word "pun" becomes "p un", so the pair (p, u) no longer exists. In strict BPE "pu" would then not appear, so "pu" on the board is an illustration, not a result of the exact algorithm. "Ah, PU" = (p, u).</span>
+  </div>
+  <div class="takeaway">Minimum frequency filters out rare merges. The slide's exact merge list is only a mechanism demo.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t3">
+  <div class="topic-title"><span class="num">3</span><h2>Q&amp;A: character order, pruning irrelevant tokens, exam example</h2><span class="time">[1:09:07 – 1:10:33]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <ul>
+      <li><b>Order matters</b>: a merge keeps the order seen in the corpus. "ug" is possible, "gu" only if the corpus contains it.</li>
+      <li>There is <b>no separate step to discard</b> tokens that are irrelevant to a language. You handle this during <b>pre-processing and corpus creation</b>.</li>
+      <li>A full BPE example is in the question paper. The professor will upload it with the answer key.</li>
+    </ul>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>BPE is purely statistical: it never needs to know what a token "means".</li></ul>
+    <ul class="cons"><li>Because it does not filter by meaning, cleaning is done upstream. "Generally nobody does it that way."</li></ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"If GU is not there in the corpus, the algorithm will anyway not pick it up."</li>
+      <li>Question paper plus answer key will be uploaded, with a full BPE worked example. <b>Practise it.</b></li>
+    </ul>
+  </div>
+  <div class="takeaway">BPE merges only pairs that really occur, in corpus order. Clean the corpus before you tokenize it.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t4">
+  <div class="topic-title"><span class="num">4</span><h2>BPE recap with the two hyperparameters</h2><span class="time">[1:10:34 – 1:13:07]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <div class="grid-2">
+      <div class="mini"><h4>min_freq</h4><p>Smallest pair count that is allowed to merge. Example: 5. With 15, "pu" (12) would be dropped.</p></div>
+      <div class="mini"><h4>max vocab size (tokens)</h4><p>Stop merging when the vocabulary reaches this size, e.g. 30,000 or 50,000.</p></div>
+    </div>
+    <ol>
+      <li>Pre-tokenize the corpus into words and count their frequencies.</li>
+      <li>Start with single characters.</li>
+      <li>Apply merge rules starting with 2-character pairs: <b>ug</b> (20), <b>un</b> (16), <b>pu</b> (12, if allowed).</li>
+      <li>Then 3-character combinations built on the previous iteration: <b>hug</b> (15).</li>
+      <li>Continue until <b>max vocab size</b> is reached.</li>
+    </ol>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation: size of the toy vocabulary</span>
+    <div class="step"><span class="n">1</span><div>Base characters. <span class="calc">b, g, h, n, p, s, u = 7</span></div></div>
+    <div class="step"><span class="n">2</span><div>Merges performed (min_freq = 5, per the board). <span class="calc">ug, un, pu, hug = 4</span></div></div>
+    <div class="step"><span class="n">3</span><div>Vocabulary size. <span class="calc">7 + 4 = 11 (the slide shows 10 because "pu" is not in its vocabulary)</span></div></div>
+    <span class="pill">size = base + merges</span><span class="hint">a stopping rule fixes the number of merges: max_vocab − base size</span>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"I should have added minimum frequency in the slide. I will modify this slide later so every section benefits."</li>
+      <li>"Max vocab size in tokens is your hyperparameter."</li>
+    </ul>
+    <span class="fix">"PU has come 12 times because I set min-freq = 5" and "min-freq 15 → PU will not become part of the vocab" are written on the slide.</span>
+  </div>
+  <div class="takeaway">BPE has two stopping controls: min_freq per merge and max vocab size overall.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t5">
+  <div class="topic-title"><span class="num">5</span><h2>Byte-level BPE</h2><span class="time">[1:13:13 – 1:15:13]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>Same merge algorithm, but the base alphabet is the <b>256 byte values</b> instead of characters.</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 700 170" role="img" aria-label="Byte-level BPE merge of bytes 117 and 103 into token ID 256">
+        <defs><marker id="a55" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6475"/></marker></defs>
+        <g font-family="Segoe UI, Arial" font-size="12" text-anchor="middle">
+          <rect x="10" y="20" width="110" height="40" rx="8" fill="#fff" stroke="#5b6475"/><text x="65" y="38" font-weight="700">"u"</text><text x="65" y="53">byte 117</text>
+          <rect x="140" y="20" width="110" height="40" rx="8" fill="#fff" stroke="#5b6475"/><text x="195" y="38" font-weight="700">"g"</text><text x="195" y="53">byte 103</text>
+          <text x="262" y="45" font-size="20">+</text>
+          <line x1="250" y1="40" x2="318" y2="40" stroke="#5b6475" stroke-width="2" marker-end="url(#a55)"/>
+          <rect x="320" y="14" width="200" height="52" rx="8" fill="#fff4ea" stroke="#e8833a" stroke-width="3"/><text x="420" y="36" font-weight="700">ID 256 = bytes [117, 103]</text><text x="420" y="54">token "ug"</text>
+          <text x="610" y="42" font-style="italic">first free ID after 0–255</text>
+          <rect x="10" y="100" width="680" height="50" rx="8" fill="#ecf8f0" stroke="#2f9e5b"/>
+          <text x="350" y="122" font-weight="700">Any text = some sequence of the 256 base bytes, so it can always be encoded</text>
+          <text x="350" y="140">unseen characters are never OOV</text>
+        </g>
+      </svg>
+      <div class="cap">Slide "Byte-level BPE". Board: "token-ID = next available".</div>
+    </div>
+    <ul>
+      <li>Vocabulary is not made of characters but of <b>bytes</b>. Characters are decomposed into their UTF-8 byte sequence.</li>
+      <li>After the first merge the vocabulary records "ID 256 = bytes [117 103] = ug".</li>
+      <li>This <b>removes the possibility of unseen characters</b>. Many (not all) LLMs use it.</li>
+    </ul>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Redo the toy example at byte level and encode "mug"</h3>
+    <table class="given">
+      <tr><th>Symbol</th><th class="num">Byte value</th></tr>
+      <tr><td>u</td><td class="num">117</td></tr>
+      <tr><td>g</td><td class="num">103</td></tr>
+      <tr><td>n</td><td class="num">110 <span class="badge beyond">computed</span></td></tr>
+      <tr><td>h</td><td class="num">104 <span class="badge beyond">computed</span></td></tr>
+      <tr><td>m</td><td class="num">109 <span class="badge beyond">computed</span></td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Base vocabulary IDs. <span class="calc">0 … 255 = the 256 raw bytes</span></div></div>
+    <div class="step"><span class="n">2</span><div>Merge 1: (u, g). <span class="calc">ID 256 = [117, 103] = "ug"</span></div></div>
+    <div class="step"><span class="n">3</span><div>Merge 2: (u, n). <span class="calc">ID 257 = [117, 110] = "un"</span></div></div>
+    <div class="step"><span class="n">4</span><div>Merge 3: (h, ug). <span class="calc">ID 258 = [104, 256] = "hug"</span></div></div>
+    <div class="step"><span class="n">5</span><div>Encode "mug". <span class="calc">bytes [109, 117, 103] → apply ug → [109, 256]</span></div></div>
+    <div class="step"><span class="n">6</span><div>Vocabulary size now. <span class="calc">256 + 3 = 259</span></div></div>
+    <span class="pill">mug → [109, 256]</span><span class="pill blue">no [UNK]</span><span class="hint">2 tokens instead of a failure</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros">
+      <li>Every possible text maps to bytes, so there are no unseen characters.</li>
+      <li>Saves space: individual elements are just bytes (256 base entries).</li>
+    </ul>
+    <ul class="cons"><li>Scripts that need several bytes per character (e.g. Hindi, 3 bytes) cost more tokens if the vocabulary has no merges for them.</li></ul>
+    <div class="balance">complete coverage vs longer sequences for rarely merged text.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Vocabulary is not based on characters but on bytes." Merged pairs get "the next available token ID" (board).</li>
+      <li>"UG, HUG, all of these tokens will get my token IDs."</li>
+    </ul>
+    <span class="fix">"U is a character represented as a byte 117, G as 103" matches the slide. Board row: token IDs 0–7 with u, g, h, m, p, v, ug, hug (hand-written, illustrative).</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://huggingface.co/docs/transformers/tokenizer_summary">Hugging Face: Byte-level BPE</a>: 256 byte values as base vocabulary, so no "&lt;unk&gt;" token. Fetched and checked.</li></ul>
+  </div>
+  <div class="takeaway">Start from 256 bytes, merge as usual, and every string is encodable. That is byte-level BPE.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t6">
+  <div class="topic-title"><span class="num">6</span><h2>BPE: advantages and limitations</h2><span class="time">[1:15:17 – 1:17:19]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <div class="grid-2">
+      <div class="mini"><h4>Advantages (slide)</h4><ul>
+        <li>Efficient handling of rare words and subword units.</li>
+        <li>Reduces the vocabulary size, so the model is more efficient.</li>
+        <li>Better generalisation by breaking words into subword units.</li></ul></div>
+      <div class="mini"><h4>Limitations (slide)</h4><ul>
+        <li>Can give <b>fragmented tokens</b> for languages with complex morphology.</li>
+        <li>May not capture semantic meaning as well as other methods.</li></ul></div>
+    </div>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>The "apolog-" family (professor's illustration)</h3>
+    <table class="given">
+      <tr><th>Word</th><th>Possible split <span class="badge verify"></span></th><th class="num">Subwords</th></tr>
+      <tr><td>apology</td><td>apolog + y</td><td class="num">2</td></tr>
+      <tr><td>apologise</td><td>apolog + ise (she says "ize")</td><td class="num">2</td></tr>
+      <tr><td>apologist</td><td>apolog + ist</td><td class="num">2</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation: vocabulary entries needed</span>
+    <div class="step"><span class="n">1</span><div>Word-level: one entry per word form. <span class="calc">3 entries</span></div></div>
+    <div class="step"><span class="n">2</span><div>Subword: shared stem plus 3 suffixes. <span class="calc">1 (apolog) + 3 (y, ise, ist) = 4 entries</span></div></div>
+    <div class="step"><span class="n">3</span><div>Add more forms: modernise, modernist share their own stem, but the suffixes <b>ise</b> and <b>ist</b> are reused. <span class="calc">adding "modern" costs 1 new stem, not 2 full words</span></div></div>
+    <span class="pill">savings grow with more words</span><span class="hint">for 3 words the saving is negative (4 &gt; 3). It pays off when suffixes are reused across many stems</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Each word form does not need its own vocabulary entry, so vocabulary stays small and rare words are covered.</li></ul>
+    <ul class="cons">
+      <li>Rules are simple <b>frequency-based</b> merges with no linguistic rules, so languages with complex morphology (South Indian languages, French) get fragmented tokens.</li>
+      <li>It does not capture meaning, only statistics.</li>
+    </ul>
+    <div class="balance">simple, language-agnostic statistics vs poor fit for morphologically rich languages. Still, "BPE or some variant" is very popular.</div>
+  </div>
+  <div class="card mistakes">
+    <span class="label">Common mistakes</span>
+    <ul>
+      <li>Believing BPE splits words at linguistic boundaries. The splits come from frequencies, not grammar. The "apolog + y" split is "just from heuristics, it depends upon your training corpus".</li>
+    </ul>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Apologise, modernise: all of this will not have their own vocabulary."</li>
+      <li>Models trained on many languages see fragmented tokens, and BPE may not suit them.</li>
+    </ul>
+    <span class="fix">"A POLOG" → <b>apolog</b>. "Y", "IZE", "IST" are the suffix pieces she named. "Ohh" and "So that's the kind of limitation" are filler.</span>
+  </div>
+  <div class="takeaway">BPE shares stems across word forms (good), but it is blind to grammar, so morphologically rich languages fragment.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t7">
+  <div class="topic-title"><span class="num">7</span><h2>SentencePiece and how libraries handle whitespace</h2><span class="time">[1:17:21 – 1:19:13]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <h3>You do not write BPE yourself. Use a library. <b>SentencePiece</b> (Google) implements BPE and Unigram LM.</h3>
+    <ul>
+      <li><b>Language-agnostic</b>: operates on raw text, no pre-tokenizer needed. Works for unsegmented languages (Chinese, Japanese, Thai).</li>
+      <li>Backend of T5, Gemma, and Meta's Llama 1 and 2 (slide).</li>
+      <li><b>Unigram LM</b>: single tokens (1-grams) used together. The professor says the main difference between libraries is how <b>whitespace</b> is handled.</li>
+    </ul>
+    <table>
+      <tr><th>Approach</th><th>Whitespace handling</th><th>Example "Tokenization matters"</th></tr>
+      <tr><td>Classic BPE</td><td>Pre-tokenizer script splits into words first</td><td>"Tokenization", "matters"</td></tr>
+      <tr><td>SentencePiece</td><td>Space becomes a leading underscore ▁</td><td>▁Token | ization | ▁matters</td></tr>
+      <tr><td>Byte-level BPE (GPT, Llama, Qwen latest)</td><td>Leading space shown as Ġ</td><td>e.g. "Ġmatters" <span class="badge verify"></span></td></tr>
+      <tr><td>WordPiece (BERT)</td><td>## marks a continuation</td><td>Token ## ization</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation <span class="badge beyond">illustrative</span></span>
+    <div class="step"><span class="n">1</span><div>Mark word starts with ▁. <span class="calc">"Tokenization matters" → ▁Tokenization▁matters</span></div></div>
+    <div class="step"><span class="n">2</span><div>Split by learned pieces. <span class="calc">▁Token | ization | ▁matters</span></div></div>
+    <div class="step"><span class="n">3</span><div>Count tokens. <span class="calc">3 tokens</span></div></div>
+    <div class="step"><span class="n">4</span><div>Decode by joining pieces and turning ▁ back into a space. <span class="calc">"Tokenization matters"</span></div></div>
+    <span class="pill">3 tokens</span><span class="hint">decoding is lossless because the space is a token symbol</span>
+  </div>
+  <div class="card why">
+    <span class="label">Justification</span>
+    <ul class="pros"><li>Treating whitespace as a normal symbol makes tokenization reversible and works for languages without spaces.</li></ul>
+    <div class="balance">BPE with a pre-tokenizer is simple but assumes spaces separate words. SentencePiece drops that assumption.</div>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"How this algorithm is actually used: you don't have to write any such algorithm. We have libraries."</li>
+      <li>These outputs ("Ġ" prefix) will be visible in <b>webinar 1</b>.</li>
+      <li>To train a new tokenizer or extend an existing one, use the open-source tokenizer in <b>Hugging Face</b>.</li>
+    </ul>
+    <span class="fix">"G test" / "G tasty" → <b>Ġtasty</b>. "Lama and Quen" → <b>Llama and Qwen</b>. "Sentence-based library" → <b>SentencePiece</b>.</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://huggingface.co/docs/transformers/tokenizer_summary">Hugging Face: SentencePiece and WordPiece sections</a>: SentencePiece treats text as a raw stream and uses ▁ for spaces. Fetched and checked.</li></ul>
+  </div>
+  <div class="takeaway">Use SentencePiece or Hugging Face tokenizers. Libraries differ mainly in how they mark whitespace (▁, Ġ or ##).</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="topic" id="t8">
+  <div class="topic-title"><span class="num">8</span><h2>Hugging Face tokenizer library, per-document counts, "256 bytes" clarification</h2><span class="time">[1:19:19 – 1:21:17]</span></div>
+  <div class="card concept">
+    <span class="label">The concept</span>
+    <ul>
+      <li><b>Frequencies across documents</b>: "hug" can appear in many documents. Counts are <b>combined</b> over the whole corpus, either before or after the split. The result is the same.</li>
+      <li><b>Why 0–255?</b> A byte has 256 values (0 to 255). BPE (character level) does not use bytes. Byte-level BPE uses all 256 as individual symbols.</li>
+      <li><b>Rare words</b> such as "tasty" written with many a's are split into subword parts by BPE.</li>
+      <li><b>Hugging Face</b> will be used "extensively". The tokenizer library is demonstrated in webinar 1.</li>
+    </ul>
+  </div>
+  <div class="card scenario">
+    <span class="label">Scenario</span>
+    <h3>Counts merged across two documents</h3>
+    <table class="given">
+      <tr><th>Source</th><th class="num">"hug" count</th></tr>
+      <tr><td>Document A <span class="badge beyond">assumed</span></td><td class="num">6</td></tr>
+      <tr><td>Document B <span class="badge beyond">assumed</span></td><td class="num">4</td></tr>
+    </table>
+  </div>
+  <div class="card steps">
+    <span class="label">Step-by-step computation</span>
+    <div class="step"><span class="n">1</span><div>Add the document counts. <span class="calc">6 + 4 = 10 → ("hug", 10)</span></div></div>
+    <div class="step"><span class="n">2</span><div>Compute pair counts once, from the combined dictionary. <span class="calc">(u, g) = 10 + 5 + 5 = 20</span></div></div>
+    <span class="pill">("hug", 10)</span><span class="hint">same totals whether you merge counts first or pair counts first</span>
+  </div>
+  <div class="card code">
+    <span class="label">Code (Hugging Face; run it to see actual pieces)</span>
+    <pre><span class="k">from</span> transformers <span class="k">import</span> AutoTokenizer
+tok = AutoTokenizer.from_pretrained(<span class="s">"gpt2"</span>)         <span class="c"># byte-level BPE</span>
+<span class="k">print</span>(tok.tokenize(<span class="s">"Tokenization matters"</span>))        <span class="c"># leading spaces show as 'Ġ'</span>
+<span class="k">print</span>(tok(<span class="s">"hugs"</span>)[<span class="s">"input_ids"</span>])                  <span class="c"># token IDs</span>
+<span class="k">print</span>(len(tok))                                 <span class="c"># vocabulary size</span></pre>
+  </div>
+  <div class="card prof">
+    <span class="label">Professor emphasized</span>
+    <ul>
+      <li>"Not 256 bytes, 0 to 255" and "Unicode character limit is 0 to 255". She is describing the same 256 values.</li>
+      <li>"We will be using Hugging Face extensively."</li>
+      <li>The screen share moved to a browser for a Hugging Face demo (continues in part 06).</li>
+    </ul>
+    <span class="fix">The professor says "Unicode character limit is 0 to 255". Precisely, <b>one byte</b> holds 0–255. Unicode itself has far more code points, which UTF-8 encodes in 1–4 bytes <span class="badge verify"></span>. Chat question: "Why only 256 bytes used in BPE?" answered by this. "Hugging phase" → <b>Hugging Face</b>. "B HARIPRIYA" is a student name.</span>
+  </div>
+  <div class="card extra">
+    <span class="label">Extra reading</span>
+    <ul><li><a href="https://huggingface.co/docs/tokenizers/index">Hugging Face Tokenizers</a>: fast library to train new vocabularies and tokenize, with alignment tracking. Fetched and checked.</li></ul>
+  </div>
+  <div class="takeaway">Pair counts are global across the corpus. Byte-level BPE uses all 256 byte values. Hugging Face is the practical tokenizer toolkit.</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="end-section" id="recall">
+  <h2>🧠 Quick recall</h2>
+  <details><summary>1. Why can BPE still produce [UNK], and what fixes it?</summary>
+    <div class="ans">If a base character never appeared in the corpus (e.g. "m"), it is not in the vocabulary. Byte-level BPE starts from the 256 bytes, so every string is encodable.</div></details>
+  <details><summary>2. Name the two hyperparameters of BPE training.</summary>
+    <div class="ans">Minimum frequency (smallest pair count allowed to merge) and maximum vocabulary size (stop when reached).</div></details>
+  <details><summary>3. In byte-level BPE, "u" = 117 and "g" = 103. What is the ID of the merged token "ug" and what does the vocabulary store?</summary>
+    <div class="ans">ID <b>256</b> (the first free ID after 0–255), recorded as bytes [117, 103] = "ug".</div></details>
+  <details><summary>4. Give one advantage and one limitation of BPE.</summary>
+    <div class="ans">Advantage: handles rare words and shrinks vocabulary by sharing subwords. Limitation: frequency-based merges fragment languages with complex morphology and do not capture meaning.</div></details>
+  <details><summary>5. How do SentencePiece, byte-level BPE and WordPiece each mark word boundaries?</summary>
+    <div class="ans">SentencePiece: leading ▁. Byte-level BPE (GPT, Llama, Qwen): leading space shown as Ġ. WordPiece (BERT): ## on continuation pieces.</div></details>
+</section>
+
+<section class="end-section">
+  <h2>❓ Open doubts for the professor</h2>
+  <ul class="doubts">
+    <li>After "un" is merged, "pun" becomes "p un". How can (p, u) with count 12 still be merged afterwards, as in the slide?</li>
+    <li>Is the minimum-frequency rule part of the exam definition of BPE, or is it an optional practical detail?</li>
+    <li>Which tokenizer does each model family (GPT, Llama, Qwen, Gemma) use, and where do we read it from the model card?</li>
+    <li>Will the question paper with the BPE worked example and answer key be uploaded before webinar 1?</li>
+  </ul>
+</section>
+
+<section class="end-section">
+  <h2>✅ Topics covered in this part</h2>
+  <ul class="checklist">
+    <li><span class="t">[1:05:48 – 1:07:05]</span> "mug" and [UNK], motivation for byte-level BPE</li>
+    <li><span class="t">[1:07:07 – 1:09:05]</span> Q&amp;A: min frequency, why "pu" is missing</li>
+    <li><span class="t">[1:09:07 – 1:10:33]</span> Q&amp;A: character order, pruning, exam example</li>
+    <li><span class="t">[1:10:34 – 1:13:07]</span> BPE recap: min_freq and max vocabulary size</li>
+    <li><span class="t">[1:13:13 – 1:15:13]</span> Byte-level BPE with byte IDs and the 256 offset</li>
+    <li><span class="t">[1:15:17 – 1:17:19]</span> BPE advantages (rare words, vocabulary) and limitations (morphology, semantics)</li>
+    <li><span class="t">[1:17:21 – 1:19:13]</span> SentencePiece, whitespace handling, Ġ, ▁ and ##</li>
+    <li><span class="t">[1:19:19 – 1:21:17]</span> Combined counts, 0–255 bytes, Hugging Face tokenizer library</li>
+  </ul>
+</section>
+
+<footer>Part 05 · segments 036–050 · <a href="part_04.html">← part 04</a> · <a href="index.html">index</a> · <a href="part_06.html">part 06 →</a></footer>
+</div>
+<script>
+window.addEventListener('beforeprint', function () {
+  document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+});
+</script>
+</body>
+</html>
